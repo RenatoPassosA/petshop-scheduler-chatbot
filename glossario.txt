@@ -1,0 +1,36 @@
+cliente:
+Identificado por número de celular (pode ter 1 ou 2 números).
+Pode ter mais de um tutor vinculado ao mesmo pet.
+Atributos: nome completo, endereço, lista de pets associados.
+
+pets:
+nome
+Pertence a um ou mais cliente/tutor.
+Atributos: nome, espécie (cão/gato), raça, porte (P/M/G), observações (saúde, restrições).
+
+serviço:
+Tipo de atividade realizada no petshop.
+Atributos: nome (banho, tosa, vacina…), duração base, valor, consumíveis necessários (ex.: shampoo, vacina).
+
+profissional:
+Pessoa que executa o serviço.
+Atributos: nome, habilidades (ex.: tosa felina, banho grande porte), agenda de trabalho.
+
+recurso físico:
+Estruturas/equipamentos necessários para executar serviços.
+Atributos: nome (banheira, secador, mesa), capacidade simultânea (quantos pets pode atender no mesmo slot).
+
+estoque:
+Itens consumíveis usados nos serviços.
+Atributos: nome (shampoo, vacina, toalha…), quantidade disponível, nível mínimo para alerta.
+
+reserva temporária:
+Hold criado ao selecionar um horário, válido por tempo limitado (TTL).
+Garante que o mesmo slot não seja reservado por outro cliente até confirmar ou expirar.
+
+agendamento:
+Confirmação efetiva de um serviço para um pet em um horário.
+Atributos: cliente, pet, serviço, profissional, recurso físico, status (confirmado/cancelado/no-show).
+
+slot:
+só pode ser oferecido se o horários está livre, há profissional habilitado livre, há recurso físico, há estoque, está dentro da janela de agendamento
