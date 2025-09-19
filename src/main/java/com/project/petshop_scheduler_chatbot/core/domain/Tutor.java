@@ -40,7 +40,7 @@ public class Tutor {
 
     public void    addPet(Long petId) 
     {
-        if (petId == null)
+        if (petId == null || petId <= 0)
             throw new IllegalArgumentException("Pet Inválido");
         if (petIds.contains(petId))
             throw new IllegalArgumentException("Pet já está associado a este Tutor");
@@ -50,7 +50,7 @@ public class Tutor {
 
     public void    removePet(Long petId)
     {
-        if (petId == null)
+        if (petId == null || petId <= 0)
             throw new IllegalArgumentException("Pet Inválido");
         if (!petIds.contains(petId))
             throw new IllegalArgumentException("Pet não pertence a esse Tutor");

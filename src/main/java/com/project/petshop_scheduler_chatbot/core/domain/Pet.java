@@ -40,7 +40,7 @@ public class Pet {
 				throw new IllegalArgumentException("Porte do pet é obrigatório");
 			if (breed == null || breed.isBlank())
 				throw new IllegalArgumentException("Raça do pet é obrigatória");
-            if (tutorId == null)
+            if (tutorId == null || tutorId <= 0)
                 throw new IllegalArgumentException("Inserir tutor válido");
         }
 

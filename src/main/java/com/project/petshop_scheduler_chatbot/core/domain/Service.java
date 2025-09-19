@@ -16,7 +16,7 @@ public class Service {
     }
 
     public Service(String name, BigDecimal price, int duration) {
-        basicValidations(name, price, duration);
+        basicValidations(name, duration);
         this.name = name;
         this.price = normalizePrice(price); 
         this.duration = duration;
@@ -24,11 +24,16 @@ public class Service {
         this.updatedAt = LocalDateTime.now();
     }
 
-    private void    basicValidations(String name, BigDecimal price, int duration) {
+    private void    basicValidations(String name, int duration) {
+
+        int scheduleStep = 15;
+
         if (name == null || name.isBlank())
             throw new IllegalArgumentException("Nome do Serviço é obrigatório");
         if (duration < 30 || duration > 180)
             throw new IllegalArgumentException("Duração válida do serviço é obrigatória (entre 30 e 180 minutos)");
+        if (duration % scheduleStep != 0)
+            throw new IllegalArgumentException("Normalizar duração de serviço terminando em multiplos de 15");
     }
 
     private BigDecimal normalizePrice(BigDecimal price) {
