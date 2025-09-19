@@ -1,5 +1,6 @@
 package com.project.petshop_scheduler_chatbot.core.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import com.project.petshop_scheduler_chatbot.core.domain.Service;
