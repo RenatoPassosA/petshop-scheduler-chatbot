@@ -32,17 +32,17 @@ public class Pet {
     }
 
     private void    basicValidations(String name, Gender gender, PetSize size, String breed, Long tutorId, String observations) {
-            if (name == null || name.isBlank())
-				throw new IllegalArgumentException("Nome do pet é obrigatório");
-            if (gender == null)
-                throw new IllegalArgumentException("Sexo do pet deve ser M ou F");
-			if (size == null)
-				throw new IllegalArgumentException("Porte do pet é obrigatório");
-			if (breed == null || breed.isBlank())
-				throw new IllegalArgumentException("Raça do pet é obrigatória");
-            if (tutorId == null || tutorId <= 0)
-                throw new IllegalArgumentException("Inserir tutor válido");
-        }
+        if (name == null || name.isBlank())
+            throw new IllegalArgumentException("Nome do pet é obrigatório");
+        if (gender == null)
+            throw new IllegalArgumentException("Sexo do pet deve ser M ou F");
+        if (size == null)
+            throw new IllegalArgumentException("Porte do pet é obrigatório");
+        if (breed == null || breed.isBlank())
+            throw new IllegalArgumentException("Raça do pet é obrigatória");
+        if (tutorId == null || tutorId <= 0)
+            throw new IllegalArgumentException("Inserir tutor válido");
+    }
 
     public Long getId() {
         return id;

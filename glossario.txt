@@ -1,36 +1,27 @@
-cliente:
-Identificado por número de celular (pode ter 1 ou 2 números).
-Pode ter mais de um tutor vinculado ao mesmo pet.
-Atributos: nome completo, endereço, lista de pets associados.
+Cada entidade do core que eu preciso consulta/salvar precisa de uma interface para implementar a ação. Essa interface é feita por meio do repository.
+Essas interfaces são os contratos (ports): dizem “o que” o domínio precisa; a infra depois fornece o “como”.
 
-pets:
-nome
-Pertence a um ou mais cliente/tutor.
-Atributos: nome, espécie (cão/gato), raça, porte (P/M/G), observações (saúde, restrições).
 
-serviço:
-Tipo de atividade realizada no petshop.
-Atributos: nome (banho, tosa, vacina…), duração base, valor, consumíveis necessários (ex.: shampoo, vacina).
+usecase:
+Use case (caso de uso) é a unidade de trabalho da sua aplicação: uma operação completa que atende um objetivo do usuário/sistema e orquestra tudo que precisa acontecer para isso.
+Ex.: “Marcar agendamento”, “Confirmar agendamento”, “Cadastrar tutor”.
 
-profissional:
-Pessoa que executa o serviço.
-Atributos: nome, habilidades (ex.: tosa felina, banho grande porte), agenda de trabalho.
+O que é um Use Case
 
-recurso físico:
-Estruturas/equipamentos necessários para executar serviços.
-Atributos: nome (banheira, secador, mesa), capacidade simultânea (quantos pets pode atender no mesmo slot).
+Ação de negócio completa (verbo): orquestra entidades + políticas + repositórios para cumprir um objetivo.
+Onde vive: camada application.
+Faz: valida regras de aplicação, consulta/salva via contratos, decide fluxos e estados.
+Não faz: SQL, HTTP, UI, detalhes de infra.
 
-estoque:
-Itens consumíveis usados nos serviços.
-Atributos: nome (shampoo, vacina, toalha…), quantidade disponível, nível mínimo para alerta.
+O que é Repository/Gateway
 
-reserva temporária:
-Hold criado ao selecionar um horário, válido por tempo limitado (TTL).
-Garante que o mesmo slot não seja reservado por outro cliente até confirmar ou expirar.
+Contrato de acesso a algo externo ao domínio:
+Repository → persistência (banco): find/save/list/exists…
+Gateway → serviço externo (ex.: WhatsApp, pagamentos)
+Onde vive: interface no core (domínio); implementação na infra.
+Faz: somente ler/gravar/consultar; não aplica regra de negócio.
 
-agendamento:
-Confirmação efetiva de um serviço para um pet em um horário.
-Atributos: cliente, pet, serviço, profissional, recurso físico, status (confirmado/cancelado/no-show).
+Regra mental rápida
 
-slot:
-só pode ser oferecido se o horários está livre, há profissional habilitado livre, há recurso físico, há estoque, está dentro da janela de agendamento
+Se a operação é “pegar/guardar dados” → Repository/Gateway.
+Se a operação é “fazer algo de negócio” (com passos e decisões) → Use Case.

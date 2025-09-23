@@ -9,4 +9,6 @@ public interface TutorRepository {
     Tutor save (Tutor tutor);
     Optional<Tutor> findById(Long id);
     Optional<Tutor> findByPhone(PhoneNumber phone); 
+    boolean existsByPhone(PhoneNumber phone);
+    boolean existsById(Long id);
 }

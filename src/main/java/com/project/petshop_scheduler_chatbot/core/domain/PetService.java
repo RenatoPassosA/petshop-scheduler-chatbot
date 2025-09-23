@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 
-public class Service {
+public class PetService {
     private Long			id;
     private String			name;
     private BigDecimal  	price;
@@ -12,10 +12,10 @@ public class Service {
     private LocalDateTime	createdAt;
     private LocalDateTime	updatedAt;
 
-    public Service() {
+    public PetService() {
     }
 
-    public Service(String name, BigDecimal price, int duration) {
+    public PetService(String name, BigDecimal price, int duration) {
         basicValidations(name, duration);
         this.name = name;
         this.price = normalizePrice(price); 

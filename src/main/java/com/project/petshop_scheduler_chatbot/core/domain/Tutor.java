@@ -20,26 +20,27 @@ public class Tutor {
     }
 
     public Tutor (String name, PhoneNumber phoneNumber, String address, List<Long> petIds) {
-            basicValidations(name, phoneNumber, address);
-            this.name = name;
-            this.phoneNumber = phoneNumber;
-            this.address = address;
-            this.petIds = (petIds == null) ? new ArrayList<>() : new ArrayList<>(petIds);
-            this.createdAt = LocalDateTime.now();
-            this.updatedAt = LocalDateTime.now();   
+        name = name.trim();
+        address = address.trim();
+        basicValidations(name, phoneNumber, address);
+        this.name = name;
+        this.phoneNumber = phoneNumber;
+        this.address = address;
+        this.petIds = (petIds == null) ? new ArrayList<>() : new ArrayList<>(petIds);
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();   
     }
 
     private void    basicValidations(String name, PhoneNumber phoneNumber, String address) {
-            if (name == null || name.isBlank())
-				throw new IllegalArgumentException("Nome do Tutor é obrigatório");
-			if (phoneNumber == null)
-				throw new IllegalArgumentException("Telefone do Tutor é obrigatório");
-			if (address == null || address.isBlank())
-				throw new IllegalArgumentException("Endereço do Tutor é obrigatório");
-        }
+        if (name == null || name.isBlank())
+            throw new IllegalArgumentException("Nome do Tutor é obrigatório");
+        if (phoneNumber == null)
+            throw new IllegalArgumentException("Telefone do Tutor é obrigatório");
+        if (address == null || address.isBlank())
+            throw new IllegalArgumentException("Endereço do Tutor é obrigatório");
+    }
 
-    public void    addPet(Long petId) 
-    {
+    public void    addPet(Long petId) {
         if (petId == null || petId <= 0)
             throw new IllegalArgumentException("Pet Inválido");
         if (petIds.contains(petId))
@@ -48,8 +49,7 @@ public class Tutor {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public void    removePet(Long petId)
-    {
+    public void    removePet(Long petId) {
         if (petId == null || petId <= 0)
             throw new IllegalArgumentException("Pet Inválido");
         if (!petIds.contains(petId))
