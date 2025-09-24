@@ -8,19 +8,23 @@ public class ProfessionalWorkingHours {
     private DayOfWeek weekday;
     private LocalTime open;
     private LocalTime close;
+    private LocalTime breakStart;
+    private LocalTime breakEnd;
 
     public ProfessionalWorkingHours () {
     }
 
-    public ProfessionalWorkingHours (Long professionalId, DayOfWeek weekday, LocalTime open, LocalTime close) {
-        basicValidations(professionalId, weekday, open, close);
+    public ProfessionalWorkingHours (Long professionalId, DayOfWeek weekday, LocalTime open, LocalTime close, LocalTime breakStart, LocalTime breakEnd) {
+        basicValidations(professionalId, weekday, open, close, breakStart, breakEnd);
         this.professionalId = professionalId;
         this.weekday = weekday;
         this.open = open;
         this.close = close;
+        this.breakStart = breakStart;
+        this.breakEnd = breakEnd;
     }
 
-    private void    basicValidations(Long professionalId, DayOfWeek weekday, LocalTime open, LocalTime close) {
+    private void    basicValidations(Long professionalId, DayOfWeek weekday, LocalTime open, LocalTime close, LocalTime breakStart, LocalTime breakEnd) {
         if (professionalId == null)
             throw new IllegalArgumentException("Id do profissional é obrigatório");
         if (weekday == null)
@@ -31,6 +35,10 @@ public class ProfessionalWorkingHours {
             throw new IllegalArgumentException("Horário de término da jornada é obrigatório");
         if (close.isBefore(open) || open.equals(close))
             throw new IllegalArgumentException("Horario de trabalho inválido");
+        if (breakStart == null)
+            throw new IllegalArgumentException("Horário do inicio da pausa é obrigatório");
+        if (breakEnd == null)
+            throw new IllegalArgumentException("Horário do final da pausa é obrigatório");
     }
 
     public Long getProfessionalId() {
@@ -47,6 +55,14 @@ public class ProfessionalWorkingHours {
 
     public LocalTime getClose() {
         return close;
+    }
+
+    public LocalTime getBreakStart() {
+        return breakStart;
+    }
+
+    public LocalTime getBreakEnd() {
+        return breakEnd;
     }
 
     public void setProfessionalId(Long professionalId) {

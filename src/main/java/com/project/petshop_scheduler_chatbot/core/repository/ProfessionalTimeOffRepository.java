@@ -7,4 +7,5 @@ import com.project.petshop_scheduler_chatbot.core.domain.schedule.ProfessionalTi
 
 public interface ProfessionalTimeOffRepository {
     List<ProfessionalTimeOff> listByProfessionalBetween(Long professionalId, LocalDateTime start, LocalDateTime end);
+    boolean isInTimeOff(Long professionalId, LocalDateTime startDateTime, LocalDateTime endDateTime);
 }

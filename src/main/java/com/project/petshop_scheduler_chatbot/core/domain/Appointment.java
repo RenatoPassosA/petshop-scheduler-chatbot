@@ -80,6 +80,10 @@ public class Appointment {
         return startAt;
     }
 
+    public int getServiceDuration() {
+        return serviceDurationMinutes;
+    }
+
     public LocalDateTime getEndAt() {
         return this.startAt.plusMinutes(this.serviceDurationMinutes);
     }

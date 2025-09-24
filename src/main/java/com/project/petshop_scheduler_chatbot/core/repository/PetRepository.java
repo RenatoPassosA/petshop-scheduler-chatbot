@@ -9,4 +9,5 @@ public interface PetRepository {
     Pet save (Pet pet);
     Optional<Pet> findById(Long id);
     List<Pet> listByTutor(Long tutorId);
+    boolean existsByIdAndTutorId(Long petId, Long tutorId);
 }

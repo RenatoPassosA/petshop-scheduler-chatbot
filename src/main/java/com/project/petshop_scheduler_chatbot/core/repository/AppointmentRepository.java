@@ -10,6 +10,9 @@ public interface AppointmentRepository {
     Appointment save (Appointment appointment);
     Optional<Appointment> findById(Long id);
     List<Appointment> findByTutorId(Long id);
-    Boolean existsOverlap(Long professionalId, LocalDateTime start,  LocalDateTime end);
+    Boolean existsOverlapForProfessional(Long professionalId, LocalDateTime start,  LocalDateTime end);
+    Boolean existsOverlapForPet(Long petId, LocalDateTime start,  LocalDateTime end);
     List<Appointment> listByProfessionalBetween(Long professionalId, LocalDateTime start, LocalDateTime end);
+    Boolean existsOverlapForProfessionalExcluding(Long appointmentId, Long professionalId, LocalDateTime start, LocalDateTime end);
+    Boolean existsOverlapForPetExcluding(Long appointmentId, Long petId, LocalDateTime start, LocalDateTime end);
 }
