@@ -5,15 +5,13 @@ import java.time.LocalDateTime;
 public class RescheduleAppointmentCommand {
     private Long appointmentId;
     private LocalDateTime newStartAt;
-    private String observation;
 
     public RescheduleAppointmentCommand() {
     }
 
-    public RescheduleAppointmentCommand(Long appointmentId, LocalDateTime newStartAt, String observation) {
+    public RescheduleAppointmentCommand(Long appointmentId, LocalDateTime newStartAt) {
         this.appointmentId = appointmentId;
         this.newStartAt = newStartAt;
-        this.observation = observation;
     }
 
     public Long getAppointmentId() {
@@ -23,9 +21,4 @@ public class RescheduleAppointmentCommand {
     public LocalDateTime getNewStartAt() {
         return newStartAt;
     }
-
-    public String getObservation() {
-        return observation;
-    }
-
 }
