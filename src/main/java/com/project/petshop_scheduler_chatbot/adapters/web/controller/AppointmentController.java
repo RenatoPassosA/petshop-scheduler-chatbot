@@ -1,4 +1,4 @@
-package com.project.petshop_scheduler_chatbot.adapters.web;
+package com.project.petshop_scheduler_chatbot.adapters.web.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

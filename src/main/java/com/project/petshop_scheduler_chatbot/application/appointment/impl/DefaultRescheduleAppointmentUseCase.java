@@ -9,6 +9,13 @@ import com.project.petshop_scheduler_chatbot.application.appointment.RescheduleA
 import com.project.petshop_scheduler_chatbot.application.appointment.RescheduleAppointmentResult;
 import com.project.petshop_scheduler_chatbot.application.appointment.RescheduleAppointmentUseCase;
 import com.project.petshop_scheduler_chatbot.core.domain.Appointment;
+import com.project.petshop_scheduler_chatbot.core.domain.exceptions.AppointmentNotFoundException;
+import com.project.petshop_scheduler_chatbot.core.domain.exceptions.AppointmentOverlapException;
+import com.project.petshop_scheduler_chatbot.core.domain.exceptions.DomainValidationException;
+import com.project.petshop_scheduler_chatbot.core.domain.exceptions.InvalidAppointmentStateException;
+import com.project.petshop_scheduler_chatbot.core.domain.exceptions.PetOverlapException;
+import com.project.petshop_scheduler_chatbot.core.domain.exceptions.ProfessionalTimeOffException;
+import com.project.petshop_scheduler_chatbot.core.domain.exceptions.WorkingHoursOutsideException;
 import com.project.petshop_scheduler_chatbot.core.domain.valueobject.AppointmentStatus;
 import com.project.petshop_scheduler_chatbot.core.repository.AppointmentRepository;
 import com.project.petshop_scheduler_chatbot.core.repository.ProfessionalTimeOffRepository;
@@ -55,19 +62,19 @@ public class DefaultRescheduleAppointmentUseCase implements RescheduleAppointmen
 
     private void validations(RescheduleAppointmentCommand command) {
         if (command.getAppointmentId() == null || command.getAppointmentId() <= 0)
-            throw new IllegalArgumentException("Necessário vincular um agendamento");
+            throw new DomainValidationException("Necessário vincular um agendamento");
         if (command.getNewStartAt() == null || command.getNewStartAt().isBefore(LocalDateTime.now()))
-            throw new IllegalArgumentException("Data do novo agendamento inválida");
+            throw new DomainValidationException("Data do novo agendamento inválida");
     }
 
     private Appointment loadExistingAppointment(RescheduleAppointmentCommand command) {
     
         Optional<Appointment> findAppointment = appointmentRepository.findById(command.getAppointmentId());
         if (findAppointment.isEmpty()) 
-            throw new IllegalArgumentException("Agendamento não encontrado");
-        if (findAppointment.get().getStatus() == AppointmentStatus.CANCELED ||
-            findAppointment.get().getStatus() == AppointmentStatus.DONE)
-            throw new IllegalArgumentException("Agendamento já cancelado ou concluído");
+            throw new AppointmentNotFoundException("Agendamento não encontrado");
+        AppointmentStatus status = findAppointment.get().getStatus();
+        if (status == AppointmentStatus.CANCELED || status == AppointmentStatus.DONE)
+            throw new InvalidAppointmentStateException("Agendamento já cancelado ou concluído");
         return (findAppointment.get());
     }
 
@@ -76,14 +83,14 @@ public class DefaultRescheduleAppointmentUseCase implements RescheduleAppointmen
         Long professionalId = appointment.getProfessionalId();
         
         if (!professionalWorkingHoursRepository.existsWindow(professionalId, newStartAt, newEndAt))
-            throw new IllegalArgumentException("Horário fora da janela de trabalho do profissional");
+            throw new WorkingHoursOutsideException("Horário fora da janela de trabalho do profissional");
     }
 
     private void checkTimeOff(Appointment appointment, LocalDateTime newStartAt, LocalDateTime newEndAt) {
         Long professionalId = appointment.getProfessionalId();
         
         if (professionalTimeOffRepository.isInTimeOff(professionalId, newStartAt, newEndAt))
-            throw new IllegalArgumentException("Profissional está em folga");
+            throw new ProfessionalTimeOffException("Profissional está em folga");
     }
 
     private void checkSchedule(Appointment appointment, LocalDateTime newStartAt, LocalDateTime newEndAt) {
@@ -92,8 +99,8 @@ public class DefaultRescheduleAppointmentUseCase implements RescheduleAppointmen
         Long petId = appointment.getPetId();
         
         if (appointmentRepository.existsOverlapForProfessionalExcluding(appointmentId, professionalId, newStartAt, newEndAt))
-            throw new IllegalArgumentException("Horário do profissional indisponível");
+            throw new AppointmentOverlapException("Horário do profissional indisponível");
         if (appointmentRepository.existsOverlapForPetExcluding(appointmentId, petId, newStartAt, newEndAt))
-            throw new IllegalArgumentException("Pet com serviço agendado no mesmo horário");
+            throw new PetOverlapException("Pet com serviço agendado no mesmo horário");
     }
 }

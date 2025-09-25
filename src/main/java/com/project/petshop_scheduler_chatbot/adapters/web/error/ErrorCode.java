@@ -1,0 +1,19 @@
+package com.project.petshop_scheduler_chatbot.adapters.web.error;
+
+public enum ErrorCode {
+    APPOINTMENT_NOT_FOUND,
+    TUTOR_NOT_FOUND,
+    PROFESSIONAL_NOT_FOUND,
+    PET_NOT_FOUND,
+    SERVICE_NOT_FOUND,
+    WORKING_HOURS_OUTSIDE,
+    PROFESSIONAL_TIME_OFF,
+    APPOINTMENT_OVERLAP,
+    PET_OVERLAP,
+    INVALID_APPOINTMENT_STATE,
+    DOMAIN_VALIDATION_ERROR,
+    VALIDATION_ERROR,
+    INTERNAL_ERROR;
+}
+
+

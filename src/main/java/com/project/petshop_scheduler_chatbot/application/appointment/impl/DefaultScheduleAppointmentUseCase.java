@@ -10,6 +10,14 @@ import com.project.petshop_scheduler_chatbot.application.appointment.ScheduleApp
 import com.project.petshop_scheduler_chatbot.application.appointment.ScheduleAppointmentUseCase;
 import com.project.petshop_scheduler_chatbot.core.domain.Appointment;
 import com.project.petshop_scheduler_chatbot.core.domain.PetService;
+import com.project.petshop_scheduler_chatbot.core.domain.exceptions.AppointmentOverlapException;
+import com.project.petshop_scheduler_chatbot.core.domain.exceptions.DomainValidationException;
+import com.project.petshop_scheduler_chatbot.core.domain.exceptions.PetOverlapException;
+import com.project.petshop_scheduler_chatbot.core.domain.exceptions.ProfessionalNotFoundException;
+import com.project.petshop_scheduler_chatbot.core.domain.exceptions.ProfessionalTimeOffException;
+import com.project.petshop_scheduler_chatbot.core.domain.exceptions.ServiceNotFoundException;
+import com.project.petshop_scheduler_chatbot.core.domain.exceptions.TutorNotFoundException;
+import com.project.petshop_scheduler_chatbot.core.domain.exceptions.WorkingHoursOutsideException;
 import com.project.petshop_scheduler_chatbot.core.domain.valueobject.AppointmentStatus;
 import com.project.petshop_scheduler_chatbot.core.repository.AppointmentRepository;
 import com.project.petshop_scheduler_chatbot.core.repository.PetRepository;
@@ -49,7 +57,7 @@ public class DefaultScheduleAppointmentUseCase implements ScheduleAppointmentUse
     @Override
     public ScheduleAppointmentResult execute (ScheduleAppointmentCommand command) {
         validations(command);
-        Optional<PetService> petService = getPetServiceInstance(command);
+        PetService petService = getPetServiceInstance(command);
         int duration = getDuration(petService);
         LocalDateTime end = command.getStartAt().plusMinutes(duration);
         checkWorkingHours(command, end);
@@ -69,7 +77,7 @@ public class DefaultScheduleAppointmentUseCase implements ScheduleAppointmentUse
         ScheduleAppointmentResult result = new ScheduleAppointmentResult(appointment.getId(),
                                                                         appointment.getServiceId(),
                                                                         appointment.getProfessionalId(),
-                                                                        petService.get().getName(),
+                                                                        petService.getName(),
                                                                         appointment.getStartAt(),
                                                                         end,
                                                                         appointment.getStatus()
@@ -80,35 +88,35 @@ public class DefaultScheduleAppointmentUseCase implements ScheduleAppointmentUse
 
     private void validations(ScheduleAppointmentCommand command) {
         if (command.getServiceId() == null || command.getServiceId() <= 0)
-            throw new IllegalArgumentException("Necessário vincular um serviço");
+            throw new DomainValidationException("Necessário vincular um serviço");
         if (command.getPetId() == null || command.getPetId() <= 0)
-            throw new IllegalArgumentException("Necessário vincular um pet");
+            throw new DomainValidationException("Necessário vincular um pet");
         if (command.getTutorId() == null || command.getTutorId() <= 0)
-            throw new IllegalArgumentException("Necessário vincular um tutor");
+            throw new DomainValidationException("Necessário vincular um tutor");
         if (command.getProfessionalId() == null || command.getProfessionalId() <= 0)
-            throw new IllegalArgumentException("Necessário vincular um profissional");
+            throw new ProfessionalNotFoundException("Necessário vincular um profissional");
         if (command.getStartAt() == null || command.getStartAt().isBefore(LocalDateTime.now()))
-            throw new IllegalArgumentException("Horário de agendamento da consulta deve estar no futuro");
+            throw new DomainValidationException("Horário de agendamento da consulta deve estar no futuro");
         if (!tutorRepository.existsById(command.getTutorId()))
-            throw new IllegalArgumentException("Tutor inválido");
+            throw new TutorNotFoundException("Tutor inválido");
         if (!professionalRepository.existsById(command.getProfessionalId()))
-            throw new IllegalArgumentException("Profissional inválido");
+            throw new ProfessionalNotFoundException("Profissional inválido");
         if (!petRepository.existsByIdAndTutorId(command.getPetId(), command.getTutorId()))
-            throw new IllegalArgumentException("Pet não pertence ao tutor");
+            throw new DomainValidationException("Pet não pertence ao tutor");
     }
 
     private void checkWorkingHours(ScheduleAppointmentCommand command, LocalDateTime end) {
         Long professionalId = command.getProfessionalId();
         LocalDateTime start = command.getStartAt();
         if (!professionalWorkingHoursRepository.existsWindow(professionalId, start, end))
-            throw new IllegalArgumentException("Horário fora da janela de trabalho do profissional");
+            throw new WorkingHoursOutsideException("Horário fora da janela de trabalho do profissional");
     }
 
     private void checkTimeOff(ScheduleAppointmentCommand command, LocalDateTime end) {
         Long professionalId = command.getProfessionalId();
         LocalDateTime start = command.getStartAt();
         if (professionalTimeOffRepository.isInTimeOff(professionalId, start, end))
-            throw new IllegalArgumentException("Profissional está Off");
+            throw new ProfessionalTimeOffException("Profissional está de folga");
     }
 
     private void checkSchedule(ScheduleAppointmentCommand command, LocalDateTime end) {
@@ -116,22 +124,22 @@ public class DefaultScheduleAppointmentUseCase implements ScheduleAppointmentUse
         Long petId = command.getPetId();
         LocalDateTime start = command.getStartAt();
         if (appointmentRepository.existsOverlapForProfessional(professionalId, start, end))
-            throw new IllegalArgumentException("Horário do profissional indisponível");
+            throw new AppointmentOverlapException("Horário do profissional indisponível");
         if (appointmentRepository.existsOverlapForPet(petId, start, end))
-            throw new IllegalArgumentException("Pet com serviço agendado no mesmo horário");
+            throw new PetOverlapException("Pet com serviço agendado no mesmo horário");
     }
 
-    private Optional<PetService> getPetServiceInstance(ScheduleAppointmentCommand command) {
+    private PetService getPetServiceInstance(ScheduleAppointmentCommand command) {
         Optional<PetService> petService = petServiceRepository.findById(command.getServiceId());
         if (petService.isEmpty())
-            throw new IllegalArgumentException("Não foi possível encontrar o serviço");
-        return (petService);
+            throw new ServiceNotFoundException("Não foi possível encontrar o serviço");
+        return (petService.get());
     }
 
-    private int getDuration(Optional<PetService> petService) {
-        int duration = petService.get().getDuration();
+    private int getDuration(PetService petService) {
+        int duration = petService.getDuration();
         if (duration <= 30)
-            throw new IllegalArgumentException("Serviço com duração inválida");
+            throw new DomainValidationException("Serviço com duração inválida");
         return (duration);
     }
 }

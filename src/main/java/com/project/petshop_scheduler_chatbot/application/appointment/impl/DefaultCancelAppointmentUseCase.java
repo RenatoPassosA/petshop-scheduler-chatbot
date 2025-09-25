@@ -9,6 +9,10 @@ import com.project.petshop_scheduler_chatbot.application.appointment.CancelAppoi
 import com.project.petshop_scheduler_chatbot.application.appointment.CancelAppointmentUseCase;
 import com.project.petshop_scheduler_chatbot.core.domain.Appointment;
 import com.project.petshop_scheduler_chatbot.core.domain.PetService;
+import com.project.petshop_scheduler_chatbot.core.domain.exceptions.AppointmentNotFoundException;
+import com.project.petshop_scheduler_chatbot.core.domain.exceptions.DomainValidationException;
+import com.project.petshop_scheduler_chatbot.core.domain.exceptions.InvalidAppointmentStateException;
+import com.project.petshop_scheduler_chatbot.core.domain.exceptions.ServiceNotFoundException;
 import com.project.petshop_scheduler_chatbot.core.domain.valueobject.AppointmentStatus;
 import com.project.petshop_scheduler_chatbot.core.repository.AppointmentRepository;
 import com.project.petshop_scheduler_chatbot.core.repository.PetServiceRepository;
@@ -42,24 +46,24 @@ public class DefaultCancelAppointmentUseCase implements CancelAppointmentUseCase
 
     private void validations(CancelAppointmentCommand command) {
         if (command.getAppointmentId() == null || command.getAppointmentId() <= 0)
-            throw new IllegalArgumentException("Necessário vincular um agendamento");
+            throw new DomainValidationException("Necessário vincular um agendamento");
     }
 
     private Appointment loadExistingAppointment(CancelAppointmentCommand command) {
     
         Optional<Appointment> findAppointment = appointmentRepository.findById(command.getAppointmentId());
         if (findAppointment.isEmpty()) 
-            throw new IllegalArgumentException("Agendamento não encontrado");
+            throw new AppointmentNotFoundException("Agendamento não encontrado");
         if (findAppointment.get().getStatus() == AppointmentStatus.CANCELED ||
             findAppointment.get().getStatus() == AppointmentStatus.DONE)
-            throw new IllegalArgumentException("Agendamento já cancelado ou concluído");
+            throw new InvalidAppointmentStateException("Agendamento já cancelado ou concluído");
         return (findAppointment.get());
     }
 
     private String getServiceName(Appointment appointment) {
         Optional<PetService> petService = petServiceRepository.findById(appointment.getServiceId());
         if (petService.isEmpty())
-            throw new IllegalArgumentException("Não foi possível encontrar o serviço");
+            throw new ServiceNotFoundException("Não foi possível encontrar o serviço");
         return (petService.get().getName());
     }
 }
