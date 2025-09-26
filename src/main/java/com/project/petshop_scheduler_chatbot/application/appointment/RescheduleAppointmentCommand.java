@@ -1,15 +1,15 @@
 package com.project.petshop_scheduler_chatbot.application.appointment;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 public class RescheduleAppointmentCommand {
     private Long appointmentId;
-    private LocalDateTime newStartAt;
+    private OffsetDateTime newStartAt;
 
     public RescheduleAppointmentCommand() {
     }
 
-    public RescheduleAppointmentCommand(Long appointmentId, LocalDateTime newStartAt) {
+    public RescheduleAppointmentCommand(Long appointmentId, OffsetDateTime newStartAt) {
         this.appointmentId = appointmentId;
         this.newStartAt = newStartAt;
     }
@@ -18,7 +18,7 @@ public class RescheduleAppointmentCommand {
         return appointmentId;
     }
 
-    public LocalDateTime getNewStartAt() {
+    public OffsetDateTime getNewStartAt() {
         return newStartAt;
     }
 }

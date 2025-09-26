@@ -1,6 +1,6 @@
 package com.project.petshop_scheduler_chatbot.adapters.web.dto;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotNull;
@@ -21,13 +21,13 @@ public class ScheduleAppointmentRequest {
     private Long serviceId;
     @NotNull(message = "O horário é obrigatório")
     @FutureOrPresent(message = "A data deve ser futura")
-    private LocalDateTime startAt;
+    private OffsetDateTime startAt;
     private String observation;
 
     public ScheduleAppointmentRequest () {
     }
 
-    public ScheduleAppointmentRequest (Long petId, Long tutorId, Long professionalId, Long serviceId, LocalDateTime startAt, String observation) {
+    public ScheduleAppointmentRequest (Long petId, Long tutorId, Long professionalId, Long serviceId, OffsetDateTime startAt, String observation) {
         this.petId = petId;
         this.tutorId = tutorId;
         this.professionalId = professionalId;
@@ -52,7 +52,7 @@ public class ScheduleAppointmentRequest {
         this.serviceId = serviceId;
     }
 
-    public void setStartAt(LocalDateTime startAt) {
+    public void setStartAt(OffsetDateTime startAt) {
         this.startAt = startAt;
     }
 
@@ -76,7 +76,7 @@ public class ScheduleAppointmentRequest {
         return serviceId;
     }
 
-    public LocalDateTime getStartAt() {
+    public OffsetDateTime getStartAt() {
         return startAt;
     }
 

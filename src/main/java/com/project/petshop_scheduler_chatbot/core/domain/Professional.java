@@ -1,6 +1,6 @@
 package com.project.petshop_scheduler_chatbot.core.domain;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 import com.project.petshop_scheduler_chatbot.core.domain.valueobject.Office;
 
@@ -8,18 +8,18 @@ public class Professional {
     private Long			id;
     private String			name;
     private Office			function;
-    private LocalDateTime	createdAt;
-    private LocalDateTime	updatedAt;
+    private OffsetDateTime	createdAt;
+    private OffsetDateTime	updatedAt;
 
     public Professional () {
     }
 
-    public Professional (String name, Office function) {
+    public Professional (String name, Office function, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
         basicValidations(name, function);
         this.name = name;
         this.function = function;
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;  
     }
 
     private void    basicValidations(String name, Office function) {
@@ -41,21 +41,21 @@ public class Professional {
         return function;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public OffsetDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public LocalDateTime getUpdatedAt() {
+    public OffsetDateTime getUpdatedAt() {
         return updatedAt;
     }
 
     public void setName(String name) {
-        this.updatedAt = LocalDateTime.now();
+        this.updatedAt = OffsetDateTime.now();
         this.name = name;
     }
 
     public void setFunction(Office function) {
-        this.updatedAt = LocalDateTime.now();
+        this.updatedAt = OffsetDateTime.now();
         this.function = function;
     }
 }

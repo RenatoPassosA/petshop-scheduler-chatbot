@@ -1,6 +1,6 @@
 package com.project.petshop_scheduler_chatbot.adapters.web.dto;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotNull;
@@ -8,20 +8,20 @@ import jakarta.validation.constraints.NotNull;
 public class RescheduleAppointmentRequest {
     @NotNull(message = "A nova data é obrigatória")
     @FutureOrPresent(message = "A nova data deve ser futura")
-    private LocalDateTime newStartAt;
+    private OffsetDateTime newStartAt;
 
     public RescheduleAppointmentRequest () {
     }
 
-    public RescheduleAppointmentRequest (LocalDateTime newStartAt) {
+    public RescheduleAppointmentRequest (OffsetDateTime newStartAt) {
         this.newStartAt = newStartAt;
     }
 
-    public LocalDateTime getNewStartAt() {
+    public OffsetDateTime getNewStartAt() {
         return newStartAt;
     }
 
-    public void setNewStartAt(LocalDateTime newStartAt) {
+    public void setNewStartAt(OffsetDateTime newStartAt) {
         this.newStartAt = newStartAt;
     }
 }

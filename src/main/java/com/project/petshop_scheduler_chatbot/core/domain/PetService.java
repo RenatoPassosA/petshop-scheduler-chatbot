@@ -2,26 +2,26 @@ package com.project.petshop_scheduler_chatbot.core.domain;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 public class PetService {
     private Long			id;
     private String			name;
     private BigDecimal  	price;
     private int			    duration;
-    private LocalDateTime	createdAt;
-    private LocalDateTime	updatedAt;
+    private OffsetDateTime	createdAt;
+    private OffsetDateTime	updatedAt;
 
     public PetService() {
     }
 
-    public PetService(String name, BigDecimal price, int duration) {
+    public PetService(String name, BigDecimal price, int duration, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
         basicValidations(name, duration);
         this.name = name;
         this.price = normalizePrice(price); 
         this.duration = duration;
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;  
     }
 
     private void    basicValidations(String name, int duration) {
@@ -64,26 +64,26 @@ public class PetService {
         return duration;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public OffsetDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public LocalDateTime getUpdatedAt() {
+    public OffsetDateTime getUpdatedAt() {
         return updatedAt;
     }
 
     public void setName(String name) {
-        this.updatedAt = LocalDateTime.now();
+        this.updatedAt = OffsetDateTime.now();
         this.name = name;
     }
 
     public void setPrice(BigDecimal price) {
-        this.updatedAt = LocalDateTime.now();
+        this.updatedAt = OffsetDateTime.now();
         this.price = normalizePrice(price);
     }
 
     public void setDuration(int duration) {
-        this.updatedAt = LocalDateTime.now();
+        this.updatedAt = OffsetDateTime.now();
         this.duration = duration;
     }
 }

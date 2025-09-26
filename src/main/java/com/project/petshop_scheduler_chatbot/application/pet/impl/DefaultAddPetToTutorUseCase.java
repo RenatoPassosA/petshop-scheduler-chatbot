@@ -6,6 +6,7 @@ import com.project.petshop_scheduler_chatbot.application.pet.AddPetToTutorComman
 import com.project.petshop_scheduler_chatbot.application.pet.AddPetToTutorResult;
 import com.project.petshop_scheduler_chatbot.application.pet.AddPetToTutorUseCase;
 import com.project.petshop_scheduler_chatbot.core.domain.Pet;
+import com.project.petshop_scheduler_chatbot.core.domain.application.TimeProvider;
 import com.project.petshop_scheduler_chatbot.core.repository.PetRepository;
 import com.project.petshop_scheduler_chatbot.core.repository.TutorRepository;
 
@@ -14,23 +15,26 @@ public class DefaultAddPetToTutorUseCase implements AddPetToTutorUseCase{
     
     private final PetRepository petRepository;
     private final TutorRepository tutorRepository;
+    private final TimeProvider timeProvider;
 
-    public DefaultAddPetToTutorUseCase (PetRepository petRepository, TutorRepository tutorRepository) {
+    public DefaultAddPetToTutorUseCase (PetRepository petRepository, TutorRepository tutorRepository, TimeProvider timeProvider) {
         this.petRepository = petRepository;
         this.tutorRepository = tutorRepository;
+        this.timeProvider = timeProvider;
     }
 
     @Override
     public AddPetToTutorResult execute(AddPetToTutorCommand petCommand) {
         validations(petCommand);
-        Pet pet = new Pet(
-            petCommand.getName(),
-            petCommand.getGender(),
-            petCommand.getSize(),
-            petCommand.getBreed(),
-            petCommand.getTutorId(),
-            petCommand.getObservation()
-            );
+        Pet pet = new Pet(petCommand.getName(),
+                        petCommand.getGender(),
+                        petCommand.getSize(),
+                        petCommand.getBreed(),
+                        petCommand.getTutorId(),
+                        petCommand.getObservation(),
+                        this.timeProvider.nowInUTC(),
+                        this.timeProvider.nowInUTC()
+                        );
         
         petRepository.save(pet);
         AddPetToTutorResult petResult = new AddPetToTutorResult(pet.getId(), pet.getTutorId(), pet.getName(), pet.getObservations());

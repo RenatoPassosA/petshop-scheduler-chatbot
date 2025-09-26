@@ -1,6 +1,6 @@
 package com.project.petshop_scheduler_chatbot.application.appointment.impl;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -10,6 +10,7 @@ import com.project.petshop_scheduler_chatbot.application.appointment.ScheduleApp
 import com.project.petshop_scheduler_chatbot.application.appointment.ScheduleAppointmentUseCase;
 import com.project.petshop_scheduler_chatbot.core.domain.Appointment;
 import com.project.petshop_scheduler_chatbot.core.domain.PetService;
+import com.project.petshop_scheduler_chatbot.core.domain.application.TimeProvider;
 import com.project.petshop_scheduler_chatbot.core.domain.exceptions.AppointmentOverlapException;
 import com.project.petshop_scheduler_chatbot.core.domain.exceptions.DomainValidationException;
 import com.project.petshop_scheduler_chatbot.core.domain.exceptions.PetOverlapException;
@@ -37,6 +38,7 @@ public class DefaultScheduleAppointmentUseCase implements ScheduleAppointmentUse
     private final PetRepository petRepository;
     private final TutorRepository tutorRepository;
     private final ProfessionalRepository professionalRepository;
+    private final TimeProvider timeProvider;
 
     public DefaultScheduleAppointmentUseCase (AppointmentRepository appointmentRepository,
                                             PetServiceRepository petServiceRepository,
@@ -44,7 +46,8 @@ public class DefaultScheduleAppointmentUseCase implements ScheduleAppointmentUse
                                             ProfessionalTimeOffRepository professionalTimeOffRepository,
                                             PetRepository petRepository,
                                             TutorRepository tutorRepository,
-                                            ProfessionalRepository professionalRepository) {
+                                            ProfessionalRepository professionalRepository,
+                                            TimeProvider timeProvider) {
         this.appointmentRepository = appointmentRepository;
         this.petServiceRepository = petServiceRepository;
         this.professionalWorkingHoursRepository = professionalWorkingHoursRepository;
@@ -52,6 +55,7 @@ public class DefaultScheduleAppointmentUseCase implements ScheduleAppointmentUse
         this.petRepository = petRepository;
         this.tutorRepository = tutorRepository;
         this.professionalRepository = professionalRepository;
+        this.timeProvider = timeProvider;
     }
 
     @Override
@@ -59,7 +63,7 @@ public class DefaultScheduleAppointmentUseCase implements ScheduleAppointmentUse
         validations(command);
         PetService petService = getPetServiceInstance(command);
         int duration = getDuration(petService);
-        LocalDateTime end = command.getStartAt().plusMinutes(duration);
+        OffsetDateTime end = command.getStartAt().plusMinutes(duration);
         checkWorkingHours(command, end);
         checkTimeOff(command, end);
         checkSchedule(command, end);
@@ -70,7 +74,9 @@ public class DefaultScheduleAppointmentUseCase implements ScheduleAppointmentUse
                                                 command.getStartAt(),
                                                 duration,
                                                 AppointmentStatus.SCHEDULED,
-                                                command.getObservation()
+                                                command.getObservation(),
+                                                this.timeProvider.nowInUTC(),
+                                                this.timeProvider.nowInUTC()
                                                 );
         appointmentRepository.save(appointment);
 
@@ -95,7 +101,7 @@ public class DefaultScheduleAppointmentUseCase implements ScheduleAppointmentUse
             throw new DomainValidationException("Necessário vincular um tutor");
         if (command.getProfessionalId() == null || command.getProfessionalId() <= 0)
             throw new ProfessionalNotFoundException("Necessário vincular um profissional");
-        if (command.getStartAt() == null || command.getStartAt().isBefore(LocalDateTime.now()))
+        if (command.getStartAt() == null || command.getStartAt().isBefore(timeProvider.nowInUTC()))
             throw new DomainValidationException("Horário de agendamento da consulta deve estar no futuro");
         if (!tutorRepository.existsById(command.getTutorId()))
             throw new TutorNotFoundException("Tutor inválido");
@@ -105,24 +111,24 @@ public class DefaultScheduleAppointmentUseCase implements ScheduleAppointmentUse
             throw new DomainValidationException("Pet não pertence ao tutor");
     }
 
-    private void checkWorkingHours(ScheduleAppointmentCommand command, LocalDateTime end) {
+    private void checkWorkingHours(ScheduleAppointmentCommand command, OffsetDateTime end) {
         Long professionalId = command.getProfessionalId();
-        LocalDateTime start = command.getStartAt();
+        OffsetDateTime start = command.getStartAt();
         if (!professionalWorkingHoursRepository.existsWindow(professionalId, start, end))
             throw new WorkingHoursOutsideException("Horário fora da janela de trabalho do profissional");
     }
 
-    private void checkTimeOff(ScheduleAppointmentCommand command, LocalDateTime end) {
+    private void checkTimeOff(ScheduleAppointmentCommand command, OffsetDateTime end) {
         Long professionalId = command.getProfessionalId();
-        LocalDateTime start = command.getStartAt();
+        OffsetDateTime start = command.getStartAt();
         if (professionalTimeOffRepository.isInTimeOff(professionalId, start, end))
             throw new ProfessionalTimeOffException("Profissional está de folga");
     }
 
-    private void checkSchedule(ScheduleAppointmentCommand command, LocalDateTime end) {
+    private void checkSchedule(ScheduleAppointmentCommand command, OffsetDateTime end) {
         Long professionalId = command.getProfessionalId();
         Long petId = command.getPetId();
-        LocalDateTime start = command.getStartAt();
+        OffsetDateTime start = command.getStartAt();
         if (appointmentRepository.existsOverlapForProfessional(professionalId, start, end))
             throw new AppointmentOverlapException("Horário do profissional indisponível");
         if (appointmentRepository.existsOverlapForPet(petId, start, end))
@@ -138,7 +144,7 @@ public class DefaultScheduleAppointmentUseCase implements ScheduleAppointmentUse
 
     private int getDuration(PetService petService) {
         int duration = petService.getDuration();
-        if (duration <= 30)
+        if (duration < 30)
             throw new DomainValidationException("Serviço com duração inválida");
         return (duration);
     }

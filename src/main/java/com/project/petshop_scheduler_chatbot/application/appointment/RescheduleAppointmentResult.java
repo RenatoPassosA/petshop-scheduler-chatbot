@@ -1,6 +1,6 @@
 package com.project.petshop_scheduler_chatbot.application.appointment;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 import com.project.petshop_scheduler_chatbot.core.domain.valueobject.AppointmentStatus;
 
@@ -8,11 +8,11 @@ public class RescheduleAppointmentResult {
     final private Long appointmentId;
     final private Long serviceId;
     final private Long professionalId;
-    final private LocalDateTime startAt;
-    final private LocalDateTime endAt;
+    final private OffsetDateTime startAt;
+    final private OffsetDateTime endAt;
     final private AppointmentStatus status;
 
-    public RescheduleAppointmentResult(Long appointmentId, Long serviceId, Long professionalId, LocalDateTime startAt, LocalDateTime endAt, AppointmentStatus status) {
+    public RescheduleAppointmentResult(Long appointmentId, Long serviceId, Long professionalId, OffsetDateTime startAt, OffsetDateTime endAt, AppointmentStatus status) {
         this.appointmentId = appointmentId;
         this.serviceId = serviceId;
         this.professionalId = professionalId;
@@ -33,11 +33,11 @@ public class RescheduleAppointmentResult {
         return professionalId;
     }
 
-    public LocalDateTime getStartAt() {
+    public OffsetDateTime getStartAt() {
         return startAt;
     }
 
-     public LocalDateTime getEndAt() {
+     public OffsetDateTime getEndAt() {
         return endAt;
     }
 

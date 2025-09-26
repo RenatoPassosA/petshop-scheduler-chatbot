@@ -1,16 +1,16 @@
 package com.project.petshop_scheduler_chatbot.adapters.web.dto;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 public class RescheduleAppointmentResponse {
     final private Long appointmentId;
     final private Long serviceId;
     final private Long professionalId;
-    final private LocalDateTime startAt;
-    final private LocalDateTime endAt;
+    final private OffsetDateTime startAt;
+    final private OffsetDateTime endAt;
     final private String status;
 
-    public RescheduleAppointmentResponse (Long appointmentId, Long serviceId, Long professionalId, LocalDateTime startAt, LocalDateTime endAt, String status) {
+    public RescheduleAppointmentResponse (Long appointmentId, Long serviceId, Long professionalId, OffsetDateTime startAt, OffsetDateTime endAt, String status) {
         this.appointmentId = appointmentId;
         this.serviceId = serviceId;
         this.professionalId = professionalId;
@@ -31,11 +31,11 @@ public class RescheduleAppointmentResponse {
         return professionalId;
     }
 
-    public LocalDateTime getStartAt() {
+    public OffsetDateTime getStartAt() {
         return startAt;
     }
 
-    public LocalDateTime getEndAt() {
+    public OffsetDateTime getEndAt() {
         return endAt;
     }
 

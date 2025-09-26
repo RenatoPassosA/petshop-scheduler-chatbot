@@ -9,6 +9,7 @@ import com.project.petshop_scheduler_chatbot.application.appointment.CancelAppoi
 import com.project.petshop_scheduler_chatbot.application.appointment.CancelAppointmentUseCase;
 import com.project.petshop_scheduler_chatbot.core.domain.Appointment;
 import com.project.petshop_scheduler_chatbot.core.domain.PetService;
+import com.project.petshop_scheduler_chatbot.core.domain.application.TimeProvider;
 import com.project.petshop_scheduler_chatbot.core.domain.exceptions.AppointmentNotFoundException;
 import com.project.petshop_scheduler_chatbot.core.domain.exceptions.DomainValidationException;
 import com.project.petshop_scheduler_chatbot.core.domain.exceptions.InvalidAppointmentStateException;
@@ -22,18 +23,21 @@ public class DefaultCancelAppointmentUseCase implements CancelAppointmentUseCase
     
     private final AppointmentRepository appointmentRepository;
     private final PetServiceRepository petServiceRepository;
+    private final TimeProvider timeProvider;
 
-    public DefaultCancelAppointmentUseCase (AppointmentRepository appointmentRepository, PetServiceRepository petServiceRepository) {
+    public DefaultCancelAppointmentUseCase (AppointmentRepository appointmentRepository, PetServiceRepository petServiceRepository, TimeProvider timeProvider) {
         this.appointmentRepository = appointmentRepository;
         this.petServiceRepository = petServiceRepository;
+        this.timeProvider = timeProvider;
     }
 
     @Override
     public CancelAppointmentResult execute (CancelAppointmentCommand command) {
         validations(command);
         Appointment appointment = loadExistingAppointment(command);
-        appointment.setStatus(AppointmentStatus.CANCELED);
+        appointment.cancelSchedule(timeProvider.nowInUTC());
         String serviceName = getServiceName(appointment);
+        
         appointmentRepository.save(appointment);
 
         CancelAppointmentResult result = new CancelAppointmentResult(appointment.getId(),
@@ -55,7 +59,7 @@ public class DefaultCancelAppointmentUseCase implements CancelAppointmentUseCase
         if (findAppointment.isEmpty()) 
             throw new AppointmentNotFoundException("Agendamento não encontrado");
         if (findAppointment.get().getStatus() == AppointmentStatus.CANCELED ||
-            findAppointment.get().getStatus() == AppointmentStatus.DONE)
+            findAppointment.get().getStatus() == AppointmentStatus.COMPLETED)
             throw new InvalidAppointmentStateException("Agendamento já cancelado ou concluído");
         return (findAppointment.get());
     }

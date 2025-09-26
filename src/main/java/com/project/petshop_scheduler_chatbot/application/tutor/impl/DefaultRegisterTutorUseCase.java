@@ -6,26 +6,30 @@ import com.project.petshop_scheduler_chatbot.application.tutor.RegisterTutorComm
 import com.project.petshop_scheduler_chatbot.application.tutor.RegisterTutorResult;
 import com.project.petshop_scheduler_chatbot.application.tutor.RegisterTutorUseCase;
 import com.project.petshop_scheduler_chatbot.core.domain.Tutor;
+import com.project.petshop_scheduler_chatbot.core.domain.application.TimeProvider;
 import com.project.petshop_scheduler_chatbot.core.repository.TutorRepository;
 
 @Service
 public class DefaultRegisterTutorUseCase implements RegisterTutorUseCase{
     
     private final TutorRepository tutorRepository;
+    private final TimeProvider timeProvider;
 
-    public DefaultRegisterTutorUseCase (TutorRepository tutorRepository) {
+    public DefaultRegisterTutorUseCase (TutorRepository tutorRepository, TimeProvider timeProvider) {
         this.tutorRepository = tutorRepository;
+        this.timeProvider = timeProvider;
     }
 
     @Override
     public RegisterTutorResult execute(RegisterTutorCommand tutorCommand) {
         validations(tutorCommand);
-        Tutor tutor = new Tutor(
-            tutorCommand.getName(),
-            tutorCommand.getPhoneNumber(),
-            tutorCommand.getAddress(),
-            null
-            );
+        Tutor tutor = new Tutor(tutorCommand.getName(),
+                            tutorCommand.getPhoneNumber(),
+                            tutorCommand.getAddress(),
+                            null,
+                            this.timeProvider.nowInUTC(),
+                            this.timeProvider.nowInUTC()
+                            );
         
         if (tutorRepository.existsByPhone(tutor.getPhoneNumber()))
             throw new IllegalArgumentException("Numero de celular já consta na base de dados");

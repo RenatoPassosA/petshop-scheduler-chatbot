@@ -1,6 +1,6 @@
 package com.project.petshop_scheduler_chatbot.core.domain;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 import com.project.petshop_scheduler_chatbot.core.domain.valueobject.Gender;
 import com.project.petshop_scheduler_chatbot.core.domain.valueobject.PetSize;
@@ -13,13 +13,13 @@ public class Pet {
     private String			breed;
     private Long            tutorId;
     private String          observations;
-    private LocalDateTime	createdAt;
-    private LocalDateTime	updatedAt;
+    private OffsetDateTime	createdAt;
+    private OffsetDateTime	updatedAt;
 
     public Pet(){   
     }
 
-    public Pet(String name, Gender gender, PetSize size, String breed, Long tutorId, String observations){
+    public Pet(String name, Gender gender, PetSize size, String breed, Long tutorId, String observations, OffsetDateTime createdAt, OffsetDateTime updatedAt){
         basicValidations(name, gender, size, breed, tutorId, observations);
         this.name = name;
         this.gender = gender;
@@ -27,8 +27,8 @@ public class Pet {
         this.breed = breed;
         this.tutorId = tutorId;
         this.observations = observations;
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now(); 
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;  
     }
 
     private void    basicValidations(String name, Gender gender, PetSize size, String breed, Long tutorId, String observations) {
@@ -72,41 +72,41 @@ public class Pet {
         return observations;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public OffsetDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public LocalDateTime getUpdatedAt() {
+    public OffsetDateTime getUpdatedAt() {
         return updatedAt;
     }
 
     public void setName(String name) {
-        this.updatedAt = LocalDateTime.now();
+        this.updatedAt = OffsetDateTime.now();
         this.name = name;
     }
 
     public void setGender(Gender gender) {
-        this.updatedAt = LocalDateTime.now();
+        this.updatedAt = OffsetDateTime.now();
         this.gender = gender;
     }
 
     public void setSize(PetSize size) {
-        this.updatedAt = LocalDateTime.now();
+        this.updatedAt = OffsetDateTime.now();
         this.size = size;
     }
 
     public void setBreed(String breed) {
-        this.updatedAt = LocalDateTime.now();
+        this.updatedAt = OffsetDateTime.now();
         this.breed = breed;
     }
 
     public void setTutorId(Long tutorId) {
-        this.updatedAt = LocalDateTime.now();
+        this.updatedAt = OffsetDateTime.now();
         this.tutorId = tutorId;
     }
 
     public void setObservations(String observations) {
-        this.updatedAt = LocalDateTime.now();
+        this.updatedAt = OffsetDateTime.now();
         this.observations = observations;
     }
 }

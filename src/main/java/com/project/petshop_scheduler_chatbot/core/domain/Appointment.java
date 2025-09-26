@@ -1,6 +1,6 @@
 package com.project.petshop_scheduler_chatbot.core.domain;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 import com.project.petshop_scheduler_chatbot.core.domain.valueobject.AppointmentStatus;
 
@@ -10,17 +10,17 @@ public class Appointment {
     private Long tutorId;
     private Long professionalId;
     private Long serviceId;
-    private LocalDateTime startAt;
+    private OffsetDateTime startAt;
     private int serviceDurationMinutes;
     private AppointmentStatus status;
     private String observations;
-    private LocalDateTime	createdAt;
-    private LocalDateTime	updatedAt;
+    private OffsetDateTime	createdAt;
+    private OffsetDateTime	updatedAt;
 
     public Appointment () {
     }
 
-    public Appointment (Long petId, Long tutorId, Long professionalId, Long serviceId, LocalDateTime startAt, int serviceDurationMinutes, AppointmentStatus status, String observations) {
+    public Appointment (Long petId, Long tutorId, Long professionalId, Long serviceId, OffsetDateTime startAt, int serviceDurationMinutes, AppointmentStatus status, String observations, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
         basicValidations(petId, tutorId, professionalId, serviceId, startAt, serviceDurationMinutes, status, observations);
         this.petId = petId;
         this.tutorId = tutorId;
@@ -30,11 +30,11 @@ public class Appointment {
         this.serviceDurationMinutes = serviceDurationMinutes;
         this.status = status;
         this.observations = observations;
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();   
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;   
     }
 
-    private void    basicValidations(Long petId, Long tutorId, Long professionalId, Long serviceId, LocalDateTime startAt, int serviceDurationMinutes, AppointmentStatus status, String observations) {
+    private void    basicValidations(Long petId, Long tutorId, Long professionalId, Long serviceId, OffsetDateTime startAt, int serviceDurationMinutes, AppointmentStatus status, String observations) {
 
         int scheduleStep = 15;
 
@@ -54,6 +54,22 @@ public class Appointment {
             throw new IllegalArgumentException("Necessário status do agendamento");
         if (startAt.getMinute() % scheduleStep != 0)
             throw new IllegalArgumentException("Horário de marcação deve ter minutos 00, 15, 30 ou 45");
+    }
+
+    public void rescheduleTo(OffsetDateTime newStartAt, OffsetDateTime nowUtc) {
+        if (newStartAt == null || newStartAt.isEqual(this.startAt) || newStartAt.isBefore(nowUtc))
+            throw new IllegalArgumentException("Novo horário inválido");
+        if ((this.status == AppointmentStatus.CANCELED || this.status == AppointmentStatus.COMPLETED))
+            throw new IllegalArgumentException("Consulta inválida, favor agendar outra");
+        this.startAt = newStartAt;
+        this.updatedAt = nowUtc;
+    }
+
+    public void cancelSchedule(OffsetDateTime nowUtc) {
+        if (this.status == AppointmentStatus.CANCELED || this.status == AppointmentStatus.COMPLETED)
+            throw new IllegalArgumentException("Consulta já encerrada");
+        this.status = AppointmentStatus.CANCELED;
+        this.updatedAt = nowUtc;
     }
 
     public Long getId() {
@@ -76,7 +92,7 @@ public class Appointment {
         return serviceId;
     }
 
-    public LocalDateTime getStartAt() {
+    public OffsetDateTime getStartAt() {
         return startAt;
     }
 
@@ -84,7 +100,7 @@ public class Appointment {
         return serviceDurationMinutes;
     }
 
-    public LocalDateTime getEndAt() {
+    public OffsetDateTime getEndAt() {
         return this.startAt.plusMinutes(this.serviceDurationMinutes);
     }
 
@@ -96,11 +112,11 @@ public class Appointment {
         return observations;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public OffsetDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public LocalDateTime getUpdatedAt() {
+    public OffsetDateTime getUpdatedAt() {
         return updatedAt;
     }
 
@@ -118,10 +134,6 @@ public class Appointment {
 
     public void setServiceId(Long serviceId) {
         this.serviceId = serviceId;
-    }
-
-    public void setStartAt(LocalDateTime startAt) {
-        this.startAt = startAt;
     }
 
     public void setStatus(AppointmentStatus status) {

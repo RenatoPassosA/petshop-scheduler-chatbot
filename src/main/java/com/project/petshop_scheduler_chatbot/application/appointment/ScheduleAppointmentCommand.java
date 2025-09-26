@@ -1,19 +1,19 @@
 package com.project.petshop_scheduler_chatbot.application.appointment;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 public class ScheduleAppointmentCommand {
     private Long petId;
     private Long tutorId;
     private Long professionalId;
     private Long serviceId;
-    private LocalDateTime startAt;
+    private OffsetDateTime startAt;
     private String observation;
     
     public ScheduleAppointmentCommand() {
     }
 
-    public ScheduleAppointmentCommand(Long petId, Long tutorId, Long professionalId, Long serviceId, LocalDateTime startAt, String observation) {
+    public ScheduleAppointmentCommand(Long petId, Long tutorId, Long professionalId, Long serviceId, OffsetDateTime startAt, String observation) {
         this.petId = petId;
         this.tutorId = tutorId;
         this.professionalId = professionalId;
@@ -38,7 +38,7 @@ public class ScheduleAppointmentCommand {
         return serviceId;
     }
 
-    public LocalDateTime getStartAt() {
+    public OffsetDateTime getStartAt() {
         return startAt;
     }
 
