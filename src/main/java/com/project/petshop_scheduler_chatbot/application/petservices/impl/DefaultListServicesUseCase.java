@@ -5,13 +5,13 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.project.petshop_scheduler_chatbot.application.petservices.ListPetServicesUseCase;
 import com.project.petshop_scheduler_chatbot.application.petservices.PetServiceSummaryResult;
-import com.project.petshop_scheduler_chatbot.application.petservices.PetServicesUseCase;
 import com.project.petshop_scheduler_chatbot.core.domain.PetService;
 import com.project.petshop_scheduler_chatbot.core.repository.PetServiceRepository;
 
 @Service
-public class DefaultListServicesUseCase implements PetServicesUseCase {
+public class DefaultListServicesUseCase implements ListPetServicesUseCase {
 
     private final PetServiceRepository petServiceRepository;
 
@@ -27,11 +27,14 @@ public class DefaultListServicesUseCase implements PetServicesUseCase {
         PetServiceSummaryResult result;
 
         for (int index = 0; index < servicesList.size(); index++) {
+            PetService petService = servicesList.get(index);
             result = new PetServiceSummaryResult(
-                servicesList.get(index).getId(),
-                servicesList.get(index).getName(),
-                servicesList.get(index).getPrice(),
-                servicesList.get(index).getDuration()
+                petService.getId(),
+                petService.getName(),
+                petService.getPrice(),
+                petService.getDuration(),
+                petService.getCreatedAt(),
+                petService.getUpdatedAt()
             );
             returnList.add(result);
     

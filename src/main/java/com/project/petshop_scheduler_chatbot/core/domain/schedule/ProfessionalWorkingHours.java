@@ -1,20 +1,20 @@
 package com.project.petshop_scheduler_chatbot.core.domain.schedule;
 
 import java.time.DayOfWeek;
-import java.time.LocalTime;
+import java.time.OffsetDateTime;
 
 public class ProfessionalWorkingHours {
     private Long professionalId;
     private DayOfWeek weekday;
-    private LocalTime open;
-    private LocalTime close;
-    private LocalTime breakStart;
-    private LocalTime breakEnd;
+    private OffsetDateTime open;
+    private OffsetDateTime close;
+    private OffsetDateTime breakStart;
+    private OffsetDateTime breakEnd;
 
     public ProfessionalWorkingHours () {
     }
 
-    public ProfessionalWorkingHours (Long professionalId, DayOfWeek weekday, LocalTime open, LocalTime close, LocalTime breakStart, LocalTime breakEnd) {
+    public ProfessionalWorkingHours (Long professionalId, DayOfWeek weekday, OffsetDateTime open, OffsetDateTime close, OffsetDateTime breakStart, OffsetDateTime breakEnd) {
         basicValidations(professionalId, weekday, open, close, breakStart, breakEnd);
         this.professionalId = professionalId;
         this.weekday = weekday;
@@ -24,7 +24,7 @@ public class ProfessionalWorkingHours {
         this.breakEnd = breakEnd;
     }
 
-    private void    basicValidations(Long professionalId, DayOfWeek weekday, LocalTime open, LocalTime close, LocalTime breakStart, LocalTime breakEnd) {
+    private void    basicValidations(Long professionalId, DayOfWeek weekday, OffsetDateTime open, OffsetDateTime close, OffsetDateTime breakStart, OffsetDateTime breakEnd) {
         if (professionalId == null)
             throw new IllegalArgumentException("Id do profissional é obrigatório");
         if (weekday == null)
@@ -49,19 +49,19 @@ public class ProfessionalWorkingHours {
         return weekday;
     }
 
-    public LocalTime getOpen() {
+    public OffsetDateTime getOpen() {
         return open;
     }
 
-    public LocalTime getClose() {
+    public OffsetDateTime getClose() {
         return close;
     }
 
-    public LocalTime getBreakStart() {
+    public OffsetDateTime getBreakStart() {
         return breakStart;
     }
 
-    public LocalTime getBreakEnd() {
+    public OffsetDateTime getBreakEnd() {
         return breakEnd;
     }
 
@@ -73,11 +73,11 @@ public class ProfessionalWorkingHours {
         this.weekday = weekday;
     }
 
-    public void setOpen(LocalTime open) {
+    public void setOpen(OffsetDateTime open) {
         this.open = open;
     }
 
-    public void setClose(LocalTime close) {
+    public void setClose(OffsetDateTime close) {
         this.close = close;
     }
 }

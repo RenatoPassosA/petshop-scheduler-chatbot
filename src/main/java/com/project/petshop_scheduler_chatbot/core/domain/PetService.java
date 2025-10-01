@@ -48,6 +48,28 @@ public class PetService {
         return normalized;
     }
 
+    public void updateInfos(String newName, BigDecimal newPrice, Integer newDuration, OffsetDateTime nowUtc) {
+
+        int scheduleStep = 15;
+
+        if (newName != null) {
+            if (name == null || name.isBlank() || name.trim().isEmpty())
+                throw new IllegalArgumentException("Nome do Serviço é obrigatório");
+            this.name = name.trim();
+        }
+        if (newPrice != null) {
+            this.price = normalizePrice(newPrice);
+        }
+        if (newDuration != null) {
+            if (duration < 30 || duration > 180)
+                throw new IllegalArgumentException("Duração válida do serviço é obrigatória (entre 30 e 180 minutos)");
+            if (duration % scheduleStep != 0)
+                throw new IllegalArgumentException("Normalizar duração de serviço terminando em multiplos de 15");
+            this.duration = newDuration;
+        }
+        this.updatedAt = nowUtc;
+    }
+
     public Long getId() {
         return id;
     }

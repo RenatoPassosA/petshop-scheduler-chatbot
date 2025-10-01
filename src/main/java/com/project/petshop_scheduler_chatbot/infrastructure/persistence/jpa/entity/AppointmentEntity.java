@@ -1,4 +1,4 @@
-package com.project.petshop_scheduler_chatbot.infrastructure.persistence.jpa;
+package com.project.petshop_scheduler_chatbot.infrastructure.persistence.jpa.entity;
 
 import java.time.OffsetDateTime;
 
@@ -6,6 +6,8 @@ import com.project.petshop_scheduler_chatbot.core.domain.valueobject.Appointment
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -32,8 +34,9 @@ public class AppointmentEntity {
     private OffsetDateTime endAt;
     @Column(nullable = false)
     private Integer serviceDurationMinutes;
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String status;
+    private AppointmentStatus status;
     @Column
     private String observations;
     @Column(nullable = false)
@@ -44,18 +47,18 @@ public class AppointmentEntity {
     public AppointmentEntity() {
     }
     
-    public AppointmentEntity (Long petId, Long tutorId, Long professionalId, Long serviceId, OffsetDateTime startAt, int serviceDurationMinutes, AppointmentStatus status, String observations) {
+    public AppointmentEntity (Long petId, Long tutorId, Long professionalId, Long serviceId, OffsetDateTime startAt, OffsetDateTime endAt, int serviceDurationMinutes, AppointmentStatus status, String observations, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
         this.petId = petId;
         this.tutorId = tutorId;
         this.professionalId = professionalId;
         this.serviceId = serviceId;
         this.startAt = startAt;
-        this.endAt = startAt.plusMinutes(serviceDurationMinutes);
+        this.endAt = endAt;
         this.serviceDurationMinutes = serviceDurationMinutes;
-        this.status = status.name();
+        this.status = status;
         this.observations = observations;
-        this.createdAt = OffsetDateTime.now();
-        this.updatedAt = OffsetDateTime.now();   
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;   
     }
 
     public Long getId() {
@@ -90,7 +93,7 @@ public class AppointmentEntity {
         return serviceDurationMinutes;
     }
 
-    public String getStatus() {
+    public AppointmentStatus getStatus() {
         return status;
     }
 
@@ -104,49 +107,5 @@ public class AppointmentEntity {
 
     public OffsetDateTime getUpdatedAt() {
         return updatedAt;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setPetId(Long petId) {
-        this.petId = petId;
-    }
-
-    public void setTutorId(Long tutorId) {
-        this.tutorId = tutorId;
-    }
-
-    public void setProfessionalId(Long professionalId) {
-        this.professionalId = professionalId;
-    }
-
-    public void setServiceId(Long serviceId) {
-        this.serviceId = serviceId;
-    }
-
-    public void setStartAt(OffsetDateTime startAt) {
-        this.startAt = startAt;
-    }
-
-    public void setServiceDurationMinutes(Integer serviceDurationMinutes) {
-        this.serviceDurationMinutes = serviceDurationMinutes;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public void setObservations(String observations) {
-        this.observations = observations;
-    }
-
-    public void setCreatedAt(OffsetDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public void setUpdatedAt(OffsetDateTime updatedAt) {
-        this.updatedAt = updatedAt;
     }
 }
