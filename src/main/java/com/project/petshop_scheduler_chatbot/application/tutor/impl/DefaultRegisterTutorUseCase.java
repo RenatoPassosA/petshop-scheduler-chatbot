@@ -26,7 +26,6 @@ public class DefaultRegisterTutorUseCase implements RegisterTutorUseCase{
         Tutor tutor = new Tutor(tutorCommand.getName(),
                             tutorCommand.getPhoneNumber(),
                             tutorCommand.getAddress(),
-                            null,
                             this.timeProvider.nowInUTC(),
                             this.timeProvider.nowInUTC()
                             );

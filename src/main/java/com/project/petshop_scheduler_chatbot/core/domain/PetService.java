@@ -24,6 +24,15 @@ public class PetService {
         this.updatedAt = updatedAt;  
     }
 
+    private PetService(Long id, String name, BigDecimal price, int duration, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
+        basicValidations(name, duration);
+        this.name = name;
+        this.price = normalizePrice(price); 
+        this.duration = duration;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;  
+    }
+
     private void    basicValidations(String name, int duration) {
 
         int scheduleStep = 15;
@@ -68,6 +77,12 @@ public class PetService {
             this.duration = newDuration;
         }
         this.updatedAt = nowUtc;
+    }
+
+    public PetService withPersistenceId (Long id) {
+        if (id == null || id < 0)
+            throw new IllegalArgumentException("Id inválido");
+        return new PetService(id, this.name, this.price, this.duration, this.createdAt, this.updatedAt);
     }
 
     public Long getId() {

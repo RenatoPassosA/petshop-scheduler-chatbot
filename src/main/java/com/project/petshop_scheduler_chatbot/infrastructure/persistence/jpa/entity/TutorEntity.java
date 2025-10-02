@@ -3,8 +3,6 @@ package com.project.petshop_scheduler_chatbot.infrastructure.persistence.jpa.ent
 import java.time.OffsetDateTime;
 import java.util.List;
 
-import com.project.petshop_scheduler_chatbot.core.domain.valueobject.PhoneNumber;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -21,7 +19,7 @@ public class TutorEntity {
     @Column(nullable = false)
     private String			name;
     @Column(nullable = false)
-    private PhoneNumber		phoneNumber;
+    private String		phoneNumber;
     @Column(nullable = false)
     private String			address;
     @Column(nullable = false)
@@ -34,7 +32,7 @@ public class TutorEntity {
     public TutorEntity () {
     }
 
-    public TutorEntity (String name, PhoneNumber phoneNumber, String address, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
+    public TutorEntity (String name, String phoneNumber, String address, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
         this.name = name;
         this.phoneNumber = phoneNumber;
         this.address = address;
@@ -51,7 +49,7 @@ public class TutorEntity {
         return name;
     }
 
-    public PhoneNumber getPhoneNumber() {
+    public String getPhoneNumber() {
         return phoneNumber;
     }
 

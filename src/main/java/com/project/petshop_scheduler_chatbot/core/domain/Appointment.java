@@ -34,6 +34,20 @@ public class Appointment {
         this.updatedAt = updatedAt;   
     }
 
+    private Appointment (Long id, Long petId, Long tutorId, Long professionalId, Long serviceId, OffsetDateTime startAt, int serviceDurationMinutes, AppointmentStatus status, String observations, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
+        basicValidations(petId, tutorId, professionalId, serviceId, startAt, serviceDurationMinutes, status, observations);
+        this.petId = petId;
+        this.tutorId = tutorId;
+        this.professionalId = professionalId;
+        this.serviceId = serviceId;
+        this.startAt = startAt;
+        this.serviceDurationMinutes = serviceDurationMinutes;
+        this.status = status;
+        this.observations = observations;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;   
+    }
+
     private void    basicValidations(Long petId, Long tutorId, Long professionalId, Long serviceId, OffsetDateTime startAt, int serviceDurationMinutes, AppointmentStatus status, String observations) {
 
         int scheduleStep = 15;
@@ -70,6 +84,12 @@ public class Appointment {
             throw new IllegalArgumentException("Consulta já encerrada");
         this.status = AppointmentStatus.CANCELED;
         this.updatedAt = nowUtc;
+    }
+
+    public Appointment withPersistenceId (Long id) {
+        if (id == null || id < 0)
+            throw new IllegalArgumentException("Id inválido");
+        return new Appointment(id, this.petId, this.tutorId, this.professionalId, this.serviceId, this.startAt, this.serviceDurationMinutes, this.status, this.observations, this.createdAt, this.updatedAt);
     }
 
     public Long getId() {

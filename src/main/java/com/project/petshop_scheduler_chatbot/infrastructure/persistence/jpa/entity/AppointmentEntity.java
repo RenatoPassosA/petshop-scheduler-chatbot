@@ -31,8 +31,6 @@ public class AppointmentEntity {
     @Column(nullable = false)
     private OffsetDateTime startAt;
     @Column(nullable = false)
-    private OffsetDateTime endAt;
-    @Column(nullable = false)
     private Integer serviceDurationMinutes;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -47,13 +45,12 @@ public class AppointmentEntity {
     public AppointmentEntity() {
     }
     
-    public AppointmentEntity (Long petId, Long tutorId, Long professionalId, Long serviceId, OffsetDateTime startAt, OffsetDateTime endAt, int serviceDurationMinutes, AppointmentStatus status, String observations, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
+    public AppointmentEntity (Long petId, Long tutorId, Long professionalId, Long serviceId, OffsetDateTime startAt, int serviceDurationMinutes, AppointmentStatus status, String observations, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
         this.petId = petId;
         this.tutorId = tutorId;
         this.professionalId = professionalId;
         this.serviceId = serviceId;
         this.startAt = startAt;
-        this.endAt = endAt;
         this.serviceDurationMinutes = serviceDurationMinutes;
         this.status = status;
         this.observations = observations;
@@ -83,10 +80,6 @@ public class AppointmentEntity {
 
     public OffsetDateTime getStartAt() {
         return startAt;
-    }
-
-    public OffsetDateTime getEndAt() {
-        return endAt;
     }
 
     public Integer getServiceDurationMinutes() {

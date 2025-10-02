@@ -22,11 +22,26 @@ public class Professional {
         this.updatedAt = updatedAt;  
     }
 
+    private Professional (Long id, String name, Office function, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
+        basicValidations(name, function);
+        this.id = id;
+        this.name = name;
+        this.function = function;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;  
+    }
+
     private void    basicValidations(String name, Office function) {
         if (name == null || name.isBlank())
             throw new IllegalArgumentException("Nome do Profissional é obrigatório");
         if (function == null)
             throw new IllegalArgumentException("Função é obrigatória");
+    }
+
+    public Professional withPersistenceId (Long id) {
+        if (id == null || id < 0)
+            throw new IllegalArgumentException("Id inválido");
+        return new Professional(id, this.name, this.function, this.createdAt, this.updatedAt);
     }
 
     public Long getId() {
