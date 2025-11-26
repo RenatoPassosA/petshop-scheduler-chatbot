@@ -9,7 +9,8 @@ public interface PetServiceRepository {
     PetService save (PetService service);
     Optional<PetService> findById(Long id);
     boolean existsById(Long id);
+    void deleteById(Long id);
     List<PetService> findByName(String name);
-    List<PetService> findAll();
+    List<PetService> getAll();
     int durationById(Long id);
 }

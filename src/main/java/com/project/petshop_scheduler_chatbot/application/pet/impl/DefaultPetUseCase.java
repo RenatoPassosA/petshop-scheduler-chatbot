@@ -59,15 +59,14 @@ public class DefaultPetUseCase implements PetUseCase{
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public Pet getPet(Long id) {
         return petRepository.findById(id)
                             .orElseThrow(() -> new PetNotFoundException("Pet não encontrado"));
     }
 
-
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public List<Pet> getAll() {
         return petRepository.getAll();
     }

@@ -19,7 +19,7 @@ import com.project.petshop_scheduler_chatbot.adapters.web.dto.pet.AddPetToTutorR
 import com.project.petshop_scheduler_chatbot.adapters.web.dto.pet.AddPetToTutorResponse;
 import com.project.petshop_scheduler_chatbot.adapters.web.dto.pet.GetPetResponse;
 import com.project.petshop_scheduler_chatbot.adapters.web.dto.pet.UpdatePetRequest;
-import com.project.petshop_scheduler_chatbot.adapters.web.mapper.PetMapper;
+import com.project.petshop_scheduler_chatbot.adapters.web.mapper.PetWebMapper;
 import com.project.petshop_scheduler_chatbot.application.pet.AddPetToTutorCommand;
 import com.project.petshop_scheduler_chatbot.application.pet.AddPetToTutorResult;
 import com.project.petshop_scheduler_chatbot.application.pet.PetUseCase;
@@ -46,15 +46,15 @@ public class PetController {
     @PostMapping
     public ResponseEntity<AddPetToTutorResponse> addPetToTutor (@RequestBody @Valid AddPetToTutorRequest request) {
         String tutorName = tutorUseCase.getTutor(request.getTutorId()).getName();
-        AddPetToTutorCommand command = PetMapper.toCommand(request);
+        AddPetToTutorCommand command = PetWebMapper.toCommand(request);
         AddPetToTutorResult result = petUseCase.execute(command);
-        AddPetToTutorResponse response = PetMapper.toResponse(result, tutorName);
+        AddPetToTutorResponse response = PetWebMapper.toResponse(result, tutorName);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Void> updatePet(@PathVariable("id") @Positive Long id, @RequestBody @Valid UpdatePetRequest request) {
-        UpdatePetCommand command = PetMapper.toCommand(request);
+        UpdatePetCommand command = PetWebMapper.toCommand(request);
         petUseCase.update(id, command);
         return ResponseEntity.noContent().build();
     }
@@ -65,7 +65,7 @@ public class PetController {
         String tutorName = tutorUseCase.getTutor(pet.getTutorId()).getName();
         if (tutorUseCase.getTutor(pet.getTutorId()) == null)
                 throw new TutorNotFoundException("Tutor não encontrado");
-        GetPetResponse response = PetMapper.toResponse(pet, tutorName);
+        GetPetResponse response = PetWebMapper.toResponse(pet, tutorName);
         return ResponseEntity.ok(response);
     }
 

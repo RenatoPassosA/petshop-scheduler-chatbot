@@ -2,15 +2,15 @@ package com.project.petshop_scheduler_chatbot.application.petservices;
 
 import java.math.BigDecimal;
 
-public class RegisterPetServiceCommand {
+public class AddPetServiceCommand {
     private String name;
     private BigDecimal price;
     private Integer duration;
 
-    public RegisterPetServiceCommand() {
+    public AddPetServiceCommand() {
     }
 
-    public RegisterPetServiceCommand (String name, BigDecimal price, Integer duration){
+    public AddPetServiceCommand (String name, BigDecimal price, Integer duration){
         this.name = name;
         this.price = price;
         this.duration = duration;

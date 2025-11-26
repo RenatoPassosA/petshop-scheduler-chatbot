@@ -1,19 +1,24 @@
 package com.project.petshop_scheduler_chatbot.application.petservices.impl;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.project.petshop_scheduler_chatbot.application.petservices.PetServiceSummaryResult;
-import com.project.petshop_scheduler_chatbot.application.petservices.RegisterPetServiceCommand;
-import com.project.petshop_scheduler_chatbot.application.petservices.RegisterPetServiceUseCase;
+import com.project.petshop_scheduler_chatbot.application.petservices.AddPetServiceResult;
+import com.project.petshop_scheduler_chatbot.application.petservices.PetServiceUseCase;
+import com.project.petshop_scheduler_chatbot.application.petservices.AddPetServiceCommand;
+import com.project.petshop_scheduler_chatbot.application.petservices.UpdatePetServiceCommand;
 import com.project.petshop_scheduler_chatbot.core.domain.PetService;
 import com.project.petshop_scheduler_chatbot.core.domain.application.TimeProvider;
 import com.project.petshop_scheduler_chatbot.core.domain.exceptions.DomainValidationException;
+import com.project.petshop_scheduler_chatbot.core.domain.exceptions.InvalidAppointmentStateException;
+import com.project.petshop_scheduler_chatbot.core.domain.exceptions.PetNotFoundException;
 import com.project.petshop_scheduler_chatbot.core.domain.exceptions.ServiceNotFoundException;
 import com.project.petshop_scheduler_chatbot.core.repository.PetServiceRepository;
 
 @Service
-public class DefaultRegisterPetServiceUseCase implements RegisterPetServiceUseCase {
+public class DefaultRegisterPetServiceUseCase implements PetServiceUseCase {
     final private PetServiceRepository petServiceRepository;
     final private TimeProvider timeProvider;
     
@@ -24,8 +29,11 @@ public class DefaultRegisterPetServiceUseCase implements RegisterPetServiceUseCa
 
     @Override
     @Transactional
-    public PetServiceSummaryResult execute (RegisterPetServiceCommand service) {
-        validations(service);
+    public AddPetServiceResult register (AddPetServiceCommand service) {
+        registerValidations(service);
+        if (!petServiceRepository.findByName(service.getName()).isEmpty()) {
+            throw new InvalidAppointmentStateException("Serviço já cadastrado");
+        }
         PetService petService = new PetService(service.getName(),
                                             service.getPrice(),
                                             service.getDuration(),
@@ -33,17 +41,16 @@ public class DefaultRegisterPetServiceUseCase implements RegisterPetServiceUseCa
                                             timeProvider.nowInUTC());
         petService = petServiceRepository.save(petService);
 
-        PetServiceSummaryResult result = new PetServiceSummaryResult(petService.getId(),
+        AddPetServiceResult result = new AddPetServiceResult(petService.getId(),
                                                                 petService.getName(),
                                                                 petService.getPrice(),
-                                                                petService.getDuration(),
-                                                                petService.getCreatedAt(),
-                                                                petService.getUpdatedAt());
+                                                                petService.getDuration()
+                                                            );
 
         return (result);
     }
 
-    private void validations(RegisterPetServiceCommand service) {
+    private void registerValidations(AddPetServiceCommand service) {
 
         int scheduleStep = 15;
 
@@ -53,5 +60,37 @@ public class DefaultRegisterPetServiceUseCase implements RegisterPetServiceUseCa
             throw new DomainValidationException("Duração válida do serviço é obrigatória (entre 30 e 180 minutos)");
         if (service.getDuration() % scheduleStep != 0)
             throw new DomainValidationException("Normalizar duração de serviço terminando em multiplos de 15");
+    }
+
+    @Override
+    @Transactional
+    public void update (Long id, UpdatePetServiceCommand service) {
+        PetService petService = petServiceRepository.findById(id)
+            .orElseThrow(() -> new PetNotFoundException("Serviço não encontrado"));
+        petService.setName(service.getName());
+        petService.setPrice(service.getPrice());
+        petService.setDuration(service.getDuration());
+        petServiceRepository.save(petService);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PetService getPetService (Long id) {
+        return petServiceRepository.findById(id)
+                            .orElseThrow(() -> new PetNotFoundException("Serviço não encontrado"));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PetService> getAll() {
+        return petServiceRepository.getAll();
+    }
+
+    @Override
+    @Transactional
+    public void delete(Long id) {
+        if (!petServiceRepository.existsById(id))
+            throw new PetNotFoundException("Serviço não encontrado");
+        petServiceRepository.deleteById(id);
     }
 }

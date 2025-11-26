@@ -4,12 +4,14 @@ import com.project.petshop_scheduler_chatbot.adapters.web.dto.pet.AddPetToTutorR
 import com.project.petshop_scheduler_chatbot.adapters.web.dto.pet.AddPetToTutorResponse;
 import com.project.petshop_scheduler_chatbot.adapters.web.dto.pet.GetPetResponse;
 import com.project.petshop_scheduler_chatbot.adapters.web.dto.pet.UpdatePetRequest;
+import com.project.petshop_scheduler_chatbot.adapters.web.dto.petservice.GetPetServiceResponse;
 import com.project.petshop_scheduler_chatbot.application.pet.AddPetToTutorCommand;
 import com.project.petshop_scheduler_chatbot.application.pet.AddPetToTutorResult;
 import com.project.petshop_scheduler_chatbot.application.pet.UpdatePetCommand;
 import com.project.petshop_scheduler_chatbot.core.domain.Pet;
+import com.project.petshop_scheduler_chatbot.core.domain.PetService;
 
-public class PetMapper {
+public class PetWebMapper {
     public static AddPetToTutorCommand toCommand(AddPetToTutorRequest r) {
         return new AddPetToTutorCommand(r.getName(),
                                     r.getGender(),
@@ -39,4 +41,10 @@ public class PetMapper {
                                 pet.getTutorId(),
                                 pet.getObservations());
     } 
+
+    public static GetPetServiceResponse toResponse(PetService petService) {
+        return new GetPetServiceResponse(petService.getName(),
+                                        petService.getPrice(),
+                                        petService.getDuration());
+    }
 }

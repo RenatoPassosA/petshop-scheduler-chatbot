@@ -9,7 +9,7 @@ import com.project.petshop_scheduler_chatbot.application.tutor.AddTutorResult;
 import com.project.petshop_scheduler_chatbot.application.tutor.UpdateTutorCommand;
 import com.project.petshop_scheduler_chatbot.core.domain.Tutor;
 
-public class TutorMapper {
+public class TutorWebMapper {
     public static AddTutorCommand toCommand(AddtutorRequest r) {
         return new AddTutorCommand(r.getName(),
                                 r.getPhoneNumber(),

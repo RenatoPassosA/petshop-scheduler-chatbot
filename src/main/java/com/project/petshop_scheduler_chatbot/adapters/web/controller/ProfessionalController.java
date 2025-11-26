@@ -18,8 +18,8 @@ import com.project.petshop_scheduler_chatbot.adapters.web.dto.professional.AddTi
 import com.project.petshop_scheduler_chatbot.adapters.web.dto.professional.AddTimeOffResponse;
 import com.project.petshop_scheduler_chatbot.adapters.web.dto.professional.GetProfessionalResponse;
 import com.project.petshop_scheduler_chatbot.adapters.web.dto.professional.UpdateProfessionalRequest;
-import com.project.petshop_scheduler_chatbot.adapters.web.mapper.ProfessionalMapper;
-import com.project.petshop_scheduler_chatbot.adapters.web.mapper.TimeOffMapper;
+import com.project.petshop_scheduler_chatbot.adapters.web.mapper.ProfessionalWebMapper;
+import com.project.petshop_scheduler_chatbot.adapters.web.mapper.TimeOffWebMapper;
 import com.project.petshop_scheduler_chatbot.application.professional.RegisterProfessionalCommand;
 import com.project.petshop_scheduler_chatbot.application.professional.RegisterProfessionalResult;
 
@@ -49,30 +49,30 @@ public class ProfessionalController {
 
     @PostMapping
     public ResponseEntity<AddProfessionalResponse> addProfessional(@RequestBody @Valid AddProfessionalRequest request) {
-        RegisterProfessionalCommand command = ProfessionalMapper.toCommand(request);
+        RegisterProfessionalCommand command = ProfessionalWebMapper.toCommand(request);
         RegisterProfessionalResult result = professionalUseCase.execute(command);
-        AddProfessionalResponse response = ProfessionalMapper.toResponse(result);
+        AddProfessionalResponse response = ProfessionalWebMapper.toResponse(result);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/{id}/timeoff")
     public ResponseEntity<AddTimeOffResponse> addTimeOff(AddTimeOffRequest request) {
-        AddTimeOffCommand command = TimeOffMapper.toCommand(request);
+        AddTimeOffCommand command = TimeOffWebMapper.toCommand(request);
         AddTimeOffResult result = timeOffUseCase.execute(command);
-        AddTimeOffResponse response = TimeOffMapper.toResponse(result);
+        AddTimeOffResponse response = TimeOffWebMapper.toResponse(result);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<GetProfessionalResponse> getProfessional(@PathVariable("id") @Positive Long id) {
         Professional professional = professionalUseCase.getProfessional(id);
-        GetProfessionalResponse response = ProfessionalMapper.toResponse(professional);
+        GetProfessionalResponse response = ProfessionalWebMapper.toResponse(professional);
         return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Void> updateProfessional(@PathVariable("id") @Positive Long id, @RequestBody @Valid UpdateProfessionalRequest request) {
-        UpdateProfessionalCommand command = ProfessionalMapper.toCommand(request);
+        UpdateProfessionalCommand command = ProfessionalWebMapper.toCommand(request);
         professionalUseCase.update(id, command);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }

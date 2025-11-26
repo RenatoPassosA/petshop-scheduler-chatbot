@@ -52,7 +52,7 @@ public class PetServiceRepositoryJpa implements PetServiceRepository {
     }
 
     @Override
-    public List<PetService> findAll() {
+    public List<PetService> getAll() {
         return (petServiceEntityRepository.findAll()
             .stream()
             .map(petServiceMapper::toDomain)
@@ -63,10 +63,13 @@ public class PetServiceRepositoryJpa implements PetServiceRepository {
     public int durationById(Long id) {
         if (id == null || id <= 0)
             throw new DomainValidationException("Id inválido");
-        return findById(id) // <- esta findById retorna Optional<PetService> (DOMÍNIO)
+        return findById(id)
         .map(PetService::getDuration)
         .orElseThrow(() -> new ServiceNotFoundException("Serviço não encontrado"));
     }
-    
-    
+
+    @Override
+    public void deleteById(Long id) {
+        petServiceEntityRepository.deleteById(id);
+    }    
 }

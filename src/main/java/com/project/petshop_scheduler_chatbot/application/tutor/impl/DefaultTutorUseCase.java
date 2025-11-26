@@ -12,6 +12,7 @@ import com.project.petshop_scheduler_chatbot.application.tutor.UpdateTutorComman
 import com.project.petshop_scheduler_chatbot.core.domain.Tutor;
 import com.project.petshop_scheduler_chatbot.core.domain.application.TimeProvider;
 import com.project.petshop_scheduler_chatbot.core.domain.exceptions.ProfessionalNotFoundException;
+import com.project.petshop_scheduler_chatbot.core.domain.exceptions.TutorNotFoundException;
 import com.project.petshop_scheduler_chatbot.core.repository.TutorRepository;
 
 @Service
@@ -72,9 +73,9 @@ public class DefaultTutorUseCase implements TutorUseCase{
     @Transactional
     public void update(Long id, UpdateTutorCommand command) {
         if (!tutorRepository.existsById(id))
-            throw new ProfessionalNotFoundException("Tutor não encontrado");
+            throw new TutorNotFoundException("Tutor não encontrado");
         Tutor tutor = tutorRepository.findById(id)
-        .orElseThrow(() -> new ProfessionalNotFoundException("Tutor não encontrado"));
+        .orElseThrow(() -> new TutorNotFoundException("Tutor não encontrado"));
 
         tutor.setName(command.getName());
         tutor.setPhone(command.getPhoneNumber());

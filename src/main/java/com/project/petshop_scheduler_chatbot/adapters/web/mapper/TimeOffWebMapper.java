@@ -7,7 +7,7 @@ import com.project.petshop_scheduler_chatbot.application.professional.AddTimeOff
 import com.project.petshop_scheduler_chatbot.application.professional.TimeOffListResult;
 import com.project.petshop_scheduler_chatbot.core.domain.ProfessionalTimeOff;
 
-public class TimeOffMapper {
+public class TimeOffWebMapper {
 
     public static TimeOffListResult toTimeOffListResult(ProfessionalTimeOff timeOff) {
         return new TimeOffListResult(

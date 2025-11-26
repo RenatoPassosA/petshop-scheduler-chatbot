@@ -19,7 +19,7 @@ import com.project.petshop_scheduler_chatbot.adapters.web.dto.tutor.AddTutorResp
 import com.project.petshop_scheduler_chatbot.adapters.web.dto.tutor.AddtutorRequest;
 import com.project.petshop_scheduler_chatbot.adapters.web.dto.tutor.GetTutorResponse;
 import com.project.petshop_scheduler_chatbot.adapters.web.dto.tutor.UpdateTutorRequest;
-import com.project.petshop_scheduler_chatbot.adapters.web.mapper.TutorMapper;
+import com.project.petshop_scheduler_chatbot.adapters.web.mapper.TutorWebMapper;
 import com.project.petshop_scheduler_chatbot.application.tutor.AddTutorCommand;
 import com.project.petshop_scheduler_chatbot.application.tutor.AddTutorResult;
 import com.project.petshop_scheduler_chatbot.application.tutor.TutorUseCase;
@@ -41,15 +41,15 @@ public class TutorController {
 
     @PostMapping
     public ResponseEntity<AddTutorResponse> addTutor (@RequestBody @Valid AddtutorRequest request) {
-        AddTutorCommand command = TutorMapper.toCommand(request);
+        AddTutorCommand command = TutorWebMapper.toCommand(request);
         AddTutorResult result = tutorUseCase.execute(command);
-        AddTutorResponse response = TutorMapper.toResponse(result);
+        AddTutorResponse response = TutorWebMapper.toResponse(result);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Void> updateTutor(@PathVariable("id") @Positive Long id, @RequestBody @Valid UpdateTutorRequest request) {
-        UpdateTutorCommand command = TutorMapper.toCommand(request);
+        UpdateTutorCommand command = TutorWebMapper.toCommand(request);
         tutorUseCase.update(id, command);
         return ResponseEntity.noContent().build();
     }
@@ -57,7 +57,7 @@ public class TutorController {
     @GetMapping("/{id}")
     public ResponseEntity<GetTutorResponse> getTutor(@PathVariable("id") @Positive Long id) {
         Tutor tutor = tutorUseCase.getTutor(id);
-        GetTutorResponse response = TutorMapper.toResponse(tutor);
+        GetTutorResponse response = TutorWebMapper.toResponse(tutor);
         return ResponseEntity.ok(response);
     }
 

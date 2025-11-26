@@ -9,7 +9,7 @@ import com.project.petshop_scheduler_chatbot.application.professional.RegisterPr
 import com.project.petshop_scheduler_chatbot.application.professional.UpdateProfessionalCommand;
 import com.project.petshop_scheduler_chatbot.core.domain.Professional;
 
-public class ProfessionalMapper {
+public class ProfessionalWebMapper {
     static public UpdateProfessionalCommand toCommand (UpdateProfessionalRequest r) {
         return new UpdateProfessionalCommand(r.getName(),
                                         r.getFunction());
