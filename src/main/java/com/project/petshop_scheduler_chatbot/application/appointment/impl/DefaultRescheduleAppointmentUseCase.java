@@ -4,6 +4,7 @@ import java.time.OffsetDateTime;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.project.petshop_scheduler_chatbot.application.appointment.RescheduleAppointmentCommand;
 import com.project.petshop_scheduler_chatbot.application.appointment.RescheduleAppointmentResult;
@@ -17,42 +18,43 @@ import com.project.petshop_scheduler_chatbot.core.domain.exceptions.InvalidAppoi
 import com.project.petshop_scheduler_chatbot.core.domain.exceptions.PetOverlapException;
 import com.project.petshop_scheduler_chatbot.core.domain.exceptions.ProfessionalTimeOffException;
 import com.project.petshop_scheduler_chatbot.core.domain.exceptions.WorkingHoursOutsideException;
+import com.project.petshop_scheduler_chatbot.core.domain.policy.BusinessHoursPolicy;
 import com.project.petshop_scheduler_chatbot.core.domain.valueobject.AppointmentStatus;
 import com.project.petshop_scheduler_chatbot.core.repository.AppointmentRepository;
 import com.project.petshop_scheduler_chatbot.core.repository.ProfessionalTimeOffRepository;
-import com.project.petshop_scheduler_chatbot.core.repository.ProfessionalWorkingHoursRepository;
 
 @Service
 public class DefaultRescheduleAppointmentUseCase implements RescheduleAppointmentUseCase{
 
     private final AppointmentRepository appointmentRepository;
-    private final ProfessionalWorkingHoursRepository professionalWorkingHoursRepository;
     private final ProfessionalTimeOffRepository professionalTimeOffRepository;
+    private final BusinessHoursPolicy businessHoursPolicy;
     private final TimeProvider timeProvider;
 
     public DefaultRescheduleAppointmentUseCase (AppointmentRepository appointmentRepository,
-                                                ProfessionalWorkingHoursRepository professionalWorkingHoursRepository,
                                                 ProfessionalTimeOffRepository professionalTimeOffRepository,
+                                                BusinessHoursPolicy businessHoursPolicy,
                                                 TimeProvider timeProvider) {
         this.appointmentRepository = appointmentRepository;
-        this.professionalWorkingHoursRepository = professionalWorkingHoursRepository;
         this.professionalTimeOffRepository = professionalTimeOffRepository;
+        this.businessHoursPolicy = businessHoursPolicy;
         this.timeProvider = timeProvider;
     }
 
 
     @Override
+    @Transactional
     public RescheduleAppointmentResult execute (RescheduleAppointmentCommand command) {
         validations(command);
         Appointment appointment = loadExistingAppointment(command);
         OffsetDateTime newStartAt = command.getNewStartAt();
         OffsetDateTime newEndAt = command.getNewStartAt().plusMinutes(appointment.getServiceDuration());
-        checkWorkingHours(appointment, newStartAt, newEndAt);
+        checkBusinessHours(newStartAt, newEndAt);
         checkTimeOff(appointment, newStartAt, newEndAt);
         checkSchedule(appointment, newStartAt, newEndAt);
         appointment.rescheduleTo(newStartAt, timeProvider.nowInUTC());
 
-        appointmentRepository.save(appointment);
+        appointment = appointmentRepository.save(appointment);
 
         RescheduleAppointmentResult result = new RescheduleAppointmentResult(appointment.getId(),
                                                                             appointment.getServiceId(),
@@ -82,18 +84,15 @@ public class DefaultRescheduleAppointmentUseCase implements RescheduleAppointmen
         return (findAppointment.get());
     }
 
-    private void checkWorkingHours(Appointment appointment, OffsetDateTime newStartAt, OffsetDateTime newEndAt) {
-        
-        Long professionalId = appointment.getProfessionalId();
-        
-        if (!professionalWorkingHoursRepository.existsWindow(professionalId, newStartAt, newEndAt))
-            throw new WorkingHoursOutsideException("Horário fora da janela de trabalho do profissional");
+    private void checkBusinessHours(OffsetDateTime newStartAt, OffsetDateTime newEndAt) {
+        if (!businessHoursPolicy.fits(newStartAt, newEndAt))
+            throw new WorkingHoursOutsideException("Horário fora do expediente");
     }
-
+  
     private void checkTimeOff(Appointment appointment, OffsetDateTime newStartAt, OffsetDateTime newEndAt) {
         Long professionalId = appointment.getProfessionalId();
         
-        if (professionalTimeOffRepository.isInTimeOff(professionalId, newStartAt, newEndAt))
+        if (professionalTimeOffRepository.existsOverlap(professionalId, newStartAt, newEndAt))
             throw new ProfessionalTimeOffException("Profissional está em folga");
     }
 
@@ -102,9 +101,9 @@ public class DefaultRescheduleAppointmentUseCase implements RescheduleAppointmen
         Long professionalId = appointment.getProfessionalId();
         Long petId = appointment.getPetId();
         
-        if (appointmentRepository.existsOverlapForProfessionalExcluding(appointmentId, professionalId, newStartAt, newEndAt))
+        if (appointmentRepository.existsOverlapForProfessionalExcluding(professionalId, newStartAt, newEndAt, appointmentId))
             throw new AppointmentOverlapException("Horário do profissional indisponível");
-        if (appointmentRepository.existsOverlapForPetExcluding(appointmentId, petId, newStartAt, newEndAt))
+        if (appointmentRepository.existsOverlapForPetExcluding(petId, newStartAt, newEndAt, appointmentId))
             throw new PetOverlapException("Pet com serviço agendado no mesmo horário");
     }
 }

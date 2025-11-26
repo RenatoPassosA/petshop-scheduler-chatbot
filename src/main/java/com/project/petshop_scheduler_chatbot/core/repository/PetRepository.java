@@ -10,4 +10,7 @@ public interface PetRepository {
     Optional<Pet> findById(Long id);
     List<Pet> listByTutor(Long tutorId);
     boolean existsByIdAndTutorId(Long petId, Long tutorId);
+    boolean existsById(Long petId);
+    void deleteById(Long petId);
+    List<Pet> getAll();
 }

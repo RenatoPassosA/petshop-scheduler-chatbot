@@ -5,11 +5,11 @@ import java.time.OffsetDateTime;
 import com.project.petshop_scheduler_chatbot.core.domain.valueobject.Office;
 
 public class Professional {
-    private Long			id;
-    private String			name;
-    private Office			function;
-    private OffsetDateTime	createdAt;
-    private OffsetDateTime	updatedAt;
+    private Long		                    id;
+    private String			                name;
+    private Office			                function;
+    private OffsetDateTime	                createdAt;
+    private OffsetDateTime	                updatedAt;
 
     public Professional () {
     }
@@ -64,13 +64,25 @@ public class Professional {
         return updatedAt;
     }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public void setName(String name) {
-        this.updatedAt = OffsetDateTime.now();
         this.name = name;
     }
 
     public void setFunction(Office function) {
-        this.updatedAt = OffsetDateTime.now();
         this.function = function;
     }
+
+    public void setCreatedAt(OffsetDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public void setUpdatedAt(OffsetDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    
 }

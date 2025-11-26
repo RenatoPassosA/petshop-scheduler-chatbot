@@ -24,25 +24,19 @@ public class ProfessionalWorkingHoursEntity {
     @Enumerated(EnumType.STRING)
     private DayOfWeek weekday;
     @Column(nullable = false)
-    private LocalTime open;
+    private LocalTime startAt;
     @Column(nullable = false)
-    private LocalTime close;
-    @Column
-    private LocalTime breakStart;
-    @Column
-    private LocalTime breakEnd;
+    private LocalTime endAt;
 
     public ProfessionalWorkingHoursEntity () {
     }
 
-    public ProfessionalWorkingHoursEntity (Long id, Long professionalId, DayOfWeek weekday, LocalTime open, LocalTime close, LocalTime breakStart, LocalTime breakEnd) {
+    public ProfessionalWorkingHoursEntity (Long id, Long professionalId, DayOfWeek weekday, LocalTime startAt, LocalTime endAt) {
         this.id = id;
         this.professionalId = professionalId;
         this.weekday = weekday;
-        this.open = open;
-        this.close = close;
-        this.breakStart = breakStart;
-        this.breakEnd = breakEnd;
+        this.startAt = startAt;
+        this.endAt = endAt;
     }
 
     public Long getId() {
@@ -57,19 +51,11 @@ public class ProfessionalWorkingHoursEntity {
         return weekday;
     }
 
-    public LocalTime getOpen() {
-        return open;
+    public LocalTime getstartAt() {
+        return startAt;
     }
 
-    public LocalTime getClose() {
-        return close;
-    }
-
-    public LocalTime getBreakStart() {
-        return breakStart;
-    }
-
-    public LocalTime getBreakEnd() {
-        return breakEnd;
+    public LocalTime getendAt() {
+        return endAt;
     }
 }

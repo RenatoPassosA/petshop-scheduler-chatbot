@@ -1,6 +1,7 @@
 package com.project.petshop_scheduler_chatbot.application.petservices.impl;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.project.petshop_scheduler_chatbot.application.petservices.PetServiceSummaryResult;
 import com.project.petshop_scheduler_chatbot.application.petservices.RegisterPetServiceCommand;
@@ -22,6 +23,7 @@ public class DefaultRegisterPetServiceUseCase implements RegisterPetServiceUseCa
     }
 
     @Override
+    @Transactional
     public PetServiceSummaryResult execute (RegisterPetServiceCommand service) {
         validations(service);
         PetService petService = new PetService(service.getName(),
@@ -29,7 +31,7 @@ public class DefaultRegisterPetServiceUseCase implements RegisterPetServiceUseCa
                                             service.getDuration(),
                                             timeProvider.nowInUTC(),
                                             timeProvider.nowInUTC());
-        petServiceRepository.save(petService);
+        petService = petServiceRepository.save(petService);
 
         PetServiceSummaryResult result = new PetServiceSummaryResult(petService.getId(),
                                                                 petService.getName(),

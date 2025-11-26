@@ -4,6 +4,7 @@ import java.time.OffsetDateTime;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.project.petshop_scheduler_chatbot.application.appointment.ScheduleAppointmentCommand;
 import com.project.petshop_scheduler_chatbot.application.appointment.ScheduleAppointmentResult;
@@ -19,13 +20,13 @@ import com.project.petshop_scheduler_chatbot.core.domain.exceptions.Professional
 import com.project.petshop_scheduler_chatbot.core.domain.exceptions.ServiceNotFoundException;
 import com.project.petshop_scheduler_chatbot.core.domain.exceptions.TutorNotFoundException;
 import com.project.petshop_scheduler_chatbot.core.domain.exceptions.WorkingHoursOutsideException;
+import com.project.petshop_scheduler_chatbot.core.domain.policy.BusinessHoursPolicy;
 import com.project.petshop_scheduler_chatbot.core.domain.valueobject.AppointmentStatus;
 import com.project.petshop_scheduler_chatbot.core.repository.AppointmentRepository;
 import com.project.petshop_scheduler_chatbot.core.repository.PetRepository;
 import com.project.petshop_scheduler_chatbot.core.repository.PetServiceRepository;
 import com.project.petshop_scheduler_chatbot.core.repository.ProfessionalRepository;
 import com.project.petshop_scheduler_chatbot.core.repository.ProfessionalTimeOffRepository;
-import com.project.petshop_scheduler_chatbot.core.repository.ProfessionalWorkingHoursRepository;
 import com.project.petshop_scheduler_chatbot.core.repository.TutorRepository;
 
 @Service
@@ -33,38 +34,39 @@ public class DefaultScheduleAppointmentUseCase implements ScheduleAppointmentUse
     
     private final AppointmentRepository appointmentRepository;
     private final PetServiceRepository petServiceRepository;
-    private final ProfessionalWorkingHoursRepository professionalWorkingHoursRepository;
     private final ProfessionalTimeOffRepository professionalTimeOffRepository;
     private final PetRepository petRepository;
     private final TutorRepository tutorRepository;
     private final ProfessionalRepository professionalRepository;
+    private final BusinessHoursPolicy businessHoursPolicy;
     private final TimeProvider timeProvider;
 
     public DefaultScheduleAppointmentUseCase (AppointmentRepository appointmentRepository,
                                             PetServiceRepository petServiceRepository,
-                                            ProfessionalWorkingHoursRepository professionalWorkingHoursRepository,
                                             ProfessionalTimeOffRepository professionalTimeOffRepository,
                                             PetRepository petRepository,
                                             TutorRepository tutorRepository,
                                             ProfessionalRepository professionalRepository,
+                                            BusinessHoursPolicy businessHoursPolicy,
                                             TimeProvider timeProvider) {
         this.appointmentRepository = appointmentRepository;
         this.petServiceRepository = petServiceRepository;
-        this.professionalWorkingHoursRepository = professionalWorkingHoursRepository;
         this.professionalTimeOffRepository = professionalTimeOffRepository;
         this.petRepository = petRepository;
         this.tutorRepository = tutorRepository;
         this.professionalRepository = professionalRepository;
+        this.businessHoursPolicy = businessHoursPolicy;
         this.timeProvider = timeProvider;
     }
 
     @Override
+    @Transactional
     public ScheduleAppointmentResult execute (ScheduleAppointmentCommand command) {
         validations(command);
         PetService petService = getPetServiceInstance(command);
         int duration = getDuration(petService);
         OffsetDateTime end = command.getStartAt().plusMinutes(duration);
-        checkWorkingHours(command, end);
+        checkBusinessHours(command.getStartAt(), end);
         checkTimeOff(command, end);
         checkSchedule(command, end);
         Appointment appointment = new Appointment(command.getPetId(),
@@ -78,7 +80,7 @@ public class DefaultScheduleAppointmentUseCase implements ScheduleAppointmentUse
                                                 this.timeProvider.nowInUTC(),
                                                 this.timeProvider.nowInUTC()
                                                 );
-        appointmentRepository.save(appointment);
+        appointment = appointmentRepository.save(appointment);
 
         ScheduleAppointmentResult result = new ScheduleAppointmentResult(appointment.getId(),
                                                                         appointment.getServiceId(),
@@ -111,17 +113,15 @@ public class DefaultScheduleAppointmentUseCase implements ScheduleAppointmentUse
             throw new DomainValidationException("Pet não pertence ao tutor");
     }
 
-    private void checkWorkingHours(ScheduleAppointmentCommand command, OffsetDateTime end) {
-        Long professionalId = command.getProfessionalId();
-        OffsetDateTime start = command.getStartAt();
-        if (!professionalWorkingHoursRepository.existsWindow(professionalId, start, end))
-            throw new WorkingHoursOutsideException("Horário fora da janela de trabalho do profissional");
+    private void checkBusinessHours(OffsetDateTime start, OffsetDateTime end) {
+        if (!businessHoursPolicy.fits(start, end))
+            throw new WorkingHoursOutsideException("Horário fora do expediente");
     }
 
     private void checkTimeOff(ScheduleAppointmentCommand command, OffsetDateTime end) {
         Long professionalId = command.getProfessionalId();
         OffsetDateTime start = command.getStartAt();
-        if (professionalTimeOffRepository.isInTimeOff(professionalId, start, end))
+        if (professionalTimeOffRepository.existsOverlap(professionalId, start, end))
             throw new ProfessionalTimeOffException("Profissional está de folga");
     }
 

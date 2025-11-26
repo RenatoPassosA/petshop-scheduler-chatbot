@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.project.petshop_scheduler_chatbot.application.petservices.ListPetServicesUseCase;
 import com.project.petshop_scheduler_chatbot.application.petservices.PetServiceSummaryResult;
@@ -20,6 +21,7 @@ public class DefaultListServicesUseCase implements ListPetServicesUseCase {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<PetServiceSummaryResult> listAll() {
 
         List<PetServiceSummaryResult> returnList = new ArrayList<>();

@@ -3,6 +3,7 @@ package com.project.petshop_scheduler_chatbot.application.appointment.impl;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.project.petshop_scheduler_chatbot.application.appointment.CancelAppointmentCommand;
 import com.project.petshop_scheduler_chatbot.application.appointment.CancelAppointmentResult;
@@ -32,13 +33,14 @@ public class DefaultCancelAppointmentUseCase implements CancelAppointmentUseCase
     }
 
     @Override
+    @Transactional
     public CancelAppointmentResult execute (CancelAppointmentCommand command) {
         validations(command);
         Appointment appointment = loadExistingAppointment(command);
         appointment.cancelSchedule(timeProvider.nowInUTC());
         String serviceName = getServiceName(appointment);
         
-        appointmentRepository.save(appointment);
+        appointment = appointmentRepository.save(appointment);
 
         CancelAppointmentResult result = new CancelAppointmentResult(appointment.getId(),
                                                                         serviceName,

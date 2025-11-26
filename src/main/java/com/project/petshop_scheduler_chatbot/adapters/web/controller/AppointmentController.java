@@ -11,12 +11,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.project.petshop_scheduler_chatbot.adapters.web.dto.CancelAppointmentRequest;
-import com.project.petshop_scheduler_chatbot.adapters.web.dto.CancelAppointmentResponse;
-import com.project.petshop_scheduler_chatbot.adapters.web.dto.RescheduleAppointmentRequest;
-import com.project.petshop_scheduler_chatbot.adapters.web.dto.RescheduleAppointmentResponse;
-import com.project.petshop_scheduler_chatbot.adapters.web.dto.ScheduleAppointmentRequest;
-import com.project.petshop_scheduler_chatbot.adapters.web.dto.ScheduleAppointmentResponse;
+import com.project.petshop_scheduler_chatbot.adapters.web.dto.appointment.CancelAppointmentRequest;
+import com.project.petshop_scheduler_chatbot.adapters.web.dto.appointment.CancelAppointmentResponse;
+import com.project.petshop_scheduler_chatbot.adapters.web.dto.appointment.RescheduleAppointmentRequest;
+import com.project.petshop_scheduler_chatbot.adapters.web.dto.appointment.RescheduleAppointmentResponse;
+import com.project.petshop_scheduler_chatbot.adapters.web.dto.appointment.ScheduleAppointmentRequest;
+import com.project.petshop_scheduler_chatbot.adapters.web.dto.appointment.ScheduleAppointmentResponse;
 import com.project.petshop_scheduler_chatbot.adapters.web.mapper.AppointmentWebMapper;
 import com.project.petshop_scheduler_chatbot.application.appointment.CancelAppointmentCommand;
 import com.project.petshop_scheduler_chatbot.application.appointment.CancelAppointmentResult;

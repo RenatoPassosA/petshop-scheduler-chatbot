@@ -3,6 +3,7 @@ package com.project.petshop_scheduler_chatbot.application.petservices.impl;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.project.petshop_scheduler_chatbot.application.petservices.GetPetServiceUseCase;
 import com.project.petshop_scheduler_chatbot.application.petservices.PetServiceSummaryResult;
@@ -10,6 +11,7 @@ import com.project.petshop_scheduler_chatbot.core.domain.PetService;
 import com.project.petshop_scheduler_chatbot.core.domain.exceptions.DomainValidationException;
 import com.project.petshop_scheduler_chatbot.core.domain.exceptions.ServiceNotFoundException;
 import com.project.petshop_scheduler_chatbot.core.repository.PetServiceRepository;
+
 
 @Service
 public class DefaultGetPetServiceUseCase implements GetPetServiceUseCase{
@@ -20,6 +22,7 @@ public class DefaultGetPetServiceUseCase implements GetPetServiceUseCase{
     }
 
     @Override
+    @Transactional(readOnly = true)
     public PetServiceSummaryResult execute (Long id) {
         PetService petService = loadExistingService(id);
         PetServiceSummaryResult result = new PetServiceSummaryResult(petService.getId(),

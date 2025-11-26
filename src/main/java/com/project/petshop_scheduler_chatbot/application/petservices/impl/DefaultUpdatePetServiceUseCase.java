@@ -4,6 +4,7 @@ import java.time.OffsetDateTime;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.project.petshop_scheduler_chatbot.application.petservices.PetServiceSummaryResult;
 import com.project.petshop_scheduler_chatbot.application.petservices.UpdatePetServiceCommand;
@@ -25,12 +26,13 @@ public class DefaultUpdatePetServiceUseCase implements UpdatePetServiceUseCase {
     }
 
     @Override
+    @Transactional
     public PetServiceSummaryResult execute (UpdatePetServiceCommand service) {
         validations(service);
         OffsetDateTime now = timeProvider.nowInUTC();
         PetService petService = loadExistingService(service.getId());
         petService.updateInfos(service.getName(), service.getPrice(), service.getDuration(), now);
-        petServiceRepository.save(petService);
+        petService = petServiceRepository.save(petService);
 
         PetServiceSummaryResult result = new PetServiceSummaryResult(petService.getId(),
                                                                 petService.getName(),

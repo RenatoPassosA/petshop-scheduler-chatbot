@@ -1,5 +1,6 @@
 package com.project.petshop_scheduler_chatbot.core.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import com.project.petshop_scheduler_chatbot.core.domain.Tutor;
@@ -9,6 +10,8 @@ public interface TutorRepository {
     Tutor save (Tutor tutor);
     Optional<Tutor> findById(Long id);
     Optional<Tutor> findByPhone(PhoneNumber phone); 
+    List<Tutor> getAll();
     boolean existsByPhone(PhoneNumber phone);
     boolean existsById(Long id);
+    void deleteById(Long id);
 }

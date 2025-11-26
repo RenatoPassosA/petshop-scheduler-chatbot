@@ -74,6 +74,10 @@ public class Tutor {
         return updatedAt;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public void setPhone(PhoneNumber phoneNumber) {
         this.phoneNumber = phoneNumber;
     }

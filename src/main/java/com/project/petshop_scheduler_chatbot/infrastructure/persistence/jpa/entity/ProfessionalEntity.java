@@ -13,6 +13,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+
 @Entity
 @Table(name = "professional")
 public class ProfessionalEntity {
@@ -21,8 +22,8 @@ public class ProfessionalEntity {
     private Long			id;
     @Column(nullable = false)
     private String			name;
-    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Office			function;
     @Column(nullable = false)
     private OffsetDateTime	createdAt;
