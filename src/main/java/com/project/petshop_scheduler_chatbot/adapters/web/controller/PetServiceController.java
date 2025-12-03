@@ -49,14 +49,14 @@ public class PetServiceController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Void> updatePet(@PathVariable("id") @Positive Long id, @RequestBody @Valid UpdatePetServiceRequest request) {
+    public ResponseEntity<Void> updatePetService(@PathVariable("id") @Positive Long id, @RequestBody @Valid UpdatePetServiceRequest request) {
         UpdatePetServiceCommand command = PetServiceWebMapper.toCommand(request);
         petServiceUseCase.update(id, command);
         return ResponseEntity.noContent().build();
     }
 
    @GetMapping("/{id}")
-    public ResponseEntity<GetPetServiceResponse> getPet(@PathVariable("id") @Positive Long id) {
+    public ResponseEntity<GetPetServiceResponse> getPetService(@PathVariable("id") @Positive Long id) {
         PetService petService = petServiceUseCase.getPetService(id);
         GetPetServiceResponse response = PetWebMapper.toResponse(petService);
         return ResponseEntity.ok(response);

@@ -20,13 +20,13 @@ import com.project.petshop_scheduler_chatbot.adapters.web.dto.pet.AddPetToTutorR
 import com.project.petshop_scheduler_chatbot.adapters.web.dto.pet.GetPetResponse;
 import com.project.petshop_scheduler_chatbot.adapters.web.dto.pet.UpdatePetRequest;
 import com.project.petshop_scheduler_chatbot.adapters.web.mapper.PetWebMapper;
+import com.project.petshop_scheduler_chatbot.application.exceptions.TutorNotFoundException;
 import com.project.petshop_scheduler_chatbot.application.pet.AddPetToTutorCommand;
 import com.project.petshop_scheduler_chatbot.application.pet.AddPetToTutorResult;
 import com.project.petshop_scheduler_chatbot.application.pet.PetUseCase;
 import com.project.petshop_scheduler_chatbot.application.pet.UpdatePetCommand;
 import com.project.petshop_scheduler_chatbot.application.tutor.TutorUseCase;
 import com.project.petshop_scheduler_chatbot.core.domain.Pet;
-import com.project.petshop_scheduler_chatbot.core.domain.exceptions.TutorNotFoundException;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;

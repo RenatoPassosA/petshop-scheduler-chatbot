@@ -2,6 +2,7 @@ package com.project.petshop_scheduler_chatbot.core.domain;
 
 import java.time.OffsetDateTime;
 
+import com.project.petshop_scheduler_chatbot.core.domain.exceptions.DomainValidationException;
 import com.project.petshop_scheduler_chatbot.core.domain.valueobject.Gender;
 import com.project.petshop_scheduler_chatbot.core.domain.valueobject.PetSize;
 
@@ -45,20 +46,20 @@ public class Pet {
 
     private void    basicValidations(String name, Gender gender, PetSize size, String breed, Long tutorId, String observations) {
         if (name == null || name.isBlank())
-            throw new IllegalArgumentException("Nome do pet é obrigatório");
+            throw new DomainValidationException("Nome do pet é obrigatório");
         if (gender == null)
-            throw new IllegalArgumentException("Sexo do pet deve ser M ou F");
+            throw new DomainValidationException("Sexo do pet deve ser M ou F");
         if (size == null)
-            throw new IllegalArgumentException("Porte do pet é obrigatório");
+            throw new DomainValidationException("Porte do pet é obrigatório");
         if (breed == null || breed.isBlank())
-            throw new IllegalArgumentException("Raça do pet é obrigatória");
+            throw new DomainValidationException("Raça do pet é obrigatória");
         if (tutorId == null || tutorId <= 0)
-            throw new IllegalArgumentException("Inserir tutor válido");
+            throw new DomainValidationException("Inserir tutor válido");
     }
 
     public Pet withPersistenceId (Long id) {
         if (id == null || id < 0)
-            throw new IllegalArgumentException("Id inválido");
+            throw new DomainValidationException("Id inválido");
         return new Pet(id, this.name, this.gender, this.size, this.breed, this.tutorId, this.observations, this.createdAt, this.updatedAt);
     }
 

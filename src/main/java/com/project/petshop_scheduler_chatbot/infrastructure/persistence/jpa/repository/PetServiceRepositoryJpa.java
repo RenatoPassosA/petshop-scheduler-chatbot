@@ -5,9 +5,9 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
+import com.project.petshop_scheduler_chatbot.application.exceptions.ServiceNotFoundException;
 import com.project.petshop_scheduler_chatbot.core.domain.PetService;
 import com.project.petshop_scheduler_chatbot.core.domain.exceptions.DomainValidationException;
-import com.project.petshop_scheduler_chatbot.core.domain.exceptions.ServiceNotFoundException;
 import com.project.petshop_scheduler_chatbot.core.repository.PetServiceRepository;
 import com.project.petshop_scheduler_chatbot.infrastructure.persistence.jpa.entity.PetServiceEntity;
 import com.project.petshop_scheduler_chatbot.infrastructure.persistence.jpa.mapper.PetServiceMapper;

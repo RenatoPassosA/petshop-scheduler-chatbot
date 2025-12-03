@@ -7,14 +7,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.project.petshop_scheduler_chatbot.application.petservices.AddPetServiceResult;
 import com.project.petshop_scheduler_chatbot.application.petservices.PetServiceUseCase;
+import com.project.petshop_scheduler_chatbot.application.exceptions.ServiceNotFoundException;
 import com.project.petshop_scheduler_chatbot.application.petservices.AddPetServiceCommand;
 import com.project.petshop_scheduler_chatbot.application.petservices.UpdatePetServiceCommand;
 import com.project.petshop_scheduler_chatbot.core.domain.PetService;
 import com.project.petshop_scheduler_chatbot.core.domain.application.TimeProvider;
 import com.project.petshop_scheduler_chatbot.core.domain.exceptions.DomainValidationException;
 import com.project.petshop_scheduler_chatbot.core.domain.exceptions.InvalidAppointmentStateException;
-import com.project.petshop_scheduler_chatbot.core.domain.exceptions.PetNotFoundException;
-import com.project.petshop_scheduler_chatbot.core.domain.exceptions.ServiceNotFoundException;
 import com.project.petshop_scheduler_chatbot.core.repository.PetServiceRepository;
 
 @Service
@@ -55,7 +54,7 @@ public class DefaultRegisterPetServiceUseCase implements PetServiceUseCase {
         int scheduleStep = 15;
 
         if (service.getName() == null || service.getName().isBlank())
-            throw new ServiceNotFoundException("Nome do Serviço é obrigatório");
+            throw new DomainValidationException("Nome do Serviço é obrigatório");
         if (service.getDuration() < 30 || service.getDuration() > 180)
             throw new DomainValidationException("Duração válida do serviço é obrigatória (entre 30 e 180 minutos)");
         if (service.getDuration() % scheduleStep != 0)
@@ -66,10 +65,11 @@ public class DefaultRegisterPetServiceUseCase implements PetServiceUseCase {
     @Transactional
     public void update (Long id, UpdatePetServiceCommand service) {
         PetService petService = petServiceRepository.findById(id)
-            .orElseThrow(() -> new PetNotFoundException("Serviço não encontrado"));
-        petService.setName(service.getName());
-        petService.setPrice(service.getPrice());
-        petService.setDuration(service.getDuration());
+            .orElseThrow(() -> new ServiceNotFoundException("Serviço não encontrado"));
+        
+        if (service.getName() != null) petService.setName(service.getName());
+        if (service.getPrice() != null) petService.setPrice(service.getPrice());
+        if (service.getDuration() != null) petService.setDuration(service.getDuration());
         petServiceRepository.save(petService);
     }
 
@@ -77,7 +77,7 @@ public class DefaultRegisterPetServiceUseCase implements PetServiceUseCase {
     @Transactional(readOnly = true)
     public PetService getPetService (Long id) {
         return petServiceRepository.findById(id)
-                            .orElseThrow(() -> new PetNotFoundException("Serviço não encontrado"));
+                            .orElseThrow(() -> new ServiceNotFoundException("Serviço não encontrado"));
     }
 
     @Override
@@ -90,7 +90,7 @@ public class DefaultRegisterPetServiceUseCase implements PetServiceUseCase {
     @Transactional
     public void delete(Long id) {
         if (!petServiceRepository.existsById(id))
-            throw new PetNotFoundException("Serviço não encontrado");
+            throw new ServiceNotFoundException("Serviço não encontrado");
         petServiceRepository.deleteById(id);
     }
 }

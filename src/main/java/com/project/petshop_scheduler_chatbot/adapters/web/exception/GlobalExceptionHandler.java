@@ -10,18 +10,19 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import com.project.petshop_scheduler_chatbot.adapters.web.dto.ErrorResponse;
 import com.project.petshop_scheduler_chatbot.adapters.web.error.ErrorCode;
-import com.project.petshop_scheduler_chatbot.core.domain.exceptions.AppointmentNotFoundException;
-import com.project.petshop_scheduler_chatbot.core.domain.exceptions.AppointmentOverlapException;
+import com.project.petshop_scheduler_chatbot.application.exceptions.AppointmentNotFoundException;
+import com.project.petshop_scheduler_chatbot.application.exceptions.AppointmentOverlapException;
+import com.project.petshop_scheduler_chatbot.application.exceptions.DuplicatedPhoneNumberException;
+import com.project.petshop_scheduler_chatbot.application.exceptions.PetNotFoundException;
+import com.project.petshop_scheduler_chatbot.application.exceptions.PetOverlapException;
+import com.project.petshop_scheduler_chatbot.application.exceptions.ProfessionalNotFoundException;
+import com.project.petshop_scheduler_chatbot.application.exceptions.ProfessionalTimeOffException;
+import com.project.petshop_scheduler_chatbot.application.exceptions.ServiceNotFoundException;
+import com.project.petshop_scheduler_chatbot.application.exceptions.TutorNotFoundException;
+import com.project.petshop_scheduler_chatbot.application.exceptions.WorkingHoursOutsideException;
 import com.project.petshop_scheduler_chatbot.core.domain.exceptions.BusinessException;
 import com.project.petshop_scheduler_chatbot.core.domain.exceptions.DomainValidationException;
 import com.project.petshop_scheduler_chatbot.core.domain.exceptions.InvalidAppointmentStateException;
-import com.project.petshop_scheduler_chatbot.core.domain.exceptions.PetNotFoundException;
-import com.project.petshop_scheduler_chatbot.core.domain.exceptions.PetOverlapException;
-import com.project.petshop_scheduler_chatbot.core.domain.exceptions.ProfessionalNotFoundException;
-import com.project.petshop_scheduler_chatbot.core.domain.exceptions.ProfessionalTimeOffException;
-import com.project.petshop_scheduler_chatbot.core.domain.exceptions.ServiceNotFoundException;
-import com.project.petshop_scheduler_chatbot.core.domain.exceptions.TutorNotFoundException;
-import com.project.petshop_scheduler_chatbot.core.domain.exceptions.WorkingHoursOutsideException;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
@@ -54,12 +55,14 @@ public class GlobalExceptionHandler {
                     ProfessionalTimeOffException.class,
                     AppointmentOverlapException.class,
                     PetOverlapException.class,
+                    DuplicatedPhoneNumberException.class,
                     InvalidAppointmentStateException.class})
     public ResponseEntity<ErrorResponse> handleConflict(BusinessException exception, HttpServletRequest request) {
         ErrorCode code = (exception instanceof WorkingHoursOutsideException) ? ErrorCode.WORKING_HOURS_OUTSIDE :
                         (exception instanceof ProfessionalTimeOffException) ? ErrorCode.PROFESSIONAL_TIME_OFF :
                         (exception instanceof AppointmentOverlapException) ? ErrorCode.APPOINTMENT_OVERLAP :
                         (exception instanceof PetOverlapException) ? ErrorCode.PET_OVERLAP :
+                        (exception instanceof DuplicatedPhoneNumberException) ? ErrorCode.DUPLICATED_PHONE :
                         ErrorCode.INVALID_APPOINTMENT_STATE;
 
         ErrorResponse body = new ErrorResponse(code.name(),

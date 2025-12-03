@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.OffsetDateTime;
 
+import com.project.petshop_scheduler_chatbot.core.domain.exceptions.DomainValidationException;
+
 public class PetService {
     private Long			id;
     private String			name;
@@ -38,21 +40,21 @@ public class PetService {
         int scheduleStep = 15;
 
         if (name == null || name.isBlank())
-            throw new IllegalArgumentException("Nome do Serviço é obrigatório");
+            throw new DomainValidationException("Nome do Serviço é obrigatório");
         if (duration < 30 || duration > 180)
-            throw new IllegalArgumentException("Duração válida do serviço é obrigatória (entre 30 e 180 minutos)");
+            throw new DomainValidationException("Duração válida do serviço é obrigatória (entre 30 e 180 minutos)");
         if (duration % scheduleStep != 0)
-            throw new IllegalArgumentException("Normalizar duração de serviço terminando em multiplos de 15");
+            throw new DomainValidationException("Normalizar duração de serviço terminando em multiplos de 15");
     }
 
     private BigDecimal normalizePrice(BigDecimal price) {
         if (price == null)
-            throw new IllegalArgumentException("Preço é obrigatório");
+            throw new DomainValidationException("Preço é obrigatório");
 
         BigDecimal normalized = price.setScale(2, RoundingMode.HALF_UP);
 
         if (normalized.compareTo(BigDecimal.ZERO) < 0)
-            throw new IllegalArgumentException("Preço deve ser maior ou igual a 0,00");
+            throw new DomainValidationException("Preço deve ser maior ou igual a 0,00");
 
         return normalized;
     }
@@ -63,7 +65,7 @@ public class PetService {
 
         if (newName != null) {
             if (name == null || name.isBlank() || name.trim().isEmpty())
-                throw new IllegalArgumentException("Nome do Serviço é obrigatório");
+                throw new DomainValidationException("Nome do Serviço é obrigatório");
             this.name = name.trim();
         }
         if (newPrice != null) {
@@ -71,9 +73,9 @@ public class PetService {
         }
         if (newDuration != null) {
             if (duration < 30 || duration > 180)
-                throw new IllegalArgumentException("Duração válida do serviço é obrigatória (entre 30 e 180 minutos)");
+                throw new DomainValidationException("Duração válida do serviço é obrigatória (entre 30 e 180 minutos)");
             if (duration % scheduleStep != 0)
-                throw new IllegalArgumentException("Normalizar duração de serviço terminando em multiplos de 15");
+                throw new DomainValidationException("Normalizar duração de serviço terminando em multiplos de 15");
             this.duration = newDuration;
         }
         this.updatedAt = nowUtc;
@@ -81,7 +83,7 @@ public class PetService {
 
     public PetService withPersistenceId (Long id) {
         if (id == null || id < 0)
-            throw new IllegalArgumentException("Id inválido");
+            throw new DomainValidationException("Id inválido");
         return new PetService(id, this.name, this.price, this.duration, this.createdAt, this.updatedAt);
     }
 

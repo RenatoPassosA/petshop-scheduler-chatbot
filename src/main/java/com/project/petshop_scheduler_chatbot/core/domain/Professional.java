@@ -2,6 +2,7 @@ package com.project.petshop_scheduler_chatbot.core.domain;
 
 import java.time.OffsetDateTime;
 
+import com.project.petshop_scheduler_chatbot.core.domain.exceptions.DomainValidationException;
 import com.project.petshop_scheduler_chatbot.core.domain.valueobject.Office;
 
 public class Professional {
@@ -33,14 +34,14 @@ public class Professional {
 
     private void    basicValidations(String name, Office function) {
         if (name == null || name.isBlank())
-            throw new IllegalArgumentException("Nome do Profissional é obrigatório");
+            throw new DomainValidationException("Nome do Profissional é obrigatório");
         if (function == null)
-            throw new IllegalArgumentException("Função é obrigatória");
+            throw new DomainValidationException("Função é obrigatória");
     }
 
     public Professional withPersistenceId (Long id) {
         if (id == null || id < 0)
-            throw new IllegalArgumentException("Id inválido");
+            throw new DomainValidationException("Id inválido");
         return new Professional(id, this.name, this.function, this.createdAt, this.updatedAt);
     }
 

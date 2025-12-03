@@ -5,13 +5,14 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.project.petshop_scheduler_chatbot.application.exceptions.PetNotFoundException;
 import com.project.petshop_scheduler_chatbot.application.pet.AddPetToTutorCommand;
 import com.project.petshop_scheduler_chatbot.application.pet.AddPetToTutorResult;
 import com.project.petshop_scheduler_chatbot.application.pet.PetUseCase;
 import com.project.petshop_scheduler_chatbot.application.pet.UpdatePetCommand;
 import com.project.petshop_scheduler_chatbot.core.domain.Pet;
 import com.project.petshop_scheduler_chatbot.core.domain.application.TimeProvider;
-import com.project.petshop_scheduler_chatbot.core.domain.exceptions.PetNotFoundException;
+import com.project.petshop_scheduler_chatbot.core.domain.exceptions.DomainValidationException;
 import com.project.petshop_scheduler_chatbot.core.repository.PetRepository;
 import com.project.petshop_scheduler_chatbot.core.repository.TutorRepository;
 
@@ -49,13 +50,13 @@ public class DefaultPetUseCase implements PetUseCase{
 
     private void validations(AddPetToTutorCommand petCommand) {
         if (petCommand == null)
-            throw new IllegalArgumentException("Dados inválidos");
+            throw new DomainValidationException("Dados inválidos");
         if (petCommand.getTutorId() == null || petCommand.getTutorId() <= 0)
-            throw new IllegalArgumentException("ID do Tutor é obrigatório");
+            throw new DomainValidationException("ID do Tutor é obrigatório");
         if (petCommand.getName() == null || petCommand.getName().trim().isBlank())
-            throw new IllegalArgumentException("Nome do Pet é obrigatório");
+            throw new DomainValidationException("Nome do Pet é obrigatório");
         if (!tutorRepository.existsById(petCommand.getTutorId()))
-            throw new IllegalArgumentException("Tutor não existente no banco de dados");
+            throw new DomainValidationException("Tutor não existente no banco de dados");
     }
 
     @Override

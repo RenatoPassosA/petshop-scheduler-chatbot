@@ -1,6 +1,8 @@
 package com.project.petshop_scheduler_chatbot.infrastructure.persistence.jpa.repository;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Repository;
 
@@ -42,5 +44,13 @@ public class ProfessionalRepositoryJpa implements ProfessionalRepository {
     @Override
     public void deleteById(Long id) {
         professionalEntityRepository.deleteById(id);
+    }
+
+    @Override
+    public List<Professional> getAll() {
+        List<ProfessionalEntity> professionalEntities = professionalEntityRepository.findAll();
+        return professionalEntities.stream()
+                        .map(professionalEntity -> professionalMapper.toDomain(professionalEntity))
+                        .collect(Collectors.toList());
     }
 }

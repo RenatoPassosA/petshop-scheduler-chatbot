@@ -2,6 +2,7 @@ package com.project.petshop_scheduler_chatbot.core.domain;
 
 import java.time.OffsetDateTime;
 
+import com.project.petshop_scheduler_chatbot.core.domain.exceptions.DomainValidationException;
 import com.project.petshop_scheduler_chatbot.core.domain.valueobject.AppointmentStatus;
 
 public class Appointment {
@@ -53,42 +54,42 @@ public class Appointment {
         int scheduleStep = 15;
 
         if (petId == null || petId <= 0)
-            throw new IllegalArgumentException("Necessário vincular um pet");
+            throw new DomainValidationException("Necessário vincular um pet");
         if (tutorId == null || tutorId <= 0)
-            throw new IllegalArgumentException("Necessário vincular um tutor");
+            throw new DomainValidationException("Necessário vincular um tutor");
         if (professionalId == null || professionalId <= 0)
-            throw new IllegalArgumentException("Necessário vincular um profissional");
+            throw new DomainValidationException("Necessário vincular um profissional");
         if (serviceId == null || serviceId <= 0)
-            throw new IllegalArgumentException("Necessário vincular um serviço");
+            throw new DomainValidationException("Necessário vincular um serviço");
         if (startAt == null)
-            throw new IllegalArgumentException("Necessário horario do agendamento");
+            throw new DomainValidationException("Necessário horario do agendamento");
         if (serviceDurationMinutes < 30 || serviceDurationMinutes % scheduleStep != 0)
-            throw new IllegalArgumentException("Necessário tempo de duração do serviço");
+            throw new DomainValidationException("Necessário tempo de duração do serviço");
         if (status == null)
-            throw new IllegalArgumentException("Necessário status do agendamento");
+            throw new DomainValidationException("Necessário status do agendamento");
         if (startAt.getMinute() % scheduleStep != 0)
-            throw new IllegalArgumentException("Horário de marcação deve ter minutos 00, 15, 30 ou 45");
+            throw new DomainValidationException("Horário de marcação deve ter minutos 00, 15, 30 ou 45");
     }
 
     public void rescheduleTo(OffsetDateTime newStartAt, OffsetDateTime nowUtc) {
         if (newStartAt == null || newStartAt.isEqual(this.startAt) || newStartAt.isBefore(nowUtc))
-            throw new IllegalArgumentException("Novo horário inválido");
+            throw new DomainValidationException("Novo horário inválido");
         if ((this.status == AppointmentStatus.CANCELED || this.status == AppointmentStatus.COMPLETED))
-            throw new IllegalArgumentException("Consulta inválida, favor agendar outra");
+            throw new DomainValidationException("Consulta inválida, favor agendar outra");
         this.startAt = newStartAt;
         this.updatedAt = nowUtc;
     }
 
     public void cancelSchedule(OffsetDateTime nowUtc) {
         if (this.status == AppointmentStatus.CANCELED || this.status == AppointmentStatus.COMPLETED)
-            throw new IllegalArgumentException("Consulta já encerrada");
+            throw new DomainValidationException("Consulta já encerrada");
         this.status = AppointmentStatus.CANCELED;
         this.updatedAt = nowUtc;
     }
 
     public Appointment withPersistenceId (Long id) {
         if (id == null || id < 0)
-            throw new IllegalArgumentException("Id inválido");
+            throw new DomainValidationException("Id inválido");
         return new Appointment(id, this.petId, this.tutorId, this.professionalId, this.serviceId, this.startAt, this.serviceDurationMinutes, this.status, this.observations, this.createdAt, this.updatedAt);
     }
 

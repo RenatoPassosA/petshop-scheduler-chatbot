@@ -20,8 +20,8 @@ import com.project.petshop_scheduler_chatbot.adapters.web.dto.professional.GetPr
 import com.project.petshop_scheduler_chatbot.adapters.web.dto.professional.UpdateProfessionalRequest;
 import com.project.petshop_scheduler_chatbot.adapters.web.mapper.ProfessionalWebMapper;
 import com.project.petshop_scheduler_chatbot.adapters.web.mapper.TimeOffWebMapper;
-import com.project.petshop_scheduler_chatbot.application.professional.RegisterProfessionalCommand;
-import com.project.petshop_scheduler_chatbot.application.professional.RegisterProfessionalResult;
+import com.project.petshop_scheduler_chatbot.application.professional.AddProfessionalCommand;
+import com.project.petshop_scheduler_chatbot.application.professional.AddProfessionalResult;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
@@ -49,15 +49,15 @@ public class ProfessionalController {
 
     @PostMapping
     public ResponseEntity<AddProfessionalResponse> addProfessional(@RequestBody @Valid AddProfessionalRequest request) {
-        RegisterProfessionalCommand command = ProfessionalWebMapper.toCommand(request);
-        RegisterProfessionalResult result = professionalUseCase.execute(command);
+        AddProfessionalCommand command = ProfessionalWebMapper.toCommand(request);
+        AddProfessionalResult result = professionalUseCase.execute(command);
         AddProfessionalResponse response = ProfessionalWebMapper.toResponse(result);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/{id}/timeoff")
-    public ResponseEntity<AddTimeOffResponse> addTimeOff(AddTimeOffRequest request) {
-        AddTimeOffCommand command = TimeOffWebMapper.toCommand(request);
+    public ResponseEntity<AddTimeOffResponse> addTimeOff(@PathVariable("id") @Positive Long id, @RequestBody @Valid AddTimeOffRequest request) {
+        AddTimeOffCommand command = TimeOffWebMapper.toCommand(id, request);
         AddTimeOffResult result = timeOffUseCase.execute(command);
         AddTimeOffResponse response = TimeOffWebMapper.toResponse(result);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -80,17 +80,12 @@ public class ProfessionalController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProfessional(@PathVariable("id") @Positive Long id) {
         professionalUseCase.delete(id);
-        return ResponseEntity.noContent().build();
-        
+        return ResponseEntity.noContent().build(); 
     }
 
-    @DeleteMapping("/{id}/timeoff{id}")
+    @DeleteMapping("/{professionalId}/timeoff/{timeOffId}")
     public ResponseEntity<Void> deleteTimeOff(@PathVariable("professionalId") @Positive Long professionalId, @PathVariable("timeOffId") @Positive Long timeOffId) {
         timeOffUseCase.delete(professionalId, timeOffId);
         return ResponseEntity.noContent().build();
     }
-
-
-
-    
 }

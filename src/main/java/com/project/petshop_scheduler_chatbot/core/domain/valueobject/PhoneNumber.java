@@ -1,5 +1,6 @@
 package com.project.petshop_scheduler_chatbot.core.domain.valueobject;
 
+import com.project.petshop_scheduler_chatbot.core.domain.exceptions.DomainValidationException;
 
 public final class PhoneNumber {
     private final String			phoneNumber;
@@ -11,9 +12,9 @@ public final class PhoneNumber {
 
     private void validation(String phoneNumber) {
         if (phoneNumber == null || phoneNumber.isEmpty())
-            throw new IllegalArgumentException("Numero de telefone inválido");
+            throw new DomainValidationException("Numero de telefone inválido");
         if (phoneNumber.length() < 13 || phoneNumber.length() > 14)
-            throw new IllegalArgumentException("Numero de telefone inválido");
+            throw new DomainValidationException("Numero de telefone inválido");
     }
 
     private String normalization(String phoneNumber) {

@@ -18,8 +18,8 @@ public class TimeOffWebMapper {
         );
     }
 
-    static public AddTimeOffCommand toCommand(AddTimeOffRequest request) {
-        return new AddTimeOffCommand(request.getProfessionalId(),
+    static public AddTimeOffCommand toCommand(Long id, AddTimeOffRequest request) {
+        return new AddTimeOffCommand(id,
                                     request.getReason(),
                                     request.getStartAt(),
                                     request.getEndAt());

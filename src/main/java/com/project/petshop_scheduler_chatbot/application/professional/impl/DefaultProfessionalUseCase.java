@@ -1,18 +1,19 @@
 package com.project.petshop_scheduler_chatbot.application.professional.impl;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.project.petshop_scheduler_chatbot.application.professional.RegisterProfessionalCommand;
-import com.project.petshop_scheduler_chatbot.application.professional.RegisterProfessionalResult;
+import com.project.petshop_scheduler_chatbot.application.professional.AddProfessionalCommand;
+import com.project.petshop_scheduler_chatbot.application.professional.AddProfessionalResult;
 import com.project.petshop_scheduler_chatbot.application.professional.UpdateProfessionalCommand;
+import com.project.petshop_scheduler_chatbot.application.exceptions.ProfessionalNotFoundException;
 import com.project.petshop_scheduler_chatbot.application.professional.ProfessionalUseCase;
 import com.project.petshop_scheduler_chatbot.core.domain.Professional;
 import com.project.petshop_scheduler_chatbot.core.domain.application.TimeProvider;
 import com.project.petshop_scheduler_chatbot.core.domain.exceptions.DomainValidationException;
-import com.project.petshop_scheduler_chatbot.core.domain.exceptions.ProfessionalNotFoundException;
 import com.project.petshop_scheduler_chatbot.core.repository.ProfessionalRepository;
 
 @Service
@@ -28,7 +29,7 @@ public class DefaultProfessionalUseCase implements ProfessionalUseCase{
 
     @Override
     @Transactional
-    public RegisterProfessionalResult execute(RegisterProfessionalCommand professionalCommand) {
+    public AddProfessionalResult execute(AddProfessionalCommand professionalCommand) {
         validations(professionalCommand);
         Professional professional = new Professional(professionalCommand.getName(),
                                                 professionalCommand.getFunction(),
@@ -37,18 +38,19 @@ public class DefaultProfessionalUseCase implements ProfessionalUseCase{
                                                 );
         
         
-        professionalRepository.save(professional);
-        RegisterProfessionalResult professionalResult = new RegisterProfessionalResult(professional.getName(),professional.getFunction());
+        professional = professionalRepository.save(professional);
+        AddProfessionalResult professionalResult = new AddProfessionalResult(professional.getId(), professional.getName(),professional.getFunction());
         return (professionalResult);
     }
 
-    private void validations(RegisterProfessionalCommand professional) {
+    private void validations(AddProfessionalCommand professional) {
         if (professional == null)
             throw new DomainValidationException("Comando inválido");
         if (professional.getName() == null || professional.getName().trim().isBlank())
-            throw new IllegalArgumentException("Nome do Colaborador é obrigatório");
-        if (professional.getFunction() == null)
-            throw new IllegalArgumentException("Função do colaborador é obrigatória");
+            throw new DomainValidationException("Nome do Colaborador é obrigatório");
+        if (professional.getFunction() == null || professional.getFunction().toString().trim().isBlank())
+            throw new DomainValidationException("Função do colaborador é obrigatória");
+
     }
 
     @Override
@@ -62,14 +64,20 @@ public class DefaultProfessionalUseCase implements ProfessionalUseCase{
 
     @Override
     @Transactional
+    public List<Professional> getAll() {
+        return professionalRepository.getAll();
+    }
+
+    @Override
+    @Transactional
     public void update(Long id, UpdateProfessionalCommand command) {
         if (!professionalRepository.existsById(id))
             throw new ProfessionalNotFoundException("Profissional não encontrado");
         Professional professional = professionalRepository.findById(id)
         .orElseThrow(() -> new ProfessionalNotFoundException("Profissional não encontrado"));
 
-        professional.setName(command.getName());
-        professional.setFunction(command.getFunction());
+        if (command.getName() != null) professional.setName(command.getName());
+        if (command.getFunction() != null) professional.setFunction(command.getFunction());
         professionalRepository.save(professional);
     }
 

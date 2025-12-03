@@ -4,14 +4,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.project.petshop_scheduler_chatbot.application.professional.TimeOffUseCase;
+import com.project.petshop_scheduler_chatbot.application.exceptions.ProfessionalNotFoundException;
+import com.project.petshop_scheduler_chatbot.application.exceptions.ProfessionalTimeOffException;
+import com.project.petshop_scheduler_chatbot.application.exceptions.WorkingHoursOutsideException;
 import com.project.petshop_scheduler_chatbot.application.professional.AddTimeOffCommand;
 import com.project.petshop_scheduler_chatbot.application.professional.AddTimeOffResult;
 import com.project.petshop_scheduler_chatbot.core.domain.Professional;
 import com.project.petshop_scheduler_chatbot.core.domain.application.TimeProvider;
 import com.project.petshop_scheduler_chatbot.core.domain.exceptions.DomainValidationException;
-import com.project.petshop_scheduler_chatbot.core.domain.exceptions.ProfessionalNotFoundException;
-import com.project.petshop_scheduler_chatbot.core.domain.exceptions.ProfessionalTimeOffException;
-import com.project.petshop_scheduler_chatbot.core.domain.exceptions.WorkingHoursOutsideException;
 import com.project.petshop_scheduler_chatbot.core.domain.policy.BusinessHoursPolicy;
 import com.project.petshop_scheduler_chatbot.core.repository.ProfessionalRepository;
 import com.project.petshop_scheduler_chatbot.core.repository.ProfessionalTimeOffRepository;
@@ -57,7 +57,7 @@ public class DefaultTimeOffUseCase implements TimeOffUseCase{
             throw new DomainValidationException("Id do profissional inválido");
         if (timeOffCommand.getStartAt() == null || timeOffCommand.getEndAt() == null)
             throw new DomainValidationException("Horários de folga inválidos");  
-        if (timeOffCommand.getEndAt().isAfter(timeOffCommand.getStartAt()))
+        if (timeOffCommand.getEndAt().isBefore(timeOffCommand.getStartAt()))
             throw new DomainValidationException("Horários de folga inválidos"); 
         if (!professionalRepository.existsById(timeOffCommand.getProfessionalId()))
             throw new ProfessionalNotFoundException("Profissional nao cadastrado");
@@ -81,7 +81,7 @@ public class DefaultTimeOffUseCase implements TimeOffUseCase{
         if (!professionalRepository.existsById(professionalId))
             throw new ProfessionalNotFoundException("Profissional não encontrado");
         if (!professionalTimeOffRepository.existsById(timeOffId))
-            throw new ProfessionalNotFoundException("TimeOff não encontrado");
+            throw new ProfessionalTimeOffException("TimeOff não encontrado");
         professionalTimeOffRepository.deleteById(timeOffId);
     }
 }

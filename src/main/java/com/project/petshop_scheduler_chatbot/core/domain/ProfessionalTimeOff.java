@@ -2,6 +2,8 @@ package com.project.petshop_scheduler_chatbot.core.domain;
 
 import java.time.OffsetDateTime;
 
+import com.project.petshop_scheduler_chatbot.core.domain.exceptions.DomainValidationException;
+
 public class ProfessionalTimeOff {
     private Long id;
     private Long professionalId;
@@ -10,6 +12,7 @@ public class ProfessionalTimeOff {
     private OffsetDateTime endAt;
 
     public ProfessionalTimeOff(Long id, Long professionalId, String reason, OffsetDateTime startAt, OffsetDateTime endAt) {
+        basicValidations(professionalId, reason, startAt, endAt);
         this.id = id;
         this.professionalId = professionalId;
         this.reason = reason;
@@ -17,11 +20,24 @@ public class ProfessionalTimeOff {
         this.endAt = endAt;
     }
 
+    private void    basicValidations(Long professionalId, String reason, OffsetDateTime startAt, OffsetDateTime endAt) {
+        if (professionalId == null || professionalId <= 0)
+            throw new DomainValidationException("Profissional inválido");
+        if (reason == null || reason.isBlank())
+            throw new DomainValidationException("Motivo é obrigatório");
+        if (startAt == null)
+            throw new DomainValidationException("startAt é obrigatório");
+        if (endAt == null)
+            throw new DomainValidationException("endAt é obrigatório");
+        if (startAt.isAfter(endAt))
+            throw new DomainValidationException("startAt deve ser antes de endAt");
+    }
+
     public Long getId() {
         return id;
     }
     
-    public Long getprofessionalId() {
+    public Long getProfessionalId() {
         return professionalId;
     }
 
@@ -35,25 +51,5 @@ public class ProfessionalTimeOff {
 
     public OffsetDateTime getEndAt() {
         return endAt;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setprofessionalId(Long professionalId) {
-        this.professionalId = professionalId;
-    }
-
-    public void setReason(String reason) {
-        this.reason = reason;
-    }
-
-    public void setStartAt(OffsetDateTime startAt) {
-        this.startAt = startAt;
-    }
-
-    public void setEndAt(OffsetDateTime endAt) {
-        this.endAt = endAt;
     }
 }

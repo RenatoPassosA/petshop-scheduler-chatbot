@@ -5,14 +5,15 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.project.petshop_scheduler_chatbot.application.exceptions.DuplicatedPhoneNumberException;
+import com.project.petshop_scheduler_chatbot.application.exceptions.TutorNotFoundException;
 import com.project.petshop_scheduler_chatbot.application.tutor.AddTutorCommand;
 import com.project.petshop_scheduler_chatbot.application.tutor.AddTutorResult;
 import com.project.petshop_scheduler_chatbot.application.tutor.TutorUseCase;
 import com.project.petshop_scheduler_chatbot.application.tutor.UpdateTutorCommand;
 import com.project.petshop_scheduler_chatbot.core.domain.Tutor;
 import com.project.petshop_scheduler_chatbot.core.domain.application.TimeProvider;
-import com.project.petshop_scheduler_chatbot.core.domain.exceptions.ProfessionalNotFoundException;
-import com.project.petshop_scheduler_chatbot.core.domain.exceptions.TutorNotFoundException;
+import com.project.petshop_scheduler_chatbot.core.domain.exceptions.DomainValidationException;
 import com.project.petshop_scheduler_chatbot.core.repository.TutorRepository;
 
 @Service
@@ -38,7 +39,7 @@ public class DefaultTutorUseCase implements TutorUseCase{
                             );
         
         if (tutorRepository.existsByPhone(tutor.getPhoneNumber()))
-            throw new IllegalArgumentException("Numero de celular já consta na base de dados");
+            throw new DuplicatedPhoneNumberException("Numero de celular já consta na base de dados");
         tutor = tutorRepository.save(tutor);
         AddTutorResult tutorResult = new AddTutorResult(tutor.getId(),
                                                     tutor.getName(),
@@ -49,25 +50,26 @@ public class DefaultTutorUseCase implements TutorUseCase{
 
     private void validations(AddTutorCommand tutorCommand) {
         if (tutorCommand.getName() == null || tutorCommand.getName().trim().isBlank())
-            throw new IllegalArgumentException("Nome do Tutor é obrigatório");
+            throw new DomainValidationException("Nome do Tutor é obrigatório");
         if (tutorCommand.getPhoneNumber() == null)
-            throw new IllegalArgumentException("Telefone do Tutor é obrigatório");
+            throw new DomainValidationException("Telefone do Tutor é obrigatório");
         if (tutorCommand.getAddress() == null || tutorCommand.getAddress().trim().isBlank())
-            throw new IllegalArgumentException("Endereço do Tutor é obrigatório");
+            throw new DomainValidationException("Endereço do Tutor é obrigatório");
     }
 
     @Override
     @Transactional
     public Tutor getTutor(Long id) {
-        return tutorRepository.findById(id).get();
+        return tutorRepository.findById(id)
+            .orElseThrow(() -> new TutorNotFoundException("Tutor não encontrado"));
     }
+
 
     @Override
     @Transactional
     public List<Tutor> getAll() {
         return tutorRepository.getAll();
     }
-
     
     @Override
     @Transactional
@@ -77,9 +79,9 @@ public class DefaultTutorUseCase implements TutorUseCase{
         Tutor tutor = tutorRepository.findById(id)
         .orElseThrow(() -> new TutorNotFoundException("Tutor não encontrado"));
 
-        tutor.setName(command.getName());
-        tutor.setPhone(command.getPhoneNumber());
-        tutor.setAddress(command.getAddress());
+        if (command.getName() != null) tutor.setName(command.getName());
+        if (command.getPhoneNumber() != null) tutor.setPhone(command.getPhoneNumber());
+        if (command.getAddress() != null) tutor.setAddress(command.getAddress());
         tutorRepository.save(tutor);
     }
 
@@ -87,10 +89,9 @@ public class DefaultTutorUseCase implements TutorUseCase{
     @Transactional
     public void delete(Long id) {
         if (!tutorRepository.existsById(id))
-            throw new ProfessionalNotFoundException("Profissional não encontrado");
+            throw new TutorNotFoundException("Tutor não encontrado");
         tutorRepository.deleteById(id);
     }
-
 }
 
 

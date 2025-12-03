@@ -2,6 +2,7 @@ package com.project.petshop_scheduler_chatbot.core.domain;
 
 import java.time.OffsetDateTime;
 
+import com.project.petshop_scheduler_chatbot.core.domain.exceptions.DomainValidationException;
 import com.project.petshop_scheduler_chatbot.core.domain.valueobject.PhoneNumber;
 
 public class Tutor {
@@ -37,16 +38,16 @@ public class Tutor {
 
     private void    basicValidations(String name, PhoneNumber phoneNumber, String address) {
         if (name == null || name.isBlank())
-            throw new IllegalArgumentException("Nome do Tutor é obrigatório");
+            throw new DomainValidationException("Nome do Tutor é obrigatório");
         if (phoneNumber == null)
-            throw new IllegalArgumentException("Telefone do Tutor é obrigatório");
+            throw new DomainValidationException("Telefone do Tutor é obrigatório");
         if (address == null || address.isBlank())
-            throw new IllegalArgumentException("Endereço do Tutor é obrigatório");
+            throw new DomainValidationException("Endereço do Tutor é obrigatório");
     }
 
     public Tutor withPersistenceId (Long id) {
         if (id == null || id < 0)
-            throw new IllegalArgumentException("Id inválido");
+            throw new DomainValidationException("Id inválido");
         return new Tutor(id, this.name, this.phoneNumber, this.address, this.createdAt, this.updatedAt);
     }
 

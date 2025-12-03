@@ -4,8 +4,8 @@ import com.project.petshop_scheduler_chatbot.adapters.web.dto.professional.AddPr
 import com.project.petshop_scheduler_chatbot.adapters.web.dto.professional.AddProfessionalResponse;
 import com.project.petshop_scheduler_chatbot.adapters.web.dto.professional.GetProfessionalResponse;
 import com.project.petshop_scheduler_chatbot.adapters.web.dto.professional.UpdateProfessionalRequest;
-import com.project.petshop_scheduler_chatbot.application.professional.RegisterProfessionalCommand;
-import com.project.petshop_scheduler_chatbot.application.professional.RegisterProfessionalResult;
+import com.project.petshop_scheduler_chatbot.application.professional.AddProfessionalCommand;
+import com.project.petshop_scheduler_chatbot.application.professional.AddProfessionalResult;
 import com.project.petshop_scheduler_chatbot.application.professional.UpdateProfessionalCommand;
 import com.project.petshop_scheduler_chatbot.core.domain.Professional;
 
@@ -21,12 +21,12 @@ public class ProfessionalWebMapper {
                                         r.getFunction());
     }
 
-    static public RegisterProfessionalCommand toCommand (AddProfessionalRequest r) {
-        return new RegisterProfessionalCommand(r.getName(),
+    static public AddProfessionalCommand toCommand (AddProfessionalRequest r) {
+        return new AddProfessionalCommand(r.getName(),
                                         r.getFunction());
     }
 
-    static public AddProfessionalResponse toResponse (RegisterProfessionalResult r) {
+    static public AddProfessionalResponse toResponse (AddProfessionalResult r) {
         return new AddProfessionalResponse(r.getName(),
                                         r.getFunction());
     }
