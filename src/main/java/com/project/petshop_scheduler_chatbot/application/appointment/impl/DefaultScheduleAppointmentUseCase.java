@@ -10,6 +10,7 @@ import com.project.petshop_scheduler_chatbot.application.appointment.ScheduleApp
 import com.project.petshop_scheduler_chatbot.application.appointment.ScheduleAppointmentResult;
 import com.project.petshop_scheduler_chatbot.application.appointment.ScheduleAppointmentUseCase;
 import com.project.petshop_scheduler_chatbot.application.exceptions.AppointmentOverlapException;
+import com.project.petshop_scheduler_chatbot.application.exceptions.PetNotFoundException;
 import com.project.petshop_scheduler_chatbot.application.exceptions.PetOverlapException;
 import com.project.petshop_scheduler_chatbot.application.exceptions.ProfessionalNotFoundException;
 import com.project.petshop_scheduler_chatbot.application.exceptions.ProfessionalTimeOffException;
@@ -96,11 +97,11 @@ public class DefaultScheduleAppointmentUseCase implements ScheduleAppointmentUse
 
     private void validations(ScheduleAppointmentCommand command) {
         if (command.getServiceId() == null || command.getServiceId() <= 0)
-            throw new DomainValidationException("Necessário vincular um serviço");
+            throw new ServiceNotFoundException("Necessário vincular um serviço");
         if (command.getPetId() == null || command.getPetId() <= 0)
-            throw new DomainValidationException("Necessário vincular um pet");
+            throw new PetNotFoundException("Necessário vincular um pet");
         if (command.getTutorId() == null || command.getTutorId() <= 0)
-            throw new DomainValidationException("Necessário vincular um tutor");
+            throw new TutorNotFoundException("Necessário vincular um tutor");
         if (command.getProfessionalId() == null || command.getProfessionalId() <= 0)
             throw new ProfessionalNotFoundException("Necessário vincular um profissional");
         if (command.getStartAt() == null || command.getStartAt().isBefore(timeProvider.nowInUTC()))
