@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import com.project.petshop_scheduler_chatbot.core.domain.exceptions.DomainValidationException;
 
-public class PetServiceServiceTest {
+public class PetServiceTest {
 
     @Test
     public void CreatePetService_Success() {

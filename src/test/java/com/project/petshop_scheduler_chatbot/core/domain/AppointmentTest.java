@@ -156,18 +156,18 @@ public class AppointmentTest {
 
     @Test
     public void rescheduleAppointment_Success() {
-        OffsetDateTime now = OffsetDateTime.now();
+        OffsetDateTime startAt = OffsetDateTime.parse("2025-01-01T10:00:00Z");
         Long petId = 2L;
         Long tutorId = 3L;
         Long professionalId = 4L;
         Long serviceId = 5L;
         int serviceDuration = 180;
         OffsetDateTime date = OffsetDateTime.now();
-        Appointment appointment = new Appointment(petId, tutorId, professionalId, serviceId, now, serviceDuration, AppointmentStatus.SCHEDULED, "nenhuma", date, date);
+        Appointment appointment = new Appointment(petId, tutorId, professionalId, serviceId, startAt, serviceDuration, AppointmentStatus.SCHEDULED, "nenhuma", date, date);
 
         OffsetDateTime newStartAt = date.plusMinutes(60);
 
-        appointment.rescheduleTo(newStartAt, now);
+        appointment.rescheduleTo(newStartAt, date);
 
         assertThat(appointment).isNotNull();
         assertThat(appointment.getId()).isNull();
@@ -180,14 +180,15 @@ public class AppointmentTest {
         assertThat(appointment.getStatus()).isEqualTo(AppointmentStatus.SCHEDULED);
         assertThat(appointment.getObservations()).isEqualTo("nenhuma");
         assertThat(appointment.getCreatedAt()).isEqualTo(date);
-        assertThat(appointment.getUpdatedAt()).isEqualTo(now);
+        assertThat(appointment.getUpdatedAt()).isEqualTo(date);
     }
 
     @Test
     public void rescheduleAppointment_Fail_NewStartAtNull() {
         OffsetDateTime date = OffsetDateTime.now();
+        OffsetDateTime startAt = OffsetDateTime.parse("2025-01-01T10:00:00Z");
         OffsetDateTime newStartAt = null;
-        Appointment appointment = new Appointment(1L, 2L, 3L, 4L, date, 180, AppointmentStatus.SCHEDULED, "nenhuma", date, date);
+        Appointment appointment = new Appointment(1L, 2L, 3L, 4L, startAt, 180, AppointmentStatus.SCHEDULED, "nenhuma", date, date);
         var ex = assertThrows(DomainValidationException.class, () -> {
             appointment.rescheduleTo(newStartAt, date);
         });
@@ -196,19 +197,22 @@ public class AppointmentTest {
 
     @Test
     public void rescheduleAppointment_Fail_NewStartAtIsEqual() {
+        OffsetDateTime startAt = OffsetDateTime.parse("2025-01-01T10:00:00Z");
+        OffsetDateTime newStartAt = OffsetDateTime.parse("2025-01-01T10:00:00Z");
         OffsetDateTime date = OffsetDateTime.now();
-        Appointment appointment = new Appointment(1L, 2L, 3L, 4L, date, 180, AppointmentStatus.SCHEDULED, "nenhuma", date, date);
+        Appointment appointment = new Appointment(1L, 2L, 3L, 4L, startAt, 180, AppointmentStatus.SCHEDULED, "nenhuma", date, date);
         var ex = assertThrows(DomainValidationException.class, () -> {
-            appointment.rescheduleTo(date, date);
+            appointment.rescheduleTo(newStartAt, date);
         });
         assertThat(ex.getMessage()).isEqualTo("Novo horário inválido");
     }
 
     @Test
     public void rescheduleAppointment_Fail_NewStartAtIsBefore() {
+        OffsetDateTime startAt = OffsetDateTime.parse("2025-01-01T10:00:00Z");
         OffsetDateTime date = OffsetDateTime.now();
         OffsetDateTime newStartAt = date.minusMinutes(60);
-        Appointment appointment = new Appointment(1L, 2L, 3L, 4L, date, 180, AppointmentStatus.SCHEDULED, "nenhuma", date, date);
+        Appointment appointment = new Appointment(1L, 2L, 3L, 4L, startAt, 180, AppointmentStatus.SCHEDULED, "nenhuma", date, date);
         var ex = assertThrows(DomainValidationException.class, () -> {
             appointment.rescheduleTo(newStartAt, date);
         });
@@ -217,9 +221,10 @@ public class AppointmentTest {
 
     @Test
     public void rescheduleAppointment_Fail_AppointmentCancelled() {
+        OffsetDateTime startAt = OffsetDateTime.parse("2025-01-01T10:00:00Z");
         OffsetDateTime date = OffsetDateTime.now();
         OffsetDateTime newStartAt = date.plusMinutes(60);
-        Appointment appointment = new Appointment(1L, 2L, 3L, 4L, date, 180, AppointmentStatus.CANCELLED, "nenhuma", date, date);
+        Appointment appointment = new Appointment(1L, 2L, 3L, 4L, startAt, 180, AppointmentStatus.CANCELLED, "nenhuma", date, date);
         var ex = assertThrows(DomainValidationException.class, () -> {
             appointment.rescheduleTo(newStartAt, date);
         });
@@ -228,9 +233,10 @@ public class AppointmentTest {
 
     @Test
     public void rescheduleAppointment_Fail_AppointmentCompleted() {
+        OffsetDateTime startAt = OffsetDateTime.parse("2025-01-01T10:00:00Z");
         OffsetDateTime date = OffsetDateTime.now();
         OffsetDateTime newStartAt = date.plusMinutes(60);
-        Appointment appointment = new Appointment(1L, 2L, 3L, 4L, date, 180, AppointmentStatus.COMPLETED, "nenhuma", date, date);
+        Appointment appointment = new Appointment(1L, 2L, 3L, 4L, startAt, 180, AppointmentStatus.COMPLETED, "nenhuma", date, date);
         var ex = assertThrows(DomainValidationException.class, () -> {
             appointment.rescheduleTo(newStartAt, date);
         });
@@ -239,8 +245,9 @@ public class AppointmentTest {
 
     @Test
     public void cancelAppointment_Fail_AppointmentCanceled() {
+        OffsetDateTime startAt = OffsetDateTime.parse("2025-01-01T10:00:00Z");
         OffsetDateTime date = OffsetDateTime.now();
-        Appointment appointment = new Appointment(1L, 2L, 3L, 4L, date, 180, AppointmentStatus.CANCELLED, "nenhuma", date, date);
+        Appointment appointment = new Appointment(1L, 2L, 3L, 4L, startAt, 180, AppointmentStatus.CANCELLED, "nenhuma", date, date);
         var ex = assertThrows(DomainValidationException.class, () -> {
             appointment.cancelSchedule(date);
         });
@@ -249,8 +256,9 @@ public class AppointmentTest {
 
     @Test
     public void cancelAppointment_Fail_AppointmentCompleted() {
+        OffsetDateTime startAt = OffsetDateTime.parse("2025-01-01T10:00:00Z");
         OffsetDateTime date = OffsetDateTime.now();
-        Appointment appointment = new Appointment(1L, 2L, 3L, 4L, date, 180, AppointmentStatus.COMPLETED, "nenhuma", date, date);
+        Appointment appointment = new Appointment(1L, 2L, 3L, 4L, startAt, 180, AppointmentStatus.COMPLETED, "nenhuma", date, date);
         var ex = assertThrows(DomainValidationException.class, () -> {
            appointment.cancelSchedule(date);
         });
@@ -260,7 +268,7 @@ public class AppointmentTest {
     @Test
     public void CreateAppointmentWithId_Success() {
         Long appointmentId = 10L;
-        OffsetDateTime startAt = OffsetDateTime.now().withMinute(15).withSecond(0).withNano(0);
+        OffsetDateTime startAt = OffsetDateTime.parse("2025-01-01T10:00:00Z");
         Long petId = 2L;
         Long tutorId = 3L;
         Long professionalId = 4L;
@@ -289,7 +297,8 @@ public class AppointmentTest {
     public void CreateAppointmentWithId_Fail_NullId() {
         Long appointmentId = null;
         OffsetDateTime date = OffsetDateTime.now();
-        Appointment appointment = new Appointment(1L, 2L, 3L, 4L, date, 180, AppointmentStatus.SCHEDULED, "nenhuma", date, date);
+        OffsetDateTime startAt = OffsetDateTime.parse("2025-01-01T10:00:00Z");
+        Appointment appointment = new Appointment(1L, 2L, 3L, 4L, startAt, 180, AppointmentStatus.SCHEDULED, "nenhuma", date, date);
 
         var ex = assertThrows(DomainValidationException.class, () -> {
             appointment.withPersistenceId(appointmentId);
@@ -301,7 +310,8 @@ public class AppointmentTest {
     public void CreateAppointmentWithId_Fail_NegativeId() {
         Long appointmentId = -10L;
         OffsetDateTime date = OffsetDateTime.now();
-        Appointment appointment = new Appointment(1L, 2L, 3L, 4L, date, 180, AppointmentStatus.SCHEDULED, "nenhuma", date, date);
+        OffsetDateTime startAt = OffsetDateTime.parse("2025-01-01T10:00:00Z");
+        Appointment appointment = new Appointment(1L, 2L, 3L, 4L, startAt, 180, AppointmentStatus.SCHEDULED, "nenhuma", date, date);
 
         var ex = assertThrows(DomainValidationException.class, () -> {
             appointment.withPersistenceId(appointmentId);

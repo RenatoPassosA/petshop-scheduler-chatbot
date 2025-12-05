@@ -140,8 +140,8 @@ public class ProfessionalTimeOffTest {
 
     @Test
     public void CreateProfessionalTimeOff_Fail_EndAtIsEqualStartAt() {
-        OffsetDateTime startAt = OffsetDateTime.now();
-        OffsetDateTime endAt = OffsetDateTime.now();
+        OffsetDateTime startAt = OffsetDateTime.parse("2025-01-20T10:00:00Z");
+        OffsetDateTime endAt = OffsetDateTime.parse("2025-01-20T10:00:00Z");
         Long professionalId = 1L;
         Long timeOffId = 2L;
         var ex = assertThrows(DomainValidationException.class, () -> {

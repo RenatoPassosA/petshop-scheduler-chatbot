@@ -67,7 +67,7 @@ public class PhoneNumberTest {
     @Test
     public void createValidPhoneNumber_FailTooShort(){
         var ex = assertThrows(DomainValidationException.class, () -> {
-            new PhoneNumber("2198839830");
+            new PhoneNumber("2198");
         });
         assertThat(ex.getMessage()).isEqualTo("Numero de telefone inválido");
     }

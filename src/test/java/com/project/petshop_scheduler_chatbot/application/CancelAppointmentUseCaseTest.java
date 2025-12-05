@@ -61,7 +61,7 @@ public class CancelAppointmentUseCaseTest {
         Long serviceId = 5L;
         OffsetDateTime provided = OffsetDateTime.parse("2025-01-01T00:00:00Z");
         CancelAppointmentCommand command = new CancelAppointmentCommand(appointmentId, "pet viajaando");
-        Appointment appointment = new Appointment(petId, tutorId, professionalId, serviceId, provided, 100, AppointmentStatus.SCHEDULED, "nenhuma", provided, provided);
+        Appointment appointment = new Appointment(petId, tutorId, professionalId, serviceId, provided, 120, AppointmentStatus.SCHEDULED, "nenhuma", provided, provided);
         PetService petService = new PetService("tosa", new BigDecimal(100), 150, provided, provided);
 
         when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointment));
@@ -123,7 +123,7 @@ public class CancelAppointmentUseCaseTest {
         Long serviceId = 5L;
         OffsetDateTime provided = OffsetDateTime.parse("2025-01-01T00:00:00Z");
         CancelAppointmentCommand command = new CancelAppointmentCommand(appointmentId, "pet viajaando");
-        Appointment appointment = new Appointment(petId, tutorId, professionalId, serviceId, provided, 100, AppointmentStatus.COMPLETED, "nenhuma", provided, provided);
+        Appointment appointment = new Appointment(petId, tutorId, professionalId, serviceId, provided, 120, AppointmentStatus.COMPLETED, "nenhuma", provided, provided);
 
         when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointment));
 
@@ -145,7 +145,7 @@ public class CancelAppointmentUseCaseTest {
         Long serviceId = 5L;
         OffsetDateTime provided = OffsetDateTime.parse("2025-01-01T00:00:00Z");
         CancelAppointmentCommand command = new CancelAppointmentCommand(appointmentId, "pet viajaando");
-        Appointment appointment = new Appointment(petId, tutorId, professionalId, serviceId, provided, 100, AppointmentStatus.SCHEDULED, "nenhuma", provided, provided);
+        Appointment appointment = new Appointment(petId, tutorId, professionalId, serviceId, provided, 120, AppointmentStatus.SCHEDULED, "nenhuma", provided, provided);
 
         when(timeProvider.nowInUTC()).thenReturn(provided);
         when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointment));

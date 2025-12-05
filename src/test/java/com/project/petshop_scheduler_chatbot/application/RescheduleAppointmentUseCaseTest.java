@@ -65,7 +65,7 @@ public class RescheduleAppointmentUseCaseTest {
         Long tutorId = 3L;
         Long professionalId = 4L;
         Long serviceId = 5L;
-        Appointment appointment = new Appointment(petId, tutorId, professionalId, serviceId, provided, 100, AppointmentStatus.SCHEDULED, "nenhuma", provided, provided);
+        Appointment appointment = new Appointment(petId, tutorId, professionalId, serviceId, provided, 120, AppointmentStatus.SCHEDULED, "nenhuma", provided, provided);
         OffsetDateTime newEndAt = provided.plusMinutes(appointment.getServiceDuration());
         RescheduleAppointmentCommand command = new RescheduleAppointmentCommand(appointmentId, provided);
 
@@ -141,7 +141,7 @@ public class RescheduleAppointmentUseCaseTest {
         Long tutorId = 3L;
         Long professionalId = 4L;
         Long serviceId = 5L;
-        Appointment appointment = new Appointment(petId, tutorId, professionalId, serviceId, provided, 100, AppointmentStatus.CANCELLED, "nenhuma", provided, provided);
+        Appointment appointment = new Appointment(petId, tutorId, professionalId, serviceId, provided, 120, AppointmentStatus.CANCELLED, "nenhuma", provided, provided);
         RescheduleAppointmentCommand command = new RescheduleAppointmentCommand(appointmentId, provided);
 
         when(timeProvider.nowInUTC()).thenReturn(provided.minusMinutes(1), provided);
@@ -167,7 +167,7 @@ public class RescheduleAppointmentUseCaseTest {
         Long tutorId = 3L;
         Long professionalId = 4L;
         Long serviceId = 5L;
-        Appointment appointment = new Appointment(petId, tutorId, professionalId, serviceId, provided, 100, AppointmentStatus.SCHEDULED, "nenhuma", provided, provided);
+        Appointment appointment = new Appointment(petId, tutorId, professionalId, serviceId, provided, 120, AppointmentStatus.SCHEDULED, "nenhuma", provided, provided);
         OffsetDateTime newEndAt = provided.plusMinutes(appointment.getServiceDuration());
         RescheduleAppointmentCommand command = new RescheduleAppointmentCommand(appointmentId, provided);
 
@@ -196,7 +196,7 @@ public class RescheduleAppointmentUseCaseTest {
         Long tutorId = 3L;
         Long professionalId = 4L;
         Long serviceId = 5L;
-        Appointment appointment = new Appointment(petId, tutorId, professionalId, serviceId, provided, 100, AppointmentStatus.SCHEDULED, "nenhuma", provided, provided);
+        Appointment appointment = new Appointment(petId, tutorId, professionalId, serviceId, provided, 120, AppointmentStatus.SCHEDULED, "nenhuma", provided, provided);
         OffsetDateTime newEndAt = provided.plusMinutes(appointment.getServiceDuration());
         RescheduleAppointmentCommand command = new RescheduleAppointmentCommand(appointmentId, provided);
 
@@ -226,7 +226,7 @@ public class RescheduleAppointmentUseCaseTest {
         Long tutorId = 3L;
         Long professionalId = 4L;
         Long serviceId = 5L;
-        Appointment appointment = new Appointment(petId, tutorId, professionalId, serviceId, provided, 100, AppointmentStatus.SCHEDULED, "nenhuma", provided, provided);
+        Appointment appointment = new Appointment(petId, tutorId, professionalId, serviceId, provided, 120, AppointmentStatus.SCHEDULED, "nenhuma", provided, provided);
         OffsetDateTime newEndAt = provided.plusMinutes(appointment.getServiceDuration());
         RescheduleAppointmentCommand command = new RescheduleAppointmentCommand(appointmentId, provided);
 
@@ -257,7 +257,7 @@ public class RescheduleAppointmentUseCaseTest {
         Long tutorId = 3L;
         Long professionalId = 4L;
         Long serviceId = 5L;
-        Appointment appointment = new Appointment(petId, tutorId, professionalId, serviceId, provided, 100, AppointmentStatus.SCHEDULED, "nenhuma", provided, provided);
+        Appointment appointment = new Appointment(petId, tutorId, professionalId, serviceId, provided, 120, AppointmentStatus.SCHEDULED, "nenhuma", provided, provided);
         OffsetDateTime newEndAt = provided.plusMinutes(appointment.getServiceDuration());
         RescheduleAppointmentCommand command = new RescheduleAppointmentCommand(appointmentId, provided);
 

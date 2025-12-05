@@ -88,7 +88,7 @@ public class ScheduleAppointmentUseCaseTest {
     public void scheduleAppointment_Sucess() {
         Long appointmentId = 1L;
         OffsetDateTime provided = OffsetDateTime.parse("2025-01-01T00:00:00Z");
-        OffsetDateTime startAt = provided.plusMinutes(1);
+        OffsetDateTime startAt = OffsetDateTime.parse("2025-01-01T10:00:00Z");
         Long petId = 2L;
         Long tutorId = 3L;
         Long professionalId = 4L;
@@ -371,7 +371,7 @@ public class ScheduleAppointmentUseCaseTest {
         Long professionalId = 3L;
         Long serviceId = 5L;
         ScheduleAppointmentCommand command = new ScheduleAppointmentCommand(petId, tutorId, professionalId, serviceId, provided.plusMinutes(1), "ouvido inflamado");
-        PetService petService = new PetService("tosa", new BigDecimal(100), 20, provided, provided);
+        PetService petService = new PetService("tosa", new BigDecimal(100), 30, provided, provided);
 
 
         when(timeProvider.nowInUTC()).thenReturn(provided);

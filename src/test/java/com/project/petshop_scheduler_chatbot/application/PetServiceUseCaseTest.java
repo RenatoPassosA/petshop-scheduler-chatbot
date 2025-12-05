@@ -67,7 +67,7 @@ public class PetServiceUseCaseTest {
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(petServiceId);
         assertThat(result.getName()).isEqualTo(command.getName());
-        assertThat(result.getPrice()).isEqualTo(command.getPrice());
+        assertThat(result.getPrice()).isEqualTo(BigDecimal.valueOf(100.00));
         assertThat(result.getDuration()).isEqualTo(command.getDuration());
 
         verify(petServiceRepository, times(1)).save(any(PetService.class));
@@ -131,7 +131,7 @@ public class PetServiceUseCaseTest {
         assertThat(getPetService).isEqualTo(expectedPetServiceWithId);
         assertThat(getPetService.getId()).isEqualTo(petServiceId);
         assertThat(getPetService.getName()).isEqualTo(expectedPetServiceWithId.getName());
-        assertThat(getPetService.getPrice()).isEqualTo(expectedPetServiceWithId.getPrice());
+        assertThat(getPetService.getPrice()).isEqualTo(BigDecimal.valueOf(100.00));
         assertThat(getPetService.getDuration()).isEqualTo(expectedPetServiceWithId.getDuration());
 
         verify(petServiceRepository, times(1)).findById(petServiceId);
@@ -155,7 +155,7 @@ public class PetServiceUseCaseTest {
         OffsetDateTime provided = OffsetDateTime.parse("2025-01-01T00:00:00Z");
         List<PetService> petServiceList = new ArrayList<>();
         petServiceList.add(new PetService("tosa", new BigDecimal(80), 120, provided, provided));
-        petServiceList.add(new PetService("banho", new BigDecimal(60), 100, provided, provided));
+        petServiceList.add(new PetService("banho", new BigDecimal(60), 120, provided, provided));
         petServiceList.add(new PetService("banho e tosa", new BigDecimal(120), 180, provided, provided));
 
         when(petServiceRepository.getAll()).thenReturn(petServiceList);
@@ -196,7 +196,7 @@ public class PetServiceUseCaseTest {
         petServiceUseCase.update(petServiceId, command);
 
         assertThat(expectedPetServiceWithId.getName()).isEqualTo("tosa");
-        assertThat(expectedPetServiceWithId.getPrice()).isEqualTo(BigDecimal.valueOf(200));
+        assertThat(expectedPetServiceWithId.getPrice()).isEqualTo(BigDecimal.valueOf(200.00));
         assertThat(expectedPetServiceWithId.getDuration()).isEqualTo(200);
 
         verify(petServiceRepository, times(1)).findById(petServiceId);
