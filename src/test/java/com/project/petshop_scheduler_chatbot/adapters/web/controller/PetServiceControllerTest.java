@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -18,6 +19,8 @@ import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.management.ServiceNotFoundException;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,9 +37,11 @@ import com.project.petshop_scheduler_chatbot.application.petservices.AddPetServi
 import com.project.petshop_scheduler_chatbot.application.petservices.PetServiceUseCase;
 import com.project.petshop_scheduler_chatbot.application.petservices.UpdatePetServiceCommand;
 import com.project.petshop_scheduler_chatbot.core.domain.PetService;
+import com.project.petshop_scheduler_chatbot.core.domain.exceptions.DomainValidationException;
+import com.project.petshop_scheduler_chatbot.core.domain.exceptions.InvalidAppointmentStateException;
 
 @ExtendWith(MockitoExtension.class)
-@WebMvcTest(PetController.class)
+@WebMvcTest(PetServiceController.class)
 public class PetServiceControllerTest {
 
     @Autowired
@@ -56,7 +61,7 @@ public class PetServiceControllerTest {
             {
             "name": "tosa",
             "price": "100",
-            "duration": "180",
+            "duration": "180"
             }
             """;
 
@@ -65,7 +70,7 @@ public class PetServiceControllerTest {
         .content(requestJson))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.id").value(1))
-        .andExpect(jsonPath("$.name").value("flor"))
+        .andExpect(jsonPath("$.name").value("tosa"))
         .andExpect(jsonPath("$.price").value("100"))
         .andExpect(jsonPath("$.duration").value("180"));
 
@@ -148,6 +153,128 @@ public class PetServiceControllerTest {
 
         mockMvc.perform(delete("/petservice/{id}", serviceId))
             .andExpect(status().isNoContent()); 
+
+        verify(petServiceUseCase, times(1)).delete(serviceId);
+    }
+
+
+
+
+    @Test
+    public void testAddPetService_ErrorInvalidAppointmentStateException_ShouldReturn409() throws Exception {
+        when(petServiceUseCase.register(any(AddPetServiceCommand.class)))
+            .thenThrow(new InvalidAppointmentStateException("Serviço já cadastrado"));
+
+         String requestJson = """
+                            {
+                            "name": "tosa premium",
+                            "price": "200",
+                            "duration": "150"
+                            }
+                            """;
+
+        mockMvc.perform(post("/petservice")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestJson))
+            .andExpect(status().isConflict())
+            .andExpect(jsonPath("$.code").value("INVALID_APPOINTMENT_STATE"))
+            .andExpect(jsonPath("$.message").value("Serviço já cadastrado"))
+            .andExpect(jsonPath("$.status").value(409))
+            .andExpect(jsonPath("$.path").value("/petservice"))
+            .andExpect(jsonPath("$.timestamp").exists());
+
+        verify(petServiceUseCase, times(1)).register(any(AddPetServiceCommand.class));
+    }
+
+    @Test
+    public void testAddPetService_ErrorDomainValidation_ShouldReturn422() throws Exception {
+        when(petServiceUseCase.register(any(AddPetServiceCommand.class)))
+            .thenThrow(new DomainValidationException("Nome do Serviço é obrigatório"));
+
+         String requestJson = """
+                            {
+                            "name": "",
+                            "price": "200",
+                            "duration": "150"
+                            }
+                            """;
+
+        mockMvc.perform(post("/petservice")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestJson))
+            .andExpect(status().isUnprocessableEntity())
+            .andExpect(jsonPath("$.code").value("DOMAIN_VALIDATION_ERROR"))
+            .andExpect(jsonPath("$.message").value("Nome do Serviço é obrigatório"))
+            .andExpect(jsonPath("$.status").value(422))
+            .andExpect(jsonPath("$.path").value("/petservice"))
+            .andExpect(jsonPath("$.timestamp").exists());
+
+        verify(petServiceUseCase, times(1)).register(any(AddPetServiceCommand.class));
+    }
+
+    @Test
+    public void testUpdatePetService_NotFound_ShouldReturn404() throws Exception {
+        Long serviceId = 99L;
+
+        doThrow(new ServiceNotFoundException("Service id: " + serviceId + " não encontrado"))
+        .when(petServiceUseCase)
+        .update(eq(serviceId), any(UpdatePetServiceCommand.class));
+
+        String requestJson = """
+                            {
+                            "name": "tosa premium",
+                            "price": "200",
+                            "duration": "150"
+                            }
+                            """;
+
+        mockMvc.perform(put("/petservice/{id}", serviceId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestJson))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.code").value("SERVICE_NOT_FOUND"))
+            .andExpect(jsonPath("$.message").value("Service id: " + serviceId + " não encontrado"))
+            .andExpect(jsonPath("$.status").value(404))
+            .andExpect(jsonPath("$.path").value("/petservice/" + serviceId))
+            .andExpect(jsonPath("$.timestamp").exists());
+
+        verify(petServiceUseCase, times(1)).update(eq(serviceId), any(UpdatePetServiceCommand.class));
+    }
+
+    @Test
+    public void testGetPetService_NotFound_ShouldReturn404() throws Exception {
+        Long serviceId = 99L;
+
+        when(petServiceUseCase.getPetService(serviceId)).thenThrow(new ServiceNotFoundException("Service id: " + serviceId + " não encontrado"));
+
+        mockMvc.perform(get("/petservice/{id}", serviceId)
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.code").value("SERVICE_NOT_FOUND"))
+            .andExpect(jsonPath("$.message").value("Service id: " + serviceId + " não encontrado"))
+            .andExpect(jsonPath("$.status").value(404))
+            .andExpect(jsonPath("$.path").value("/petservice/" + serviceId))
+            .andExpect(jsonPath("$.timestamp").exists());
+
+        verify(petServiceUseCase, times(1)).getPetService(serviceId);
+    }
+
+    
+    @Test
+    public void testDeletePetService_NotFound_ShouldReturn404() throws Exception {
+        Long serviceId = 99L;
+
+        doThrow(new ServiceNotFoundException("Service id: " + serviceId + " não encontrado"))
+        .when(petServiceUseCase)
+        .delete(serviceId);
+
+        mockMvc.perform(delete("/petservice/{id}", serviceId))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.code").value("SERVICE_NOT_FOUND"))
+            .andExpect(jsonPath("$.message").value("Service id: " + serviceId + " não encontrado"))
+            .andExpect(jsonPath("$.status").value(404))
+            .andExpect(jsonPath("$.path").value("/petservice/" + serviceId))
+            .andExpect(jsonPath("$.timestamp").exists());
 
         verify(petServiceUseCase, times(1)).delete(serviceId);
     }

@@ -37,6 +37,7 @@ public class Appointment {
 
     private Appointment (Long id, Long petId, Long tutorId, Long professionalId, Long serviceId, OffsetDateTime startAt, int serviceDurationMinutes, AppointmentStatus status, String observations, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
         basicValidations(petId, tutorId, professionalId, serviceId, startAt, serviceDurationMinutes, status, observations);
+        this.id = id;
         this.petId = petId;
         this.tutorId = tutorId;
         this.professionalId = professionalId;
@@ -64,7 +65,7 @@ public class Appointment {
         if (startAt == null)
             throw new DomainValidationException("Necessário horario do agendamento");
         if (serviceDurationMinutes < 30 || serviceDurationMinutes % scheduleStep != 0)
-            throw new DomainValidationException("Necessário tempo de duração do serviço");
+            throw new DomainValidationException("Necessário tempo de duração correto do serviço");
         if (status == null)
             throw new DomainValidationException("Necessário status do agendamento");
         if (startAt.getMinute() % scheduleStep != 0)
@@ -74,16 +75,16 @@ public class Appointment {
     public void rescheduleTo(OffsetDateTime newStartAt, OffsetDateTime nowUtc) {
         if (newStartAt == null || newStartAt.isEqual(this.startAt) || newStartAt.isBefore(nowUtc))
             throw new DomainValidationException("Novo horário inválido");
-        if ((this.status == AppointmentStatus.CANCELED || this.status == AppointmentStatus.COMPLETED))
+        if ((this.status == AppointmentStatus.CANCELLED || this.status == AppointmentStatus.COMPLETED))
             throw new DomainValidationException("Consulta inválida, favor agendar outra");
         this.startAt = newStartAt;
         this.updatedAt = nowUtc;
     }
 
     public void cancelSchedule(OffsetDateTime nowUtc) {
-        if (this.status == AppointmentStatus.CANCELED || this.status == AppointmentStatus.COMPLETED)
+        if (this.status == AppointmentStatus.CANCELLED || this.status == AppointmentStatus.COMPLETED)
             throw new DomainValidationException("Consulta já encerrada");
-        this.status = AppointmentStatus.CANCELED;
+        this.status = AppointmentStatus.CANCELLED;
         this.updatedAt = nowUtc;
     }
 

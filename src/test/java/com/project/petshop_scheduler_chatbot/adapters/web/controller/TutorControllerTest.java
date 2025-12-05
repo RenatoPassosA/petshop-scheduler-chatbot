@@ -3,6 +3,7 @@ package com.project.petshop_scheduler_chatbot.adapters.web.controller;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -26,12 +27,14 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.project.petshop_scheduler_chatbot.application.exceptions.DuplicatedPhoneNumberException;
 import com.project.petshop_scheduler_chatbot.application.exceptions.TutorNotFoundException;
 import com.project.petshop_scheduler_chatbot.application.tutor.AddTutorCommand;
 import com.project.petshop_scheduler_chatbot.application.tutor.AddTutorResult;
 import com.project.petshop_scheduler_chatbot.application.tutor.TutorUseCase;
 import com.project.petshop_scheduler_chatbot.application.tutor.UpdateTutorCommand;
 import com.project.petshop_scheduler_chatbot.core.domain.Tutor;
+import com.project.petshop_scheduler_chatbot.core.domain.exceptions.DomainValidationException;
 import com.project.petshop_scheduler_chatbot.core.domain.valueobject.PhoneNumber;
 
 
@@ -79,14 +82,15 @@ public class TutorControllerTest {
     @Test
     public void testGetTutor() throws Exception {
         Long tutorId = 1L;
-        Tutor tutor = new Tutor("renato", new PhoneNumber("123345678"), "rua3", OffsetDateTime.now(), OffsetDateTime.now());
+        Tutor tutor = new Tutor("renato", new PhoneNumber("123345678"), "rua 3", OffsetDateTime.now(), OffsetDateTime.now());
 
         when(tutorUseCase.getTutor(tutorId)).thenReturn(tutor);
+
 
         mockMvc.perform(get("/tutor/{id}", tutorId)
         .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.name").value("Renato"))
+        .andExpect(jsonPath("$.name").value("renato"))
         .andExpect(jsonPath("$.phoneNumber").value("123345678"))
         .andExpect(jsonPath("$.address").value("rua 3"));
 
@@ -166,6 +170,108 @@ public class TutorControllerTest {
             .andExpect(jsonPath("$.timestamp").exists());
 
         verify(tutorUseCase, times(1)).getTutor(tutorId);
+    }
+
+    @Test
+    public void testAddTutor_ErrorDuplicatedPhone_ShouldReturn409() throws Exception {
+        when(tutorUseCase.execute(any(AddTutorCommand.class)))
+            .thenThrow(new DuplicatedPhoneNumberException("Numero de celular já consta na base de dados"));
+
+         String requestJson = """
+                            {
+                            "name": "Renato",
+                            "phoneNumber": "123456789",
+                            "address": "rua 1"
+                            }
+                            """;
+
+        mockMvc.perform(post("/tutor")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestJson))
+            .andExpect(status().isConflict())
+            .andExpect(jsonPath("$.code").value("DUPLICATED_PHONE"))
+            .andExpect(jsonPath("$.message").value("Numero de celular já consta na base de dados"))
+            .andExpect(jsonPath("$.status").value(409))
+            .andExpect(jsonPath("$.path").value("/tutor"))
+            .andExpect(jsonPath("$.timestamp").exists());
+
+        verify(tutorUseCase, times(1)).execute(any(AddTutorCommand.class));
+    }
+
+    @Test
+    public void testAddTutor_ErrorDomainValidation_ShouldReturn422() throws Exception {
+        when(tutorUseCase.execute(any(AddTutorCommand.class)))
+            .thenThrow(new DomainValidationException("Nome do Tutor é obrigatório"));
+
+         String requestJson = """
+                            {
+                            "name": "",
+                            "phoneNumber": "123456789",
+                            "address": "rua 1"
+                            }
+                            """;
+
+        mockMvc.perform(post("/tutor")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestJson))
+            .andExpect(status().isUnprocessableEntity())
+            .andExpect(jsonPath("$.code").value("DOMAIN_VALIDATION_ERROR"))
+            .andExpect(jsonPath("$.message").value("Nome do Tutor é obrigatório"))
+            .andExpect(jsonPath("$.status").value(422))
+            .andExpect(jsonPath("$.path").value("/tutor"))
+            .andExpect(jsonPath("$.timestamp").exists());
+
+        verify(tutorUseCase, times(1)).execute(any(AddTutorCommand.class));
+    }
+
+    
+    @Test
+    public void testUpdateTutor_NotFound_ShouldReturn404() throws Exception {
+        Long tutorId = 99L;
+
+        doThrow(new TutorNotFoundException("Tutor id: " + tutorId + " não encontrado"))
+        .when(tutorUseCase)
+        .update(eq(tutorId), any(UpdateTutorCommand.class));
+
+        String requestJson = """
+                            {
+                            "name": "",
+                            "phoneNumber": "123456789",
+                            "address": "rua 2"
+                            }
+                            """;
+
+        mockMvc.perform(put("/tutor/{id}", tutorId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestJson))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.code").value("TUTOR_NOT_FOUND"))
+            .andExpect(jsonPath("$.message").value("Tutor id: " + tutorId + " não encontrado"))
+            .andExpect(jsonPath("$.status").value(404))
+            .andExpect(jsonPath("$.path").value("/tutor/" + tutorId))
+            .andExpect(jsonPath("$.timestamp").exists());
+
+        verify(tutorUseCase, times(1)).update(eq(tutorId), any(UpdateTutorCommand.class));
+    }
+
+    
+    @Test
+    public void testDeleteTutor_NotFound_ShouldReturn404() throws Exception {
+        Long tutorId = 99L;
+
+        doThrow(new TutorNotFoundException("Tutor id: " + tutorId + " não encontrado"))
+        .when(tutorUseCase)
+        .delete(tutorId);
+
+        mockMvc.perform(delete("/tutor/{id}", tutorId))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.code").value("TUTOR_NOT_FOUND"))
+            .andExpect(jsonPath("$.message").value("Tutor id: " + tutorId + " não encontrado"))
+            .andExpect(jsonPath("$.status").value(404))
+            .andExpect(jsonPath("$.path").value("/tutor/" + tutorId))
+            .andExpect(jsonPath("$.timestamp").exists());
+
+        verify(tutorUseCase, times(1)).delete(tutorId);
     }
 }
 

@@ -141,7 +141,7 @@ public class RescheduleAppointmentUseCaseTest {
         Long tutorId = 3L;
         Long professionalId = 4L;
         Long serviceId = 5L;
-        Appointment appointment = new Appointment(petId, tutorId, professionalId, serviceId, provided, 100, AppointmentStatus.CANCELED, "nenhuma", provided, provided);
+        Appointment appointment = new Appointment(petId, tutorId, professionalId, serviceId, provided, 100, AppointmentStatus.CANCELLED, "nenhuma", provided, provided);
         RescheduleAppointmentCommand command = new RescheduleAppointmentCommand(appointmentId, provided);
 
         when(timeProvider.nowInUTC()).thenReturn(provided.minusMinutes(1), provided);

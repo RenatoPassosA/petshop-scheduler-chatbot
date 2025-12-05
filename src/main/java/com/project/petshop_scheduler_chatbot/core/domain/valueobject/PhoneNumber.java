@@ -6,14 +6,20 @@ public final class PhoneNumber {
     private final String			phoneNumber;
 
     public PhoneNumber (String phoneNumber) {
+        if (phoneNumber == null)
+            throw new DomainValidationException("Numero de telefone inválido");
+        phoneNumber = phoneNumber.trim();
         validation(phoneNumber);
         this.phoneNumber = normalization(phoneNumber);
     }
 
     private void validation(String phoneNumber) {
-        if (phoneNumber == null || phoneNumber.isEmpty())
+        if (phoneNumber.isEmpty())
             throw new DomainValidationException("Numero de telefone inválido");
-        if (phoneNumber.length() < 13 || phoneNumber.length() > 14)
+    }
+
+    private void checkRange(String phoneNumber) {
+        if (phoneNumber.length() < 8 || phoneNumber.length() > 15)
             throw new DomainValidationException("Numero de telefone inválido");
     }
 
@@ -24,7 +30,7 @@ public final class PhoneNumber {
             phoneNumber = "+" + phoneNumber;
         else
             phoneNumber = "+55" + phoneNumber;
-        validation(phoneNumber);
+        checkRange(phoneNumber);
         return phoneNumber;
     }
 

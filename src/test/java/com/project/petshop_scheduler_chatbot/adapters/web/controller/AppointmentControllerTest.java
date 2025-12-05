@@ -34,7 +34,7 @@ import com.project.petshop_scheduler_chatbot.application.appointment.ScheduleApp
 import com.project.petshop_scheduler_chatbot.core.domain.valueobject.AppointmentStatus;
 
 @ExtendWith(MockitoExtension.class)
-@WebMvcTest(PetController.class)
+@WebMvcTest(AppointmentController.class)
 public class AppointmentControllerTest {
 
     @Autowired
@@ -56,7 +56,10 @@ public class AppointmentControllerTest {
         Long serviceId = 2L;
         Long professionalId = 3L;
 
-        ScheduleAppointmentResult result = new ScheduleAppointmentResult(appointmentId, serviceId, professionalId, "banho", OffsetDateTime.now(), OffsetDateTime.now(), AppointmentStatus.SCHEDULED);
+        OffsetDateTime startAt = OffsetDateTime.parse("2025-01-20T10:00:00Z");
+        OffsetDateTime endAt   = OffsetDateTime.parse("2025-01-20T11:00:00Z");
+
+        ScheduleAppointmentResult result = new ScheduleAppointmentResult(appointmentId, serviceId, professionalId, "banho", startAt, endAt, AppointmentStatus.SCHEDULED);
 
         when(scheduleAppointmentUseCase.execute(Mockito.any(ScheduleAppointmentCommand.class))).thenReturn(result);
 
@@ -136,7 +139,7 @@ public class AppointmentControllerTest {
         CancelAppointmentResult result = new CancelAppointmentResult(
             appointmentId,
             "banho",
-            AppointmentStatus.CANCELED
+            AppointmentStatus.CANCELLED
         );
 
         when(cancelAppointmentUseCase.execute(any(CancelAppointmentCommand.class)))

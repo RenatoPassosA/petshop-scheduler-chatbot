@@ -14,6 +14,10 @@ public class Tutor {
     private OffsetDateTime	updatedAt;
 
     public Tutor (String name, PhoneNumber phoneNumber, String address, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
+        if (name == null)
+            throw new DomainValidationException("Nome do Tutor é obrigatório");
+        if (address == null)
+            throw new DomainValidationException("Endereço do Tutor é obrigatório");
         name = name.trim();
         address = address.trim();
         basicValidations(name, phoneNumber, address);
@@ -25,6 +29,10 @@ public class Tutor {
     }
 
     private Tutor (Long id, String name, PhoneNumber phoneNumber, String address, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
+        if (name == null)
+            throw new DomainValidationException("Nome do Tutor é obrigatório");
+        if (address == null)
+            throw new DomainValidationException("Endereço do Tutor é obrigatório");
         name = name.trim();
         address = address.trim();
         basicValidations(name, phoneNumber, address);
@@ -37,11 +45,11 @@ public class Tutor {
     }
 
     private void    basicValidations(String name, PhoneNumber phoneNumber, String address) {
-        if (name == null || name.isBlank())
+        if (name.isBlank())
             throw new DomainValidationException("Nome do Tutor é obrigatório");
         if (phoneNumber == null)
             throw new DomainValidationException("Telefone do Tutor é obrigatório");
-        if (address == null || address.isBlank())
+        if (address.isBlank())
             throw new DomainValidationException("Endereço do Tutor é obrigatório");
     }
 

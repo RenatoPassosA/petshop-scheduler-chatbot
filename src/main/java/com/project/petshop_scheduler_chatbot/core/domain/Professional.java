@@ -16,6 +16,9 @@ public class Professional {
     }
 
     public Professional (String name, Office function, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
+        if (name == null)
+            throw new DomainValidationException("Nome do Profissional é obrigatório");
+        name = name.trim();
         basicValidations(name, function);
         this.name = name;
         this.function = function;
@@ -24,6 +27,9 @@ public class Professional {
     }
 
     private Professional (Long id, String name, Office function, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
+        if (name == null)
+            throw new DomainValidationException("Nome do Profissional é obrigatório");
+        name = name.trim();
         basicValidations(name, function);
         this.id = id;
         this.name = name;

@@ -12,6 +12,9 @@ public class ProfessionalTimeOff {
     private OffsetDateTime endAt;
 
     public ProfessionalTimeOff(Long id, Long professionalId, String reason, OffsetDateTime startAt, OffsetDateTime endAt) {
+        if (reason == null)
+            throw new DomainValidationException("Motivo é obrigatório");
+        reason = reason.trim();
         basicValidations(professionalId, reason, startAt, endAt);
         this.id = id;
         this.professionalId = professionalId;
@@ -23,13 +26,13 @@ public class ProfessionalTimeOff {
     private void    basicValidations(Long professionalId, String reason, OffsetDateTime startAt, OffsetDateTime endAt) {
         if (professionalId == null || professionalId <= 0)
             throw new DomainValidationException("Profissional inválido");
-        if (reason == null || reason.isBlank())
+        if (reason.isBlank())
             throw new DomainValidationException("Motivo é obrigatório");
         if (startAt == null)
             throw new DomainValidationException("startAt é obrigatório");
         if (endAt == null)
             throw new DomainValidationException("endAt é obrigatório");
-        if (startAt.isAfter(endAt))
+        if (startAt.isAfter(endAt) || startAt.isEqual(endAt))
             throw new DomainValidationException("startAt deve ser antes de endAt");
     }
 

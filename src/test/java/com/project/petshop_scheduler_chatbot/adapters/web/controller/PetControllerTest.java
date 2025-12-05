@@ -3,6 +3,7 @@ package com.project.petshop_scheduler_chatbot.adapters.web.controller;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -27,6 +28,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.project.petshop_scheduler_chatbot.application.exceptions.PetNotFoundException;
 import com.project.petshop_scheduler_chatbot.application.pet.AddPetToTutorCommand;
 import com.project.petshop_scheduler_chatbot.application.pet.AddPetToTutorResult;
 import com.project.petshop_scheduler_chatbot.application.pet.PetUseCase;
@@ -34,6 +36,7 @@ import com.project.petshop_scheduler_chatbot.application.pet.UpdatePetCommand;
 import com.project.petshop_scheduler_chatbot.application.tutor.TutorUseCase;
 import com.project.petshop_scheduler_chatbot.core.domain.Pet;
 import com.project.petshop_scheduler_chatbot.core.domain.Tutor;
+import com.project.petshop_scheduler_chatbot.core.domain.exceptions.DomainValidationException;
 import com.project.petshop_scheduler_chatbot.core.domain.valueobject.PhoneNumber;
 import com.project.petshop_scheduler_chatbot.core.domain.valueobject.Gender;
 import com.project.petshop_scheduler_chatbot.core.domain.valueobject.PetSize;
@@ -207,6 +210,105 @@ public class PetControllerTest {
 
         mockMvc.perform(delete("/pet/{id}", petId))
             .andExpect(status().isNoContent()); 
+
+        verify(petUseCase, times(1)).delete(petId);
+    }
+
+    @Test
+    public void testAddPet_ErrorDomainValidation_ShouldReturn422() throws Exception {
+        when(petUseCase.execute(any(AddPetToTutorCommand.class)))
+            .thenThrow(new DomainValidationException("Nome do Pet é obrigatório"));
+
+         String requestJson = """
+                            {
+                            "name": "",
+                            "gender": "Gender.F",
+                            "size": "PetSize.SMALL",
+                            "breed": "york",
+                            "tutorId": "1",
+                            "observation": "idoso",
+                            }
+                            """;
+
+        mockMvc.perform(post("/pet")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestJson))
+            .andExpect(status().isUnprocessableEntity())
+            .andExpect(jsonPath("$.code").value("DOMAIN_VALIDATION_ERROR"))
+            .andExpect(jsonPath("$.message").value("Nome do Pet é obrigatório"))
+            .andExpect(jsonPath("$.status").value(422))
+            .andExpect(jsonPath("$.path").value("/pet"))
+            .andExpect(jsonPath("$.timestamp").exists());
+
+        verify(petUseCase, times(1)).execute(any(AddPetToTutorCommand.class));
+    }
+
+    @Test
+    public void testUpdatePet_NotFound_ShouldReturn404() throws Exception {
+        Long petId = 99L;
+
+        doThrow(new PetNotFoundException("Pet id: " + petId + " não encontrado"))
+        .when(petUseCase)
+        .update(eq(petId), any(UpdatePetCommand.class));
+
+        String requestJson = """
+                            {
+                            "name": "",
+                            "gender": "Gender.F",
+                            "size": "PetSize.SMALL",
+                            "breed": "york",
+                            "tutorId": "1",
+                            "observation": "idoso",
+                            }
+                            """;
+
+        mockMvc.perform(put("/pet/{id}", petId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestJson))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.code").value("PET_NOT_FOUND"))
+            .andExpect(jsonPath("$.message").value("Pet id: " + petId + " não encontrado"))
+            .andExpect(jsonPath("$.status").value(404))
+            .andExpect(jsonPath("$.path").value("/pet/" + petId))
+            .andExpect(jsonPath("$.timestamp").exists());
+
+        verify(petUseCase, times(1)).update(petId, any(UpdatePetCommand.class));
+    }
+
+    @Test
+    public void testGetPet_NotFound_ShouldReturn404() throws Exception {
+        Long petId = 99L;
+
+        when(petUseCase.getPet(petId)).thenThrow(new PetNotFoundException("Pet id: " + petId + " não encontrado"));
+
+        mockMvc.perform(get("/pet/{id}", petId)
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.code").value("PET_NOT_FOUND"))
+            .andExpect(jsonPath("$.message").value("Pet id: " + petId + " não encontrado"))
+            .andExpect(jsonPath("$.status").value(404))
+            .andExpect(jsonPath("$.path").value("/pet/" + petId))
+            .andExpect(jsonPath("$.timestamp").exists());
+
+        verify(petUseCase, times(1)).getPet(petId);
+    }
+
+    
+    @Test
+    public void testDeletePet_NotFound_ShouldReturn404() throws Exception {
+        Long petId = 99L;
+
+        doThrow(new PetNotFoundException("Pet id: " + petId + " não encontrado"))
+        .when(petUseCase)
+        .delete(petId);
+
+        mockMvc.perform(delete("/pet/{id}", petId))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.code").value("PET_NOT_FOUND"))
+            .andExpect(jsonPath("$.message").value("Pet id: " + petId + " não encontrado"))
+            .andExpect(jsonPath("$.status").value(404))
+            .andExpect(jsonPath("$.path").value("/pet/" + petId))
+            .andExpect(jsonPath("$.timestamp").exists());
 
         verify(petUseCase, times(1)).delete(petId);
     }

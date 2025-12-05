@@ -79,7 +79,7 @@ public class DefaultRescheduleAppointmentUseCase implements RescheduleAppointmen
         if (findAppointment.isEmpty()) 
             throw new AppointmentNotFoundException("Agendamento não encontrado");
         AppointmentStatus status = findAppointment.get().getStatus();
-        if (status == AppointmentStatus.CANCELED || status == AppointmentStatus.COMPLETED)
+        if (status == AppointmentStatus.CANCELLED || status == AppointmentStatus.COMPLETED)
             throw new InvalidAppointmentStateException("Agendamento já cancelado ou concluído");
         return (findAppointment.get());
     }

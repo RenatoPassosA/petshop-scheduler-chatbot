@@ -21,6 +21,12 @@ public class Pet {
     }
 
     public Pet(String name, Gender gender, PetSize size, String breed, Long tutorId, String observations, OffsetDateTime createdAt, OffsetDateTime updatedAt){
+        if (name == null)
+            throw new DomainValidationException("Nome do pet é obrigatório");
+        if (breed == null)
+            throw new DomainValidationException("Raça do pet é obrigatória");
+        name = name.trim();
+        breed = breed.trim();
         basicValidations(name, gender, size, breed, tutorId, observations);
         this.name = name;
         this.gender = gender;
@@ -33,7 +39,14 @@ public class Pet {
     }
 
     private Pet(Long id, String name, Gender gender, PetSize size, String breed, Long tutorId, String observations, OffsetDateTime createdAt, OffsetDateTime updatedAt){
+        if (name == null)
+            throw new DomainValidationException("Nome do pet é obrigatório");
+        if (breed == null)
+            throw new DomainValidationException("Raça do pet é obrigatória");
+        name = name.trim();
+        breed = breed.trim();
         basicValidations(name, gender, size, breed, tutorId, observations);
+        this.id = id;
         this.name = name;
         this.gender = gender;
         this.size = size;
@@ -45,13 +58,13 @@ public class Pet {
     }
 
     private void    basicValidations(String name, Gender gender, PetSize size, String breed, Long tutorId, String observations) {
-        if (name == null || name.isBlank())
+        if (name.isBlank())
             throw new DomainValidationException("Nome do pet é obrigatório");
         if (gender == null)
             throw new DomainValidationException("Sexo do pet deve ser M ou F");
         if (size == null)
             throw new DomainValidationException("Porte do pet é obrigatório");
-        if (breed == null || breed.isBlank())
+        if (breed.isBlank())
             throw new DomainValidationException("Raça do pet é obrigatória");
         if (tutorId == null || tutorId <= 0)
             throw new DomainValidationException("Inserir tutor válido");

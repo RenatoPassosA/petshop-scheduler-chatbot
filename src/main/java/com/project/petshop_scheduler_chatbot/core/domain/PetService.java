@@ -18,6 +18,9 @@ public class PetService {
     }
 
     public PetService(String name, BigDecimal price, int duration, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
+        if (name == null)
+            throw new DomainValidationException("Nome do Serviço é obrigatório");
+        name = name.trim();
         basicValidations(name, duration);
         this.name = name;
         this.price = normalizePrice(price); 
@@ -27,7 +30,11 @@ public class PetService {
     }
 
     private PetService(Long id, String name, BigDecimal price, int duration, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
+        if (name == null)
+            throw new DomainValidationException("Nome do Serviço é obrigatório");
+        name = name.trim();
         basicValidations(name, duration);
+        this.id = id;
         this.name = name;
         this.price = normalizePrice(price); 
         this.duration = duration;
@@ -39,7 +46,7 @@ public class PetService {
 
         int scheduleStep = 15;
 
-        if (name == null || name.isBlank())
+        if (name.isBlank())
             throw new DomainValidationException("Nome do Serviço é obrigatório");
         if (duration < 30 || duration > 180)
             throw new DomainValidationException("Duração válida do serviço é obrigatória (entre 30 e 180 minutos)");
@@ -59,7 +66,7 @@ public class PetService {
         return normalized;
     }
 
-    public void updateInfos(String newName, BigDecimal newPrice, Integer newDuration, OffsetDateTime nowUtc) {
+    /*public void updateInfos(String newName, BigDecimal newPrice, Integer newDuration, OffsetDateTime nowUtc) {
 
         int scheduleStep = 15;
 
@@ -79,7 +86,7 @@ public class PetService {
             this.duration = newDuration;
         }
         this.updatedAt = nowUtc;
-    }
+    }*/
 
     public PetService withPersistenceId (Long id) {
         if (id == null || id < 0)

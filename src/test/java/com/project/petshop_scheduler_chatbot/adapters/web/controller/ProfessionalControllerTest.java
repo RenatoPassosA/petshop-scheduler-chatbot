@@ -3,6 +3,7 @@ package com.project.petshop_scheduler_chatbot.adapters.web.controller;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -26,6 +27,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.project.petshop_scheduler_chatbot.application.exceptions.ProfessionalNotFoundException;
+import com.project.petshop_scheduler_chatbot.application.exceptions.ProfessionalTimeOffException;
+import com.project.petshop_scheduler_chatbot.application.exceptions.WorkingHoursOutsideException;
 import com.project.petshop_scheduler_chatbot.application.professional.AddProfessionalCommand;
 import com.project.petshop_scheduler_chatbot.application.professional.AddProfessionalResult;
 import com.project.petshop_scheduler_chatbot.application.professional.AddTimeOffCommand;
@@ -34,6 +38,7 @@ import com.project.petshop_scheduler_chatbot.application.professional.Profession
 import com.project.petshop_scheduler_chatbot.application.professional.TimeOffUseCase;
 import com.project.petshop_scheduler_chatbot.application.professional.UpdateProfessionalCommand;
 import com.project.petshop_scheduler_chatbot.core.domain.Professional;
+import com.project.petshop_scheduler_chatbot.core.domain.exceptions.DomainValidationException;
 import com.project.petshop_scheduler_chatbot.core.domain.valueobject.Office;
 
 
@@ -145,8 +150,225 @@ public class ProfessionalControllerTest {
 
         verify(timeOffUseCase, times(1)).delete(professionalId, timeOffId);
     }
-   
 
+    @Test
+    public void testAddProfessional_ErrorDomainValidation_ShouldReturn422() throws Exception {
+        when(professionalUseCase.execute(any(AddProfessionalCommand.class)))
+            .thenThrow(new DomainValidationException("Nome do Colaborador é obrigatório"));
+
+         String requestJson = """
+                            {
+                            "name": "",
+                            "function": "Office.VET"
+                            }
+                            """;
+
+        mockMvc.perform(post("/professional")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestJson))
+            .andExpect(status().isUnprocessableEntity())
+            .andExpect(jsonPath("$.code").value("DOMAIN_VALIDATION_ERROR"))
+            .andExpect(jsonPath("$.message").value("Nome do Colaborador é obrigatório"))
+            .andExpect(jsonPath("$.status").value(422))
+            .andExpect(jsonPath("$.path").value("/professional"))
+            .andExpect(jsonPath("$.timestamp").exists());
+
+        verify(professionalUseCase, times(1)).execute(any(AddProfessionalCommand.class));
+    }
+   
+    @Test
+    public void testUpdateProfessional_NotFound_ShouldReturn404() throws Exception {
+        Long professionalId = 99L;
+
+        doThrow(new ProfessionalNotFoundException("Professional id: " + professionalId + " não encontrado"))
+        .when(professionalUseCase)
+        .update(eq(professionalId), any(UpdateProfessionalCommand.class));
+
+        String requestJson = """
+                            {
+                            "name": "amanda",
+                            "function": "Office.VET"
+                            }
+                            """;
+
+        mockMvc.perform(put("/professional/{id}", professionalId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestJson))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.code").value("PROFESSIONAL_NOT_FOUND"))
+            .andExpect(jsonPath("$.message").value("Professional id: " + professionalId + " não encontrado"))
+            .andExpect(jsonPath("$.status").value(404))
+            .andExpect(jsonPath("$.path").value("/professional/" + professionalId))
+            .andExpect(jsonPath("$.timestamp").exists());
+
+        verify(professionalUseCase, times(1)).update(eq(professionalId), any(UpdateProfessionalCommand.class));
+    }
+
+    @Test
+    public void testGetProfessional_NotFound_ShouldReturn404() throws Exception {
+        Long professionalId = 99L;
+
+        when(professionalUseCase.getProfessional(professionalId)).thenThrow(new ProfessionalNotFoundException("Professional id: " + professionalId + " não encontrado"));
+
+        mockMvc.perform(get("/professional/{id}", professionalId)
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.code").value("PROFESSIONAL_NOT_FOUND"))
+            .andExpect(jsonPath("$.message").value("Professional id: " + professionalId + " não encontrado"))
+            .andExpect(jsonPath("$.status").value(404))
+            .andExpect(jsonPath("$.path").value("/professional/" + professionalId))
+            .andExpect(jsonPath("$.timestamp").exists());
+
+        verify(professionalUseCase, times(1)).getProfessional(professionalId);
+    }
+
+    
+    @Test
+    public void testDeleteProfessional_NotFound_ShouldReturn404() throws Exception {
+        Long professionalId = 99L;
+
+        doThrow(new ProfessionalNotFoundException("Professional id: " + professionalId + " não encontrado"))
+        .when(professionalUseCase)
+        .delete(professionalId);
+
+        mockMvc.perform(delete("/professional/{id}", professionalId))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.code").value("PROFESSIONAL_NOT_FOUND"))
+            .andExpect(jsonPath("$.message").value("Professional id: " + professionalId + " não encontrado"))
+            .andExpect(jsonPath("$.status").value(404))
+            .andExpect(jsonPath("$.path").value("/professional/" + professionalId))
+            .andExpect(jsonPath("$.timestamp").exists());
+
+        verify(professionalUseCase, times(1)).delete(professionalId);
+    }
+
+    @Test
+    public void testAddTimeOff_ErrorDomainValidation_ShouldReturn422() throws Exception {
+        Long professionalId = 1L;
+        when(timeOffUseCase.execute(any(AddTimeOffCommand.class)))
+            .thenThrow(new DomainValidationException("Id do profissional inválido"));
+
+         String requestJson = """
+                            {
+                            "reason": "consulta médica",
+                            "startAt": "2025-01-20T10:00:00Z",
+                            "endAt": "2025-01-21T10:00:00Z"
+                            }
+                            """;
+
+        mockMvc.perform(post("/professional/{id}/timeoff", professionalId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestJson))
+            .andExpect(status().isUnprocessableEntity())
+            .andExpect(jsonPath("$.code").value("DOMAIN_VALIDATION_ERROR"))
+            .andExpect(jsonPath("$.message").value("Id do profissional inválido"))
+            .andExpect(jsonPath("$.status").value(422))
+            .andExpect(jsonPath("$.path").value("/professional/1/timeoff"))
+            .andExpect(jsonPath("$.timestamp").exists());
+
+        verify(timeOffUseCase, times(1)).execute(any(AddTimeOffCommand.class));
+    }
+
+    @Test
+    public void testAddTimeOff_ProfessionalNotFoundException_ShouldReturn404() throws Exception {
+        Long professionalId = 1L;
+        when(timeOffUseCase.execute(any(AddTimeOffCommand.class)))
+            .thenThrow(new ProfessionalNotFoundException("Profissional nao cadastrado"));
+
+         String requestJson = """
+                            {
+                            "reason": "consulta médica",
+                            "startAt": "2025-01-20T10:00:00Z",
+                            "endAt": "2025-01-21T10:00:00Z"
+                            }
+                            """;
+
+        mockMvc.perform(post("/professional/{id}/timeoff", professionalId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestJson))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.code").value("PROFESSIONAL_NOT_FOUND"))
+            .andExpect(jsonPath("$.message").value("Profissional nao cadastrado"))
+            .andExpect(jsonPath("$.status").value(404))
+            .andExpect(jsonPath("$.path").value("/professional/1/timeoff"))
+            .andExpect(jsonPath("$.timestamp").exists());
+
+        verify(timeOffUseCase, times(1)).execute(any(AddTimeOffCommand.class));
+    }
+
+    @Test
+    public void testAddTimeOff_WorkingHoursOutsideException_ShouldReturn409() throws Exception {
+        Long professionalId = 1L;
+        when(timeOffUseCase.execute(any(AddTimeOffCommand.class)))
+            .thenThrow(new WorkingHoursOutsideException("Horário fora do expediente"));
+
+         String requestJson = """
+                            {
+                            "reason": "consulta médica",
+                            "startAt": "2025-01-20T10:00:00Z",
+                            "endAt": "2025-01-21T10:00:00Z"
+                            }
+                            """;
+
+        mockMvc.perform(post("/professional/{id}/timeoff", professionalId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestJson))
+            .andExpect(status().isConflict())
+            .andExpect(jsonPath("$.code").value("WORKING_HOURS_OUTSIDE"))
+            .andExpect(jsonPath("$.message").value("Horário fora do expediente"))
+            .andExpect(jsonPath("$.status").value(409))
+            .andExpect(jsonPath("$.path").value("/professional/1/timeoff"))
+            .andExpect(jsonPath("$.timestamp").exists());
+
+        verify(timeOffUseCase, times(1)).execute(any(AddTimeOffCommand.class));
+    }
+
+    @Test
+    public void testAddTimeOff_ProfessionalTimeOffException_ShouldReturn409() throws Exception {
+        Long professionalId = 1L;
+        when(timeOffUseCase.execute(any(AddTimeOffCommand.class)))
+            .thenThrow(new ProfessionalTimeOffException("Folga já cadastrada"));
+
+         String requestJson = """
+                            {
+                            "reason": "consulta médica",
+                            "startAt": "2025-01-20T10:00:00Z",
+                            "endAt": "2025-01-21T10:00:00Z"
+                            }
+                            """;
+
+        mockMvc.perform(post("/professional/{id}/timeoff", professionalId)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(requestJson))
+            .andExpect(status().isConflict())
+            .andExpect(jsonPath("$.code").value("PROFESSIONAL_TIME_OFF"))
+            .andExpect(jsonPath("$.message").value("Folga já cadastrada"))
+            .andExpect(jsonPath("$.status").value(409))
+            .andExpect(jsonPath("$.path").value("/professional/1/timeoff"))
+            .andExpect(jsonPath("$.timestamp").exists());
+
+        verify(timeOffUseCase, times(1)).execute(any(AddTimeOffCommand.class));
+    }
+    
+    @Test
+    public void testDeleteProfessionalTimeOffException_ShouldReturn409() throws Exception {
+        Long timeOffId = 99L;
+        Long professionalId = 1L;
+
+        doThrow(new ProfessionalTimeOffException("TimeOff não encontrado"))
+        .when(timeOffUseCase)
+        .delete(professionalId, timeOffId);
+
+        mockMvc.perform(delete("/professional/{id}/timeoff/{timeOffId}", professionalId, timeOffId))
+            .andExpect(status().isConflict())
+            .andExpect(jsonPath("$.code").value("PROFESSIONAL_TIME_OFF"))
+            .andExpect(jsonPath("$.message").value("TimeOff não encontrado"))
+            .andExpect(jsonPath("$.status").value(409))
+            .andExpect(jsonPath("$.path").value("/professional/1/timeoff/99"))
+            .andExpect(jsonPath("$.timestamp").exists());
+
+        verify(timeOffUseCase, times(1)).delete(professionalId, timeOffId);
+    }
     
 }
 

@@ -60,7 +60,7 @@ public class DefaultCancelAppointmentUseCase implements CancelAppointmentUseCase
         Optional<Appointment> findAppointment = appointmentRepository.findById(command.getAppointmentId());
         if (findAppointment.isEmpty()) 
             throw new AppointmentNotFoundException("Agendamento não encontrado");
-        if (findAppointment.get().getStatus() == AppointmentStatus.CANCELED ||
+        if (findAppointment.get().getStatus() == AppointmentStatus.CANCELLED ||
             findAppointment.get().getStatus() == AppointmentStatus.COMPLETED)
             throw new InvalidAppointmentStateException("Agendamento já cancelado ou concluído");
         return (findAppointment.get());

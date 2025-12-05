@@ -74,7 +74,7 @@ public class CancelAppointmentUseCaseTest {
         assertThat(result).isNotNull();
         assertThat(result.getAppointmentId()).isEqualTo(appointmentId);
         assertThat(result.getServiceName()).isEqualTo(petService.getName());
-        assertThat(result.getStatus()).isEqualTo(AppointmentStatus.CANCELED);
+        assertThat(result.getStatus()).isEqualTo(AppointmentStatus.CANCELLED);
 
         verify(timeProvider, times(1)).nowInUTC();
         verify(appointmentRepository, times(1)).findById(appointmentId);
