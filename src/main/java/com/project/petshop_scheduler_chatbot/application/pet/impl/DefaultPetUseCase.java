@@ -77,7 +77,7 @@ public class DefaultPetUseCase implements PetUseCase{
     public void update(Long petId, UpdatePetCommand command) {
         Pet pet = petRepository.findById(petId)
             .orElseThrow(() -> new PetNotFoundException("Pet não encontrado"));
-        pet.setObservations(command.getObservation());
+        pet.setObservations(command.getObservations());
         petRepository.save(pet);
     }
 

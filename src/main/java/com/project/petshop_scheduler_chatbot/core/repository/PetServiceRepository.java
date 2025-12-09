@@ -13,4 +13,5 @@ public interface PetServiceRepository {
     List<PetService> findByName(String name);
     List<PetService> getAll();
     int durationById(Long id);
+    List<PetService> searchByName(String name);
 }

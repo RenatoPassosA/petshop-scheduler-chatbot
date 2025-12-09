@@ -5,12 +5,14 @@ import java.time.OffsetDateTime;
 
 public class AddTimeOffResponse {
     private Long professionalId;
+    private String professionalName;
     private String reason;
     private OffsetDateTime startAt;
     private OffsetDateTime endAt;
     
-    public AddTimeOffResponse(Long professionalId, String reason, OffsetDateTime startAt, OffsetDateTime endAt) {
+    public AddTimeOffResponse(Long professionalId, String professionalName, String reason, OffsetDateTime startAt, OffsetDateTime endAt) {
         this.professionalId = professionalId;
+        this.professionalName = professionalName;
         this.reason = reason;
         this.startAt = startAt;
         this.endAt = endAt;
@@ -18,6 +20,10 @@ public class AddTimeOffResponse {
 
     public Long getProfessionalId() {
         return professionalId;
+    }
+
+    public String getProfessionalName() {
+        return professionalName;
     }
 
     public String getReason() {

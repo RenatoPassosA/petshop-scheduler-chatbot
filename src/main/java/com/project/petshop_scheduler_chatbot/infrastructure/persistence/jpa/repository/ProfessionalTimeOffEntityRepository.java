@@ -9,5 +9,5 @@ import com.project.petshop_scheduler_chatbot.infrastructure.persistence.jpa.enti
 
 public interface ProfessionalTimeOffEntityRepository extends JpaRepository<ProfessionalTimeOffEntity, Long> {
     boolean existsByProfessional_IdAndStartAtLessThanAndEndAtGreaterThan(Long professionalId, OffsetDateTime end, OffsetDateTime start);
-    List<ProfessionalTimeOffEntity> findByProfessionalId(Long professionalId);
+    List<ProfessionalTimeOffEntity> getAllByProfessional_Id(Long professionalId);
 }

@@ -67,7 +67,7 @@ public class TutorController {
         List<GetTutorResponse> response = new ArrayList<>();
         for (Tutor tutor : tutors) {
             GetTutorResponse tutorResponse = new GetTutorResponse(tutor.getName(),
-                                                                tutor.getPhoneNumber(),
+                                                                tutor.getPhoneNumber().value(),
                                                                 tutor.getAddress());
             response.add(tutorResponse);
         }

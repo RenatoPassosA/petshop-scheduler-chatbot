@@ -9,7 +9,7 @@ import com.project.petshop_scheduler_chatbot.application.appointment.CancelAppoi
 import com.project.petshop_scheduler_chatbot.application.appointment.CancelAppointmentResult;
 import com.project.petshop_scheduler_chatbot.application.appointment.CancelAppointmentUseCase;
 import com.project.petshop_scheduler_chatbot.application.exceptions.AppointmentNotFoundException;
-import com.project.petshop_scheduler_chatbot.application.exceptions.ServiceNotFoundException;
+import com.project.petshop_scheduler_chatbot.application.exceptions.PetServiceNotFoundException;
 import com.project.petshop_scheduler_chatbot.core.domain.Appointment;
 import com.project.petshop_scheduler_chatbot.core.domain.PetService;
 import com.project.petshop_scheduler_chatbot.core.domain.application.TimeProvider;
@@ -69,7 +69,7 @@ public class DefaultCancelAppointmentUseCase implements CancelAppointmentUseCase
     private String getServiceName(Appointment appointment) {
         Optional<PetService> petService = petServiceRepository.findById(appointment.getServiceId());
         if (petService.isEmpty())
-            throw new ServiceNotFoundException("Não foi possível encontrar o serviço");
+            throw new PetServiceNotFoundException("Não foi possível encontrar o serviço");
         return (petService.get().getName());
     }
 }

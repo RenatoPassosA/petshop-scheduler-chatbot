@@ -1,13 +1,11 @@
 package com.project.petshop_scheduler_chatbot.adapters.web.dto.tutor;
 
-import com.project.petshop_scheduler_chatbot.core.domain.valueobject.PhoneNumber;
-
 public class GetTutorResponse {
     private String			name;
-    private PhoneNumber 	phoneNumber;
+    private String          phoneNumber;
     private String			address;
     
-    public GetTutorResponse(String name, PhoneNumber phoneNumber, String address) {
+    public GetTutorResponse(String name, String phoneNumber, String address) {
         this.name = name;
         this.phoneNumber = phoneNumber;
         this.address = address;
@@ -17,7 +15,7 @@ public class GetTutorResponse {
         return name;
     }
 
-    public PhoneNumber getPhoneNumber() {
+    public String getPhoneNumber() {
         return phoneNumber;
     }
 
@@ -29,7 +27,7 @@ public class GetTutorResponse {
         this.name = name;
     }
 
-    public void setPhoneNumber(PhoneNumber phoneNumber) {
+    public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
 

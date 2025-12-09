@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Instalar Docker (necessário para Testcontainers)
+        uses: docker-practice/actions-setup-docker@v1
+
+      - name: Verificar Docker
+        run: docker info
+
+      - name: Rodar testes Maven com Testcontainers funcionando
+        run: mvn -B clean test
+        env:
+          TESTCONTAINERS_RYUK_DISABLED: true
+
+
+
+
+
+# on:
+#  push:
+#    branches: [ main, master, develop ]
+#  pull_request:
+#    branches: [ main, master, develop ]
+
+
+#Todas as vezes que alguém fizer push nessas branches → roda CI
+#Toda vez que abrir PR contra essas branches → roda CI
+
+#jobs:
+#  build-and-test:
+#    runs-on: ubuntu-latest
+
+#GitHub Actions cria uma máquina virtual Linux para rodar sua pipeline.
+
+#Steps - é o passo a passo que vai ser realizado
+
+#uses: actions/checkout@v4 - clona o código
+#uses: actions/setup-java@v4 - instala o java
+#uses: docker-practice/actions-setup-docker@v1 - instala o docker
+#run: docker info - mostra as informações do docker
+#run: mvn -B clean test - executa os testes do maven

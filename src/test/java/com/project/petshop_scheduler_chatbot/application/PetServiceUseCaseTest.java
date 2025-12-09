@@ -21,7 +21,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.project.petshop_scheduler_chatbot.application.exceptions.ServiceNotFoundException;
+import com.project.petshop_scheduler_chatbot.application.exceptions.PetServiceNotFoundException;
 import com.project.petshop_scheduler_chatbot.application.petservices.AddPetServiceCommand;
 import com.project.petshop_scheduler_chatbot.application.petservices.AddPetServiceResult;
 import com.project.petshop_scheduler_chatbot.application.petservices.PetServiceUseCase;
@@ -67,7 +67,8 @@ public class PetServiceUseCaseTest {
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(petServiceId);
         assertThat(result.getName()).isEqualTo(command.getName());
-        assertThat(result.getPrice()).isEqualTo(BigDecimal.valueOf(100.00));
+        assertThat(result.getPrice()).isEqualByComparingTo(BigDecimal.valueOf(100.00));
+        assertThat(result.getPrice()).isEqualByComparingTo(BigDecimal.valueOf(100.00));
         assertThat(result.getDuration()).isEqualTo(command.getDuration());
 
         verify(petServiceRepository, times(1)).save(any(PetService.class));
@@ -131,7 +132,7 @@ public class PetServiceUseCaseTest {
         assertThat(getPetService).isEqualTo(expectedPetServiceWithId);
         assertThat(getPetService.getId()).isEqualTo(petServiceId);
         assertThat(getPetService.getName()).isEqualTo(expectedPetServiceWithId.getName());
-        assertThat(getPetService.getPrice()).isEqualTo(BigDecimal.valueOf(100.00));
+        assertThat(getPetService.getPrice()).isEqualByComparingTo(BigDecimal.valueOf(100.00));
         assertThat(getPetService.getDuration()).isEqualTo(expectedPetServiceWithId.getDuration());
 
         verify(petServiceRepository, times(1)).findById(petServiceId);
@@ -143,7 +144,7 @@ public class PetServiceUseCaseTest {
 
         when(petServiceRepository.findById(petServiceId)).thenReturn(Optional.empty());
     
-        assertThrows(ServiceNotFoundException.class, () -> {
+        assertThrows(PetServiceNotFoundException.class, () -> {
             petServiceUseCase.getPetService(petServiceId);
             });
 
@@ -196,7 +197,7 @@ public class PetServiceUseCaseTest {
         petServiceUseCase.update(petServiceId, command);
 
         assertThat(expectedPetServiceWithId.getName()).isEqualTo("tosa");
-        assertThat(expectedPetServiceWithId.getPrice()).isEqualTo(BigDecimal.valueOf(200.00));
+        assertThat(expectedPetServiceWithId.getPrice()).isEqualByComparingTo(BigDecimal.valueOf(200.00));
         assertThat(expectedPetServiceWithId.getDuration()).isEqualTo(200);
 
         verify(petServiceRepository, times(1)).findById(petServiceId);
@@ -216,7 +217,7 @@ public class PetServiceUseCaseTest {
         petServiceUseCase.update(petServiceId, command);
     
         assertThat(expectedPetServiceWithId.getName()).isEqualTo("tosa");
-        assertThat(expectedPetServiceWithId.getPrice()).isEqualTo(BigDecimal.valueOf(100));
+        assertThat(expectedPetServiceWithId.getPrice()).isEqualByComparingTo(BigDecimal.valueOf(100.00));
         assertThat(expectedPetServiceWithId.getDuration()).isEqualTo(180);
 
         verify(petServiceRepository, times(1)).findById(petServiceId);
@@ -230,7 +231,7 @@ public class PetServiceUseCaseTest {
         
         when(petServiceRepository.findById(petServiceId)).thenReturn(Optional.empty());
 
-        assertThrows(ServiceNotFoundException.class, () -> {
+        assertThrows(PetServiceNotFoundException.class, () -> {
             petServiceUseCase.update(petServiceId, command);
             });
 
@@ -256,7 +257,7 @@ public class PetServiceUseCaseTest {
 
         when(petServiceRepository.existsById(petServiceId)).thenReturn(false);
     
-        assertThrows(ServiceNotFoundException.class, () -> {
+        assertThrows(PetServiceNotFoundException.class, () -> {
             petServiceUseCase.delete(petServiceId);
             });
 

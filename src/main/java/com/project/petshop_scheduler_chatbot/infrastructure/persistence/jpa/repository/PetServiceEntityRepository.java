@@ -11,8 +11,10 @@ import com.project.petshop_scheduler_chatbot.infrastructure.persistence.jpa.enti
 
 public interface PetServiceEntityRepository extends JpaRepository <PetServiceEntity, Long> {
     List<PetServiceEntity> findByName(String name);
+    List<PetServiceEntity> findByNameContainingIgnoreCase(String name);
     @Query("select p.duration from PetServiceEntity p where p.id = :id")
     Optional<Integer> findDurationById(@Param("id") Long id);
+
 }
 
 

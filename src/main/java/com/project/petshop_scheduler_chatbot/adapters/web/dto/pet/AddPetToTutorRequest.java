@@ -5,11 +5,20 @@ import java.time.OffsetDateTime;
 import com.project.petshop_scheduler_chatbot.core.domain.valueobject.Gender;
 import com.project.petshop_scheduler_chatbot.core.domain.valueobject.PetSize;
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+
 public class AddPetToTutorRequest {
+    @NotNull(message = "O nome é obrigatório")
     private String			name;
+    @NotNull(message = "O genero é obrigatório")
     private Gender			gender;
+    @NotNull(message = "O porte é obrigatório")
     private PetSize		    size;
+    @NotNull(message = "A raça é obrigatório")
     private String			breed;
+    @NotNull(message = "O tutor é obrigatório")
+    @Positive
     private Long            tutorId;
     private String          observations;
     private OffsetDateTime	createdAt;

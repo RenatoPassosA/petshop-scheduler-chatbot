@@ -2,7 +2,7 @@ package com.project.petshop_scheduler_chatbot.adapters.web.dto.tutor;
 
 public class AddTutorResponse {
     private String			name;
-    private String 	phoneNumber;
+    private String          phoneNumber;
     private String			address;
     
     public AddTutorResponse(String name, String phoneNumber, String address) {

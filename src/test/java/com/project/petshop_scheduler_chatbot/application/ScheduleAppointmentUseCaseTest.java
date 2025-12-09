@@ -3,6 +3,7 @@ package com.project.petshop_scheduler_chatbot.application;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -23,11 +24,10 @@ import com.project.petshop_scheduler_chatbot.application.appointment.ScheduleApp
 import com.project.petshop_scheduler_chatbot.application.appointment.ScheduleAppointmentResult;
 import com.project.petshop_scheduler_chatbot.application.appointment.impl.DefaultScheduleAppointmentUseCase;
 import com.project.petshop_scheduler_chatbot.application.exceptions.AppointmentOverlapException;
-import com.project.petshop_scheduler_chatbot.application.exceptions.PetNotFoundException;
 import com.project.petshop_scheduler_chatbot.application.exceptions.PetOverlapException;
 import com.project.petshop_scheduler_chatbot.application.exceptions.ProfessionalNotFoundException;
 import com.project.petshop_scheduler_chatbot.application.exceptions.ProfessionalTimeOffException;
-import com.project.petshop_scheduler_chatbot.application.exceptions.ServiceNotFoundException;
+import com.project.petshop_scheduler_chatbot.application.exceptions.PetServiceNotFoundException;
 import com.project.petshop_scheduler_chatbot.application.exceptions.TutorNotFoundException;
 import com.project.petshop_scheduler_chatbot.application.exceptions.WorkingHoursOutsideException;
 import com.project.petshop_scheduler_chatbot.core.domain.Appointment;
@@ -87,8 +87,8 @@ public class ScheduleAppointmentUseCaseTest {
     @Test
     public void scheduleAppointment_Sucess() {
         Long appointmentId = 1L;
-        OffsetDateTime provided = OffsetDateTime.parse("2025-01-01T00:00:00Z");
-        OffsetDateTime startAt = OffsetDateTime.parse("2025-01-01T10:00:00Z");
+        OffsetDateTime provided = OffsetDateTime.parse("2100-12-09T10:00:00Z");
+        OffsetDateTime startAt = OffsetDateTime.parse("2100-12-10T10:00:00Z");
         Long petId = 2L;
         Long tutorId = 3L;
         Long professionalId = 4L;
@@ -136,15 +136,15 @@ public class ScheduleAppointmentUseCaseTest {
     }
 
     @Test
-    public void scheduleAppointment_Fail_ServiceNull_ServiceNotFoundException() {
-        OffsetDateTime provided = OffsetDateTime.parse("2025-01-01T00:00:00Z");
+    public void scheduleAppointment_Fail_ServiceNull_DomainValidationException() {
+        OffsetDateTime provided = OffsetDateTime.parse("2100-12-09T10:00:00Z");
         Long petId = 2L;
         Long tutorId = 3L;
         Long professionalId = 4L;
         Long serviceId = null;
         ScheduleAppointmentCommand command = new ScheduleAppointmentCommand(petId, tutorId, professionalId, serviceId, provided, "ouvido inflamado");
 
-        assertThrows(ServiceNotFoundException.class, () -> {
+        assertThrows(DomainValidationException.class, () -> {
             defaultScheduleAppointmentUseCase.execute(command);
             });
 
@@ -159,15 +159,15 @@ public class ScheduleAppointmentUseCaseTest {
     }
 
     @Test
-    public void scheduleAppointment_Fail_PetNull_PetNotFoundException() {
-        OffsetDateTime provided = OffsetDateTime.parse("2025-01-01T00:00:00Z");
+    public void scheduleAppointment_Fail_PetNull_DomainValidationException() {
+        OffsetDateTime provided = OffsetDateTime.parse("2100-12-09T10:00:00Z");
         Long petId = null;
         Long tutorId = 3L;
         Long professionalId = 4L;
         Long serviceId = 5L;
         ScheduleAppointmentCommand command = new ScheduleAppointmentCommand(petId, tutorId, professionalId, serviceId, provided, "ouvido inflamado");
 
-        assertThrows(PetNotFoundException.class, () -> {
+        assertThrows(DomainValidationException.class, () -> {
             defaultScheduleAppointmentUseCase.execute(command);
             });
 
@@ -182,15 +182,15 @@ public class ScheduleAppointmentUseCaseTest {
     }
 
     @Test
-    public void scheduleAppointment_Fail_TutorNull_TutorNotFoundException() {
-        OffsetDateTime provided = OffsetDateTime.parse("2025-01-01T00:00:00Z");
+    public void scheduleAppointment_Fail_TutorNull_DomainValidationException() {
+        OffsetDateTime provided = OffsetDateTime.parse("2100-12-09T10:00:00Z");
         Long petId = 1L;
         Long tutorId = null;
         Long professionalId = 4L;
         Long serviceId = 5L;
         ScheduleAppointmentCommand command = new ScheduleAppointmentCommand(petId, tutorId, professionalId, serviceId, provided, "ouvido inflamado");
 
-        assertThrows(TutorNotFoundException.class, () -> {
+        assertThrows(DomainValidationException.class, () -> {
             defaultScheduleAppointmentUseCase.execute(command);
             });
 
@@ -205,15 +205,15 @@ public class ScheduleAppointmentUseCaseTest {
     }
 
     @Test
-    public void scheduleAppointment_Fail_ProfessionalNull_ProfessionalNotFoundException() {
-        OffsetDateTime provided = OffsetDateTime.parse("2025-01-01T00:00:00Z");
+    public void scheduleAppointment_Fail_ProfessionalNull_DomainValidationException() {
+        OffsetDateTime provided = OffsetDateTime.parse("2100-12-09T10:00:00Z");
         Long petId = 1L;
         Long tutorId = 2L;
         Long professionalId = null;
         Long serviceId = 5L;
         ScheduleAppointmentCommand command = new ScheduleAppointmentCommand(petId, tutorId, professionalId, serviceId, provided, "ouvido inflamado");
 
-        assertThrows(ProfessionalNotFoundException.class, () -> {
+        assertThrows(DomainValidationException.class, () -> {
             defaultScheduleAppointmentUseCase.execute(command);
             });
 
@@ -229,7 +229,7 @@ public class ScheduleAppointmentUseCaseTest {
 
     @Test
     public void scheduleAppointment_Fail_PastDateSchedule_DomainValidationException() {
-        OffsetDateTime provided = OffsetDateTime.parse("2025-01-01T00:00:00Z");
+        OffsetDateTime provided = OffsetDateTime.parse("2100-12-09T10:00:00Z");
         OffsetDateTime pastDate = OffsetDateTime.parse("2024-01-01T00:00:00Z");
         Long petId = 1L;
         Long tutorId = 2L;
@@ -255,7 +255,7 @@ public class ScheduleAppointmentUseCaseTest {
 
     @Test
     public void scheduleAppointment_Fail_TutorNotFound() {
-        OffsetDateTime provided = OffsetDateTime.parse("2025-01-01T00:00:00Z");
+        OffsetDateTime provided = OffsetDateTime.parse("2100-12-09T10:00:00Z");
         Long petId = 1L;
         Long tutorId = 2L;
         Long professionalId = 3L;
@@ -281,7 +281,7 @@ public class ScheduleAppointmentUseCaseTest {
 
     @Test
     public void scheduleAppointment_Fail_ProfessionalNotFound() {
-        OffsetDateTime provided = OffsetDateTime.parse("2025-01-01T00:00:00Z");
+        OffsetDateTime provided = OffsetDateTime.parse("2100-12-09T10:00:00Z");
         Long petId = 1L;
         Long tutorId = 2L;
         Long professionalId = 3L;
@@ -308,7 +308,7 @@ public class ScheduleAppointmentUseCaseTest {
 
     @Test
     public void scheduleAppointment_Fail_PetDoesntMatchTutor() {
-        OffsetDateTime provided = OffsetDateTime.parse("2025-01-01T00:00:00Z");
+        OffsetDateTime provided = OffsetDateTime.parse("2100-12-09T10:00:00Z");
         Long petId = 1L;
         Long tutorId = 2L;
         Long professionalId = 3L;
@@ -336,7 +336,7 @@ public class ScheduleAppointmentUseCaseTest {
 
     @Test
     public void scheduleAppointment_Fail_ServiceNotFound() {
-        OffsetDateTime provided = OffsetDateTime.parse("2025-01-01T00:00:00Z");
+        OffsetDateTime provided = OffsetDateTime.parse("2100-12-09T10:00:00Z");
         Long petId = 1L;
         Long tutorId = 2L;
         Long professionalId = 3L;
@@ -349,7 +349,7 @@ public class ScheduleAppointmentUseCaseTest {
         when(petRepository.existsByIdAndTutorId(petId, tutorId)).thenReturn(true);
         when(petServiceRepository.findById(serviceId)).thenReturn(Optional.empty());
         
-        assertThrows(ServiceNotFoundException.class, () -> {
+        assertThrows(PetServiceNotFoundException.class, () -> {
             defaultScheduleAppointmentUseCase.execute(command);
             });
 
@@ -365,24 +365,27 @@ public class ScheduleAppointmentUseCaseTest {
 
     @Test
     public void scheduleAppointment_Fail_WrongDuration() {
-        OffsetDateTime provided = OffsetDateTime.parse("2025-01-01T00:00:00Z");
+        OffsetDateTime provided = OffsetDateTime.parse("2025-12-08T12:00:00Z");
+        OffsetDateTime startAt = OffsetDateTime.parse("2025-12-08T12:30:00Z");
         Long petId = 1L;
         Long tutorId = 2L;
         Long professionalId = 3L;
         Long serviceId = 5L;
-        ScheduleAppointmentCommand command = new ScheduleAppointmentCommand(petId, tutorId, professionalId, serviceId, provided.plusMinutes(1), "ouvido inflamado");
-        PetService petService = new PetService("tosa", new BigDecimal(100), 30, provided, provided);
-
+        
+        PetService petService = mock(PetService.class);
+        when(petService.getDuration()).thenReturn(20);
+        
+        ScheduleAppointmentCommand command = new ScheduleAppointmentCommand(petId, tutorId, professionalId, serviceId, startAt, "ouvido inflamado");
 
         when(timeProvider.nowInUTC()).thenReturn(provided);
         when(tutorRepository.existsById(tutorId)).thenReturn(true);
         when(professionalRepository.existsById(professionalId)).thenReturn(true);
         when(petRepository.existsByIdAndTutorId(petId, tutorId)).thenReturn(true);
         when(petServiceRepository.findById(serviceId)).thenReturn(Optional.of(petService));
-        
+
         assertThrows(DomainValidationException.class, () -> {
             defaultScheduleAppointmentUseCase.execute(command);
-            });
+        });
 
         verify(timeProvider, times(1)).nowInUTC();
         verify(tutorRepository, times(1)).existsById(tutorId);
@@ -391,12 +394,13 @@ public class ScheduleAppointmentUseCaseTest {
         verify(petServiceRepository, times(1)).findById(serviceId);
         verifyNoInteractions(businessHoursPolicy);
         verifyNoInteractions(professionalTimeOffRepository);
-        verifyNoInteractions(appointmentRepository);       
+        verifyNoInteractions(appointmentRepository);
     }
+
 
     @Test
     public void scheduleAppointment_Fail_WorkingHoursOutsideExceptionException() {
-        OffsetDateTime provided = OffsetDateTime.parse("2025-01-01T00:00:00Z");
+        OffsetDateTime provided = OffsetDateTime.parse("2100-12-09T10:00:00Z");
         OffsetDateTime startAt = provided.plusMinutes(1);
         Long petId = 1L;
         Long tutorId = 2L;
@@ -430,7 +434,7 @@ public class ScheduleAppointmentUseCaseTest {
 
     @Test
     public void scheduleAppointment_Fail_ProfessionalTimeOffException() {
-        OffsetDateTime provided = OffsetDateTime.parse("2025-01-01T00:00:00Z");
+        OffsetDateTime provided = OffsetDateTime.parse("2100-12-09T10:00:00Z");
         OffsetDateTime startAt = provided.plusMinutes(1);
         Long petId = 1L;
         Long tutorId = 2L;
@@ -465,7 +469,7 @@ public class ScheduleAppointmentUseCaseTest {
 
     @Test
     public void scheduleAppointment_Fail_AppointmentOverlapException() {
-        OffsetDateTime provided = OffsetDateTime.parse("2025-01-01T00:00:00Z");
+        OffsetDateTime provided = OffsetDateTime.parse("2100-12-09T10:00:00Z");
         OffsetDateTime startAt = provided.plusMinutes(1);
         Long petId = 1L;
         Long tutorId = 2L;
@@ -502,7 +506,7 @@ public class ScheduleAppointmentUseCaseTest {
 
     @Test
     public void scheduleAppointment_Fail_PetOverlapException() {
-        OffsetDateTime provided = OffsetDateTime.parse("2025-01-01T00:00:00Z");
+        OffsetDateTime provided = OffsetDateTime.parse("2100-12-09T10:00:00Z");
         OffsetDateTime startAt = provided.plusMinutes(1);
         Long petId = 1L;
         Long tutorId = 2L;
@@ -537,11 +541,4 @@ public class ScheduleAppointmentUseCaseTest {
         verify(appointmentRepository, times(1)).existsOverlapForProfessional(professionalId, startAt, endAt);
         verify(appointmentRepository, times(1)).existsOverlapForPet(petId, startAt, endAt);
     }
-
-
-
-
-
-
-
 }

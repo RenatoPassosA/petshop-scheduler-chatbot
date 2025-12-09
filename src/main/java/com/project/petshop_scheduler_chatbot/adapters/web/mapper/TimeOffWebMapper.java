@@ -27,6 +27,7 @@ public class TimeOffWebMapper {
 
     static public AddTimeOffResponse toResponse(AddTimeOffResult result) {
         return new AddTimeOffResponse(result.getProfessionalId(), 
+                                    result.getProfessionalName(),
                                     result.getReason(),
                                     result.getStartAt(),
                                     result.getEndAt());

@@ -54,7 +54,7 @@ public class PetController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Void> updatePet(@PathVariable("id") @Positive Long id, @RequestBody @Valid UpdatePetRequest request) {
-        UpdatePetCommand command = PetWebMapper.toCommand(request);
+        UpdatePetCommand command = PetWebMapper.toCommand(id, request);
         petUseCase.update(id, command);
         return ResponseEntity.noContent().build();
     }
@@ -86,6 +86,7 @@ public class PetController {
                                                         pet.getObservations());
             response.add(petResponse);
         }
+        
         return ResponseEntity.ok(response);
     }
 

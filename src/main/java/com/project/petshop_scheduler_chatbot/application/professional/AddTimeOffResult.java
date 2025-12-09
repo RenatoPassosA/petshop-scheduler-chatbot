@@ -4,14 +4,14 @@ import java.time.OffsetDateTime;
 
 public class AddTimeOffResult {
     private Long professionalId;
-    private String name;
+    private String professionalName;
     private String reason;
     private OffsetDateTime startAt;
     private OffsetDateTime endAt;
     
-    public AddTimeOffResult(Long professionalId, String name, String reason, OffsetDateTime startAt, OffsetDateTime endAt) {
+    public AddTimeOffResult(Long professionalId, String professionalName, String reason, OffsetDateTime startAt, OffsetDateTime endAt) {
         this.professionalId = professionalId;
-        this.name = name;
+        this.professionalName = professionalName;
         this.reason = reason;
         this.startAt = startAt;
         this.endAt = endAt;
@@ -21,8 +21,8 @@ public class AddTimeOffResult {
         return professionalId;
     }
     
-    public String getName() {
-        return name;
+    public String getProfessionalName() {
+        return professionalName;
     }
 
     public String getReason() {

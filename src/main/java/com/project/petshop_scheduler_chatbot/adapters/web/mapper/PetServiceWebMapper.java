@@ -18,7 +18,8 @@ public class PetServiceWebMapper {
 
 
      public static AddPetServiceResponse toResponse(AddPetServiceResult result) {
-        return new AddPetServiceResponse(result.getName(),
+        return new AddPetServiceResponse(result.getId(),
+                                        result.getName(),
                                         result.getPrice(),
                                         result.getDuration());
      }

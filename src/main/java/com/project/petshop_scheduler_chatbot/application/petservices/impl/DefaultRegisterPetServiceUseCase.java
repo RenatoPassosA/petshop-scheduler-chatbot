@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.project.petshop_scheduler_chatbot.application.petservices.AddPetServiceResult;
 import com.project.petshop_scheduler_chatbot.application.petservices.PetServiceUseCase;
-import com.project.petshop_scheduler_chatbot.application.exceptions.ServiceNotFoundException;
+import com.project.petshop_scheduler_chatbot.application.exceptions.PetServiceNotFoundException;
 import com.project.petshop_scheduler_chatbot.application.petservices.AddPetServiceCommand;
 import com.project.petshop_scheduler_chatbot.application.petservices.UpdatePetServiceCommand;
 import com.project.petshop_scheduler_chatbot.core.domain.PetService;
@@ -65,7 +65,7 @@ public class DefaultRegisterPetServiceUseCase implements PetServiceUseCase {
     @Transactional
     public void update (Long id, UpdatePetServiceCommand service) {
         PetService petService = petServiceRepository.findById(id)
-            .orElseThrow(() -> new ServiceNotFoundException("Serviço não encontrado"));
+            .orElseThrow(() -> new PetServiceNotFoundException("Serviço não encontrado"));
         
         if (service.getName() != null) petService.setName(service.getName());
         if (service.getPrice() != null) petService.setPrice(service.getPrice());
@@ -77,7 +77,7 @@ public class DefaultRegisterPetServiceUseCase implements PetServiceUseCase {
     @Transactional(readOnly = true)
     public PetService getPetService (Long id) {
         return petServiceRepository.findById(id)
-                            .orElseThrow(() -> new ServiceNotFoundException("Serviço não encontrado"));
+                            .orElseThrow(() -> new PetServiceNotFoundException("Serviço não encontrado"));
     }
 
     @Override
@@ -90,7 +90,7 @@ public class DefaultRegisterPetServiceUseCase implements PetServiceUseCase {
     @Transactional
     public void delete(Long id) {
         if (!petServiceRepository.existsById(id))
-            throw new ServiceNotFoundException("Serviço não encontrado");
+            throw new PetServiceNotFoundException("Serviço não encontrado");
         petServiceRepository.deleteById(id);
     }
 }

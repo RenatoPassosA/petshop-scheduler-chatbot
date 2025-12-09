@@ -42,6 +42,15 @@ public class ProfessionalRepositoryJpa implements ProfessionalRepository {
     }
 
     @Override
+    public List<Professional> findByName(String name) {
+        return (professionalEntityRepository
+            .findByName(name)
+            .stream()
+            .map(professionalMapper::toDomain)
+            .toList());
+    }
+
+    @Override
     public void deleteById(Long id) {
         professionalEntityRepository.deleteById(id);
     }

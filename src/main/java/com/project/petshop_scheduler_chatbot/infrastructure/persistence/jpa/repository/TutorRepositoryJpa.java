@@ -40,7 +40,7 @@ public class TutorRepositoryJpa implements TutorRepository {
     
     @Override
     public Optional<Tutor> findByPhone(PhoneNumber phone) {
-        String phoneString = phone.toString();
+        String phoneString = phone.value();
         return (tutorEntityRepository
                 .findByPhoneNumber(phoneString)
                 .map(tutorMapper::toDomain));
@@ -48,7 +48,7 @@ public class TutorRepositoryJpa implements TutorRepository {
 
     @Override
     public boolean existsByPhone(PhoneNumber phone) {
-        String phoneString = phone.toString();
+        String phoneString = phone.value();
         return (tutorEntityRepository.existsByPhoneNumber(phoneString));
     }
 

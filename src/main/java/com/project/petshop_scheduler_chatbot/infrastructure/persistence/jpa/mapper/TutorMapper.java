@@ -13,7 +13,7 @@ public class TutorMapper {
         if (tutor == null)
             throw new DomainValidationException("Dados de entrada invalidos");
         return new TutorEntity(tutor.getName(),
-                        tutor.getPhoneNumber().toString(),
+                        tutor.getPhoneNumber().value(),
                         tutor.getAddress(),
                         tutor.getCreatedAt(),
                         tutor.getUpdatedAt()

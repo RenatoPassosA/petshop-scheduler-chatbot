@@ -10,6 +10,7 @@ import com.project.petshop_scheduler_chatbot.application.exceptions.WorkingHours
 import com.project.petshop_scheduler_chatbot.application.professional.AddTimeOffCommand;
 import com.project.petshop_scheduler_chatbot.application.professional.AddTimeOffResult;
 import com.project.petshop_scheduler_chatbot.core.domain.Professional;
+import com.project.petshop_scheduler_chatbot.core.domain.ProfessionalTimeOff;
 import com.project.petshop_scheduler_chatbot.core.domain.application.TimeProvider;
 import com.project.petshop_scheduler_chatbot.core.domain.exceptions.DomainValidationException;
 import com.project.petshop_scheduler_chatbot.core.domain.policy.BusinessHoursPolicy;
@@ -34,15 +35,17 @@ public class DefaultTimeOffUseCase implements TimeOffUseCase{
 
     @Override
     @Transactional
-    public AddTimeOffResult execute (AddTimeOffCommand timeOff) {
-        validations(timeOff);
-        professionalTimeOffRepository.save(timeOff.getProfessionalId(),
-                                        timeOff.getStartAt(),
-                                        timeOff.getEndAt(),
-                                        timeOff.getReason(),
-                                        timeProvider.nowInUTC());
+    public AddTimeOffResult execute (AddTimeOffCommand timeOffCommand) {
+        validations(timeOffCommand);
+        ProfessionalTimeOff timeOff = new ProfessionalTimeOff(timeOffCommand.getProfessionalId(),
+                                                            timeOffCommand.getReason(),
+                                                            timeOffCommand.getStartAt(),
+                                                            timeOffCommand.getEndAt(),
+                                                            this.timeProvider.nowInUTC(),
+                                                            this.timeProvider.nowInUTC());
+        professionalTimeOffRepository.save(timeOff);
 
-        final String name = getName(timeOff);
+        final String name = getName(timeOffCommand);
         return new AddTimeOffResult(timeOff.getProfessionalId(),
                                 name,
                                 timeOff.getReason(),

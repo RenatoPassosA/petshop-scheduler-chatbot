@@ -20,10 +20,10 @@ import static org.hamcrest.Matchers.hasSize;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -45,7 +45,7 @@ public class TutorControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @Mock
+    @MockitoBean
     private TutorUseCase tutorUseCase;
 
     @Test
@@ -91,7 +91,7 @@ public class TutorControllerTest {
         .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.name").value("renato"))
-        .andExpect(jsonPath("$.phoneNumber").value("123345678"))
+        .andExpect(jsonPath("$.phoneNumber").value("+55123345678"))
         .andExpect(jsonPath("$.address").value("rua 3"));
 
         verify(tutorUseCase, times(1)).getTutor(tutorId);
@@ -121,19 +121,19 @@ public class TutorControllerTest {
         .andExpect(jsonPath("$", hasSize(4))) 
 
         .andExpect(jsonPath("$[0].name").value("renato1"))
-        .andExpect(jsonPath("$[0].phoneNumber").value("111345678"))
+        .andExpect(jsonPath("$[0].phoneNumber").value("+55111345678"))
         .andExpect(jsonPath("$[0].address").value("rua1"))
 
         .andExpect(jsonPath("$[1].name").value("renato2"))
-        .andExpect(jsonPath("$[1].phoneNumber").value("222345678"))
+        .andExpect(jsonPath("$[1].phoneNumber").value("+55222345678"))
         .andExpect(jsonPath("$[1].address").value("rua2"))
 
         .andExpect(jsonPath("$[2].name").value("renato3"))
-        .andExpect(jsonPath("$[2].phoneNumber").value("333345678"))
+        .andExpect(jsonPath("$[2].phoneNumber").value("+55333345678"))
         .andExpect(jsonPath("$[2].address").value("rua3"))
 
         .andExpect(jsonPath("$[3].name").value("renato4"))
-        .andExpect(jsonPath("$[3].phoneNumber").value("444345678"))
+        .andExpect(jsonPath("$[3].phoneNumber").value("+55444345678"))
         .andExpect(jsonPath("$[3].address").value("rua4"));
 
         verify(tutorUseCase, times(1)).getAll();

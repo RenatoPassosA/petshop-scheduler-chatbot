@@ -20,15 +20,13 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.management.ServiceNotFoundException;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -38,6 +36,7 @@ import com.project.petshop_scheduler_chatbot.application.petservices.PetServiceU
 import com.project.petshop_scheduler_chatbot.application.petservices.UpdatePetServiceCommand;
 import com.project.petshop_scheduler_chatbot.core.domain.PetService;
 import com.project.petshop_scheduler_chatbot.core.domain.exceptions.DomainValidationException;
+import com.project.petshop_scheduler_chatbot.application.exceptions.PetServiceNotFoundException;
 import com.project.petshop_scheduler_chatbot.core.domain.exceptions.InvalidAppointmentStateException;
 
 @ExtendWith(MockitoExtension.class)
@@ -47,13 +46,14 @@ public class PetServiceControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @Mock
+    @MockitoBean
     private PetServiceUseCase petServiceUseCase;
 
     @Test
     public void testAddPetService() throws Exception {
+        Long serviceId = 1L;
         
-        AddPetServiceResult result = new AddPetServiceResult(1L, "tosa", new BigDecimal(100), 180);
+        AddPetServiceResult result = new AddPetServiceResult(serviceId, "tosa", new BigDecimal(100), 180);
 
         when(petServiceUseCase.register(Mockito.any(AddPetServiceCommand.class))).thenReturn(result);
 
@@ -216,7 +216,7 @@ public class PetServiceControllerTest {
     public void testUpdatePetService_NotFound_ShouldReturn404() throws Exception {
         Long serviceId = 99L;
 
-        doThrow(new ServiceNotFoundException("Service id: " + serviceId + " não encontrado"))
+        doThrow(new PetServiceNotFoundException("Service id: " + serviceId + " não encontrado"))
         .when(petServiceUseCase)
         .update(eq(serviceId), any(UpdatePetServiceCommand.class));
 
@@ -245,7 +245,7 @@ public class PetServiceControllerTest {
     public void testGetPetService_NotFound_ShouldReturn404() throws Exception {
         Long serviceId = 99L;
 
-        when(petServiceUseCase.getPetService(serviceId)).thenThrow(new ServiceNotFoundException("Service id: " + serviceId + " não encontrado"));
+        when(petServiceUseCase.getPetService(serviceId)).thenThrow(new PetServiceNotFoundException("Service id: " + serviceId + " não encontrado"));
 
         mockMvc.perform(get("/petservice/{id}", serviceId)
             .contentType(MediaType.APPLICATION_JSON))
@@ -264,14 +264,14 @@ public class PetServiceControllerTest {
     public void testDeletePetService_NotFound_ShouldReturn404() throws Exception {
         Long serviceId = 99L;
 
-        doThrow(new ServiceNotFoundException("Service id: " + serviceId + " não encontrado"))
+        doThrow(new PetServiceNotFoundException("Serviço não encontrado"))
         .when(petServiceUseCase)
         .delete(serviceId);
 
         mockMvc.perform(delete("/petservice/{id}", serviceId))
             .andExpect(status().isNotFound())
             .andExpect(jsonPath("$.code").value("SERVICE_NOT_FOUND"))
-            .andExpect(jsonPath("$.message").value("Service id: " + serviceId + " não encontrado"))
+            .andExpect(jsonPath("$.message").value("Serviço não encontrado"))
             .andExpect(jsonPath("$.status").value(404))
             .andExpect(jsonPath("$.path").value("/petservice/" + serviceId))
             .andExpect(jsonPath("$.timestamp").exists());

@@ -23,7 +23,7 @@ import com.project.petshop_scheduler_chatbot.application.appointment.CancelAppoi
 import com.project.petshop_scheduler_chatbot.application.appointment.CancelAppointmentResult;
 import com.project.petshop_scheduler_chatbot.application.appointment.impl.DefaultCancelAppointmentUseCase;
 import com.project.petshop_scheduler_chatbot.application.exceptions.AppointmentNotFoundException;
-import com.project.petshop_scheduler_chatbot.application.exceptions.ServiceNotFoundException;
+import com.project.petshop_scheduler_chatbot.application.exceptions.PetServiceNotFoundException;
 import com.project.petshop_scheduler_chatbot.core.domain.Appointment;
 import com.project.petshop_scheduler_chatbot.core.domain.PetService;
 import com.project.petshop_scheduler_chatbot.core.domain.application.TimeProvider;
@@ -60,14 +60,16 @@ public class CancelAppointmentUseCaseTest {
         Long professionalId = 4L;
         Long serviceId = 5L;
         OffsetDateTime provided = OffsetDateTime.parse("2025-01-01T00:00:00Z");
+        OffsetDateTime startAt = OffsetDateTime.parse("2025-12-08T12:30:00Z");
         CancelAppointmentCommand command = new CancelAppointmentCommand(appointmentId, "pet viajaando");
-        Appointment appointment = new Appointment(petId, tutorId, professionalId, serviceId, provided, 120, AppointmentStatus.SCHEDULED, "nenhuma", provided, provided);
+        Appointment appointment = new Appointment(petId, tutorId, professionalId, serviceId, startAt, 120, AppointmentStatus.SCHEDULED, "nenhuma", provided, provided);
+        Appointment appointmentWithId = appointment.withPersistenceId(appointmentId);
         PetService petService = new PetService("tosa", new BigDecimal(100), 150, provided, provided);
 
-        when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointment));
+        when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointmentWithId));
         when(petServiceRepository.findById(serviceId)).thenReturn(Optional.of(petService));
         when(timeProvider.nowInUTC()).thenReturn(provided);
-        when(appointmentRepository.save(appointment)).thenReturn(appointment);
+        when(appointmentRepository.save(appointmentWithId)).thenReturn(appointmentWithId);
 
         CancelAppointmentResult result = defaultCancelAppointmentUseCase.execute(command);
 
@@ -79,7 +81,7 @@ public class CancelAppointmentUseCaseTest {
         verify(timeProvider, times(1)).nowInUTC();
         verify(appointmentRepository, times(1)).findById(appointmentId);
         verify(petServiceRepository, times(1)).findById(serviceId);
-        verify(appointmentRepository, times(1)).save(appointment);
+        verify(appointmentRepository, times(1)).save(appointmentWithId);
     }
 
 
@@ -137,7 +139,7 @@ public class CancelAppointmentUseCaseTest {
     }
 
     @Test
-    public void cancelAppointment_Fail_ServiceNotFoundException() {
+    public void cancelAppointment_Fail_PetServiceNotFoundException() {
         Long appointmentId = 1L;
         Long petId = 2L;
         Long tutorId = 3L;
@@ -151,7 +153,7 @@ public class CancelAppointmentUseCaseTest {
         when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointment));
         when(petServiceRepository.findById(serviceId)).thenReturn(Optional.empty());
 
-        assertThrows(ServiceNotFoundException.class, () -> {
+        assertThrows(PetServiceNotFoundException.class, () -> {
                 defaultCancelAppointmentUseCase.execute(command);
             });
 

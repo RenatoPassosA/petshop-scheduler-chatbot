@@ -17,7 +17,7 @@ import com.project.petshop_scheduler_chatbot.application.exceptions.PetNotFoundE
 import com.project.petshop_scheduler_chatbot.application.exceptions.PetOverlapException;
 import com.project.petshop_scheduler_chatbot.application.exceptions.ProfessionalNotFoundException;
 import com.project.petshop_scheduler_chatbot.application.exceptions.ProfessionalTimeOffException;
-import com.project.petshop_scheduler_chatbot.application.exceptions.ServiceNotFoundException;
+import com.project.petshop_scheduler_chatbot.application.exceptions.PetServiceNotFoundException;
 import com.project.petshop_scheduler_chatbot.application.exceptions.TutorNotFoundException;
 import com.project.petshop_scheduler_chatbot.application.exceptions.WorkingHoursOutsideException;
 import com.project.petshop_scheduler_chatbot.core.domain.exceptions.BusinessException;
@@ -34,7 +34,7 @@ public class GlobalExceptionHandler {
                     TutorNotFoundException.class,
                     ProfessionalNotFoundException.class,
                     PetNotFoundException.class,
-                    ServiceNotFoundException.class}
+                    PetServiceNotFoundException.class}
                     )
     public ResponseEntity<ErrorResponse> handleNotFound(BusinessException exception, HttpServletRequest request) {
         ErrorCode code = (exception instanceof AppointmentNotFoundException) ? ErrorCode.APPOINTMENT_NOT_FOUND :

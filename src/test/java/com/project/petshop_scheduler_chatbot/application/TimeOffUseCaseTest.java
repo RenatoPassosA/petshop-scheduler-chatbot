@@ -57,28 +57,29 @@ public class TimeOffUseCaseTest {
     @Test
     public void addValidTimeOff_Success() {
         Long professionalId = 10L;
-        OffsetDateTime provided = OffsetDateTime.parse("2025-01-01T00:00:00Z");
+        OffsetDateTime startAt = OffsetDateTime.parse("2100-01-08T10:00:00Z");
+        OffsetDateTime endAt = OffsetDateTime.parse("2100-01-08T12:00:00Z");
       
-        AddTimeOffCommand command = new AddTimeOffCommand(professionalId, "consulta médica", provided, provided);
-        Professional professional = new Professional("renato", Office.TOSADOR, provided, provided);
+        AddTimeOffCommand command = new AddTimeOffCommand(professionalId, "consulta médica", startAt, endAt);
+        Professional professional = new Professional("renato", Office.TOSADOR, startAt, endAt);
 
 
         when(professionalRepository.existsById(professionalId)).thenReturn(true);
-        when(businessHoursPolicy.fits(provided, provided)).thenReturn(true);
-        when(professionalTimeOffRepository.existsOverlap(professionalId, provided, provided)).thenReturn(false);
+        when(businessHoursPolicy.fits(startAt, endAt)).thenReturn(true);
+        when(professionalTimeOffRepository.existsOverlap(professionalId, startAt, endAt)).thenReturn(false);
         when(professionalRepository.findById(professionalId)).thenReturn(Optional.of(professional));
 
         AddTimeOffResult result = timeOffUseCase.execute(command);
 
         assertThat(result).isNotNull();
-        assertThat(result.getName()).isEqualTo(professional.getName());
+        assertThat(result.getProfessionalName()).isEqualTo(professional.getName());
         assertThat(result.getProfessionalId()).isEqualTo(professionalId);
         assertThat(result.getReason()).isEqualTo(command.getReason());
 
         verify(professionalRepository, times(1)).existsById(professionalId);
-        verify(businessHoursPolicy, times(1)).fits(provided, provided);
-        verify(timeProvider, times(1)).nowInUTC();
-        verify(professionalTimeOffRepository, times(1)).existsOverlap(professionalId, provided, provided);
+        verify(businessHoursPolicy, times(1)).fits(startAt, endAt);
+        verify(timeProvider, times(2)).nowInUTC();
+        verify(professionalTimeOffRepository, times(1)).existsOverlap(professionalId, startAt, endAt);
         verify(professionalRepository, times(1)).findById(professionalId);
     }
 
@@ -162,12 +163,13 @@ public class TimeOffUseCaseTest {
     @Test
     public void addTimeOff_Fail_FindById_ProfessionalNotFoundException() {
         Long professionalId = 10L;
-        OffsetDateTime provided = OffsetDateTime.parse("2025-01-01T00:00:00Z");
-        AddTimeOffCommand command = new AddTimeOffCommand(professionalId, "consulta médica", provided, provided);
+        OffsetDateTime startAt = OffsetDateTime.parse("2025-12-09T10:00:00Z");
+        OffsetDateTime endAt = OffsetDateTime.parse("2025-12-09T12:00:00Z");
+        AddTimeOffCommand command = new AddTimeOffCommand(professionalId, "consulta médica", startAt, endAt);
 
         when(professionalRepository.existsById(professionalId)).thenReturn(true);
-        when(businessHoursPolicy.fits(provided, provided)).thenReturn(true);
-        when(professionalTimeOffRepository.existsOverlap(professionalId, provided, provided)).thenReturn(false);
+        when(businessHoursPolicy.fits(startAt, endAt)).thenReturn(true);
+        when(professionalTimeOffRepository.existsOverlap(professionalId, startAt, endAt)).thenReturn(false);
         when(professionalRepository.findById(professionalId)).thenReturn(Optional.empty());
     
         assertThrows(ProfessionalNotFoundException.class, () -> {
@@ -175,9 +177,9 @@ public class TimeOffUseCaseTest {
             });
 
         verify(professionalRepository, times(1)).existsById(professionalId);
-        verify(businessHoursPolicy, times(1)).fits(provided, provided);
-        verify(timeProvider, times(1)).nowInUTC();
-        verify(professionalTimeOffRepository, times(1)).existsOverlap(professionalId, provided, provided);
+        verify(businessHoursPolicy, times(1)).fits(startAt, endAt);
+        verify(timeProvider, times(2)).nowInUTC();
+        verify(professionalTimeOffRepository, times(1)).existsOverlap(professionalId, startAt, endAt);
         verify(professionalRepository, times(1)).findById(professionalId);
     }
     

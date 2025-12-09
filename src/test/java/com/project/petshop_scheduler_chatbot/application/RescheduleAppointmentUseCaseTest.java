@@ -60,21 +60,25 @@ public class RescheduleAppointmentUseCaseTest {
     @Test
     public void rescheduleAppointment_Sucess() {
         Long appointmentId = 1L;
-        OffsetDateTime provided = OffsetDateTime.parse("2025-01-01T00:00:00Z");
+        OffsetDateTime provided = OffsetDateTime.now();
+        OffsetDateTime startAt = OffsetDateTime.parse("2025-12-08T12:30:00Z");
+        OffsetDateTime newStartAt = OffsetDateTime.parse("2025-12-11T12:30:00Z");
         Long petId = 2L;
         Long tutorId = 3L;
         Long professionalId = 4L;
         Long serviceId = 5L;
-        Appointment appointment = new Appointment(petId, tutorId, professionalId, serviceId, provided, 120, AppointmentStatus.SCHEDULED, "nenhuma", provided, provided);
-        OffsetDateTime newEndAt = provided.plusMinutes(appointment.getServiceDuration());
-        RescheduleAppointmentCommand command = new RescheduleAppointmentCommand(appointmentId, provided);
+        Appointment appointment = new Appointment(petId, tutorId, professionalId, serviceId, startAt, 120, AppointmentStatus.SCHEDULED, "nenhuma", provided, provided);
+        Appointment appointmentWithId = appointment.withPersistenceId(appointmentId);
+        OffsetDateTime newEndAt = newStartAt.plusMinutes(appointment.getServiceDuration());
+        RescheduleAppointmentCommand command = new RescheduleAppointmentCommand(appointmentId, newStartAt);
 
-        when(timeProvider.nowInUTC()).thenReturn(provided.minusMinutes(1), provided);
-        when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointment));
-        when(businessHoursPolicy.fits(provided, newEndAt)).thenReturn(true);
-        when(professionalTimeOffRepository.existsOverlap(professionalId, provided, newEndAt)).thenReturn(false);
-        when(appointmentRepository.existsOverlapForProfessionalExcluding(professionalId, provided, newEndAt, appointmentId)).thenReturn(false);
-        when(appointmentRepository.existsOverlapForPetExcluding(petId, provided, newEndAt, appointmentId)).thenReturn(false);
+        when(timeProvider.nowInUTC()).thenReturn(provided);
+        when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointmentWithId));
+        when(businessHoursPolicy.fits(newStartAt, newEndAt)).thenReturn(true);
+        when(professionalTimeOffRepository.existsOverlap(professionalId, newStartAt, newEndAt)).thenReturn(false);
+        when(appointmentRepository.existsOverlapForProfessionalExcluding(professionalId, newStartAt, newEndAt, appointmentId)).thenReturn(false);
+        when(appointmentRepository.existsOverlapForPetExcluding(petId, newStartAt, newEndAt, appointmentId)).thenReturn(false);
+        when(appointmentRepository.save(appointmentWithId)).thenReturn(appointmentWithId);
 
         RescheduleAppointmentResult result = defaultRescheduleAppointmentUseCase.execute(command);
 
@@ -82,16 +86,17 @@ public class RescheduleAppointmentUseCaseTest {
         assertThat(result.getAppointmentId()).isEqualTo(appointmentId);
         assertThat(result.getServiceId()).isEqualTo(serviceId);
         assertThat(result.getProfessionalId()).isEqualTo(professionalId);
-        assertThat(result.getStartAt()).isEqualTo(provided);
-        assertThat(result.getEndAt()).isEqualTo(provided.plusMinutes(appointment.getServiceDuration()));
+        assertThat(result.getStartAt()).isEqualTo(newStartAt);
+        assertThat(result.getEndAt()).isEqualTo(newStartAt.plusMinutes(appointment.getServiceDuration()));
         assertThat(result.getStatus()).isEqualTo(AppointmentStatus.SCHEDULED);
 
+        verify(timeProvider, times(2)).nowInUTC();
         verify(appointmentRepository, times(1)).findById(appointmentId);
-        verify(businessHoursPolicy, times(1)).fits(provided, newEndAt);
-        verify(professionalTimeOffRepository, times(1)).existsOverlap(professionalId, provided, newEndAt);
-        verify(appointmentRepository, times(1)).existsOverlapForProfessionalExcluding(professionalId, provided, newEndAt, appointmentId);
-        verify(appointmentRepository, times(1)).existsOverlapForPetExcluding(petId, provided, newEndAt, appointmentId);
-        verify(appointmentRepository, times(1)).save(appointment);
+        verify(businessHoursPolicy, times(1)).fits(newStartAt, newEndAt);
+        verify(professionalTimeOffRepository, times(1)).existsOverlap(professionalId, newStartAt, newEndAt);
+        verify(appointmentRepository, times(1)).existsOverlapForProfessionalExcluding(professionalId, newStartAt, newEndAt, appointmentId);
+        verify(appointmentRepository, times(1)).existsOverlapForPetExcluding(petId, newStartAt, newEndAt, appointmentId);
+        verify(appointmentRepository, times(1)).save(appointmentWithId);
     }
 
     @Test
@@ -221,30 +226,34 @@ public class RescheduleAppointmentUseCaseTest {
     @Test
     public void rescheduleAppointment_Fail_AppointmentOverlapException() {
         Long appointmentId = 1L;
-        OffsetDateTime provided = OffsetDateTime.parse("2025-01-01T00:00:00Z");
+        OffsetDateTime provided = OffsetDateTime.now();
+        OffsetDateTime startAt = OffsetDateTime.parse("2025-12-08T12:30:00Z");
+        OffsetDateTime newStartAt = OffsetDateTime.parse("2025-12-11T12:30:00Z");
         Long petId = 2L;
         Long tutorId = 3L;
         Long professionalId = 4L;
         Long serviceId = 5L;
-        Appointment appointment = new Appointment(petId, tutorId, professionalId, serviceId, provided, 120, AppointmentStatus.SCHEDULED, "nenhuma", provided, provided);
-        OffsetDateTime newEndAt = provided.plusMinutes(appointment.getServiceDuration());
-        RescheduleAppointmentCommand command = new RescheduleAppointmentCommand(appointmentId, provided);
+        Appointment appointment = new Appointment(petId, tutorId, professionalId, serviceId, startAt, 120, AppointmentStatus.SCHEDULED, "nenhuma", provided, provided);
+        Appointment appointmentWithId = appointment.withPersistenceId(appointmentId);
+        OffsetDateTime newEndAt = newStartAt.plusMinutes(appointment.getServiceDuration());
+        RescheduleAppointmentCommand command = new RescheduleAppointmentCommand(appointmentId, newStartAt);
 
-        when(timeProvider.nowInUTC()).thenReturn(provided.minusMinutes(1), provided);
-        when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointment));
-        when(businessHoursPolicy.fits(provided, newEndAt)).thenReturn(true);
-        when(professionalTimeOffRepository.existsOverlap(professionalId, provided, newEndAt)).thenReturn(false);
-        when(appointmentRepository.existsOverlapForProfessionalExcluding(professionalId, provided, newEndAt, appointmentId)).thenReturn(true);
+        when(timeProvider.nowInUTC()).thenReturn(provided);
+        when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointmentWithId));
+        when(businessHoursPolicy.fits(newStartAt, newEndAt)).thenReturn(true);
+        when(professionalTimeOffRepository.existsOverlap(professionalId, newStartAt, newEndAt)).thenReturn(false);
+        when(appointmentRepository.existsOverlapForProfessionalExcluding(professionalId, newStartAt, newEndAt, appointmentId)).thenReturn(true);
 
 
         assertThrows(AppointmentOverlapException.class, () -> {
             defaultRescheduleAppointmentUseCase.execute(command);
             });
 
+        verify(timeProvider, times(1)).nowInUTC();
         verify(appointmentRepository, times(1)).findById(appointmentId);
-        verify(businessHoursPolicy, times(1)).fits(provided, newEndAt);
-        verify(professionalTimeOffRepository, times(1)).existsOverlap(professionalId, provided, newEndAt);
-        verify(appointmentRepository, times(1)).existsOverlapForProfessionalExcluding(professionalId, provided, newEndAt, appointmentId);
+        verify(businessHoursPolicy, times(1)).fits(newStartAt, newEndAt);
+        verify(professionalTimeOffRepository, times(1)).existsOverlap(professionalId, newStartAt, newEndAt);
+        verify(appointmentRepository, times(1)).existsOverlapForProfessionalExcluding(professionalId, newStartAt, newEndAt, appointmentId);
         verify(appointmentRepository, never()).existsOverlapForPetExcluding(anyLong(), any(OffsetDateTime.class), any(OffsetDateTime.class), anyLong());
         verify(appointmentRepository, never()).save(any(Appointment.class));
     }
@@ -252,31 +261,35 @@ public class RescheduleAppointmentUseCaseTest {
     @Test
     public void rescheduleAppointment_Fail_PetOverlapException() {
         Long appointmentId = 1L;
-        OffsetDateTime provided = OffsetDateTime.parse("2025-01-01T00:00:00Z");
+        OffsetDateTime provided = OffsetDateTime.now();
+        OffsetDateTime startAt = OffsetDateTime.parse("2025-12-08T12:30:00Z");
+        OffsetDateTime newStartAt = OffsetDateTime.parse("2025-12-11T12:30:00Z");
         Long petId = 2L;
         Long tutorId = 3L;
         Long professionalId = 4L;
         Long serviceId = 5L;
-        Appointment appointment = new Appointment(petId, tutorId, professionalId, serviceId, provided, 120, AppointmentStatus.SCHEDULED, "nenhuma", provided, provided);
-        OffsetDateTime newEndAt = provided.plusMinutes(appointment.getServiceDuration());
-        RescheduleAppointmentCommand command = new RescheduleAppointmentCommand(appointmentId, provided);
+        Appointment appointment = new Appointment(petId, tutorId, professionalId, serviceId, startAt, 120, AppointmentStatus.SCHEDULED, "nenhuma", provided, provided);
+        Appointment appointmentWithId = appointment.withPersistenceId(appointmentId);
+        OffsetDateTime newEndAt = newStartAt.plusMinutes(appointment.getServiceDuration());
+        RescheduleAppointmentCommand command = new RescheduleAppointmentCommand(appointmentId, newStartAt);
 
-        when(timeProvider.nowInUTC()).thenReturn(provided.minusMinutes(1), provided);
-        when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointment));
-        when(businessHoursPolicy.fits(provided, newEndAt)).thenReturn(true);
-        when(professionalTimeOffRepository.existsOverlap(professionalId, provided, newEndAt)).thenReturn(false);
-        when(appointmentRepository.existsOverlapForProfessionalExcluding(professionalId, provided, newEndAt, appointmentId)).thenReturn(false);
-        when(appointmentRepository.existsOverlapForPetExcluding(petId, provided, newEndAt, appointmentId)).thenReturn(true);
+        when(timeProvider.nowInUTC()).thenReturn(provided);
+        when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointmentWithId));
+        when(businessHoursPolicy.fits(newStartAt, newEndAt)).thenReturn(true);
+        when(professionalTimeOffRepository.existsOverlap(professionalId, newStartAt, newEndAt)).thenReturn(false);
+        when(appointmentRepository.existsOverlapForProfessionalExcluding(professionalId, newStartAt, newEndAt, appointmentId)).thenReturn(false);
+        when(appointmentRepository.existsOverlapForPetExcluding(petId, newStartAt, newEndAt, appointmentId)).thenReturn(true);
 
         assertThrows(PetOverlapException.class, () -> {
             defaultRescheduleAppointmentUseCase.execute(command);
             });
 
+        verify(timeProvider, times(1)).nowInUTC();
         verify(appointmentRepository, times(1)).findById(appointmentId);
-        verify(businessHoursPolicy, times(1)).fits(provided, newEndAt);
-        verify(professionalTimeOffRepository, times(1)).existsOverlap(professionalId, provided, newEndAt);
-        verify(appointmentRepository, times(1)).existsOverlapForProfessionalExcluding(professionalId, provided, newEndAt, appointmentId);
-        verify(appointmentRepository, times(1)).existsOverlapForPetExcluding(petId, provided, newEndAt, appointmentId);
+        verify(businessHoursPolicy, times(1)).fits(newStartAt, newEndAt);
+        verify(professionalTimeOffRepository, times(1)).existsOverlap(professionalId, newStartAt, newEndAt);
+        verify(appointmentRepository, times(1)).existsOverlapForProfessionalExcluding(professionalId, newStartAt, newEndAt, appointmentId);
+        verify(appointmentRepository, times(1)).existsOverlapForPetExcluding(petId, newStartAt, newEndAt, appointmentId);
         verify(appointmentRepository, never()).save(any(Appointment.class));
     }
 }

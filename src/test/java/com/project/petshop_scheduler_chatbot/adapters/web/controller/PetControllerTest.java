@@ -1,6 +1,7 @@
 package com.project.petshop_scheduler_chatbot.adapters.web.controller;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
@@ -20,11 +21,11 @@ import static org.hamcrest.Matchers.hasSize;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -49,16 +50,18 @@ public class PetControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @Mock
+    @MockitoBean
     private PetUseCase petUseCase;
-    @Mock
+
+    @MockitoBean
     private TutorUseCase tutorUseCase;
 
     @Test
     public void testAddPetToTutor() throws Exception {
         Long tutorId = 1L;
+        Long petId = 2L;
         Tutor tutor = new Tutor("renato", new PhoneNumber("123456789"), "rua 1", OffsetDateTime.now(), OffsetDateTime.now());
-        AddPetToTutorResult result = new AddPetToTutorResult(1L, tutorId,"flor", "ok");
+        AddPetToTutorResult result = new AddPetToTutorResult(petId, tutorId,"flor", "ok");
 
         when(tutorUseCase.getTutor(tutorId)).thenReturn(tutor);
         when(petUseCase.execute(Mockito.any(AddPetToTutorCommand.class))).thenReturn(result);
@@ -78,10 +81,9 @@ public class PetControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .content(requestJson))
             .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.id").value(1))
+            .andExpect(jsonPath("$.petId").value(2))
+            .andExpect(jsonPath("$.petName").value("flor"))
             .andExpect(jsonPath("$.tutorId").value(1))
-            .andExpect(jsonPath("$.name").value("flor"))
-            .andExpect(jsonPath("$.observations").value("ok"))
             .andExpect(jsonPath("$.tutorName").value("renato"));
 
         verify(tutorUseCase, times(1)).getTutor(tutorId);
@@ -107,7 +109,7 @@ public class PetControllerTest {
     }
 
     @Test
-    public void testUpdatePet() throws Exception {
+    public void testUpdatePet_Success() throws Exception {
         Long petId = 1L;
 
         doNothing().when(petUseCase).update(eq(petId), any(UpdatePetCommand.class));
@@ -122,7 +124,7 @@ public class PetControllerTest {
     }
 
     @Test
-    public void testGetPet() throws Exception {
+    public void testGetPet_Success() throws Exception {
         Long petId = 1L;
         Tutor tutor = new Tutor("renato", new PhoneNumber("123456789"), "rua 1", OffsetDateTime.now(), OffsetDateTime.now());
         Pet pet = new Pet("flor", Gender.F, PetSize.SMALL, "york", 1L, "ok", OffsetDateTime.now(), OffsetDateTime.now());
@@ -139,24 +141,28 @@ public class PetControllerTest {
                 .andExpect(jsonPath("$.size").value("SMALL"))
                 .andExpect(jsonPath("$.breed").value("york"))
                 .andExpect(jsonPath("$.tutorId").value(1))
-                .andExpect(jsonPath("$.observation").value("ok")
+                .andExpect(jsonPath("$.observations").value("ok")
             );
 
-        verify(tutorUseCase, times(1)).getTutor(pet.getTutorId());
+        verify(tutorUseCase, times(2)).getTutor(pet.getTutorId());
         verify(petUseCase, times(1)).getPet(petId);
     }
 
 
     @Test
-    public void getAll() throws Exception {
+    public void getAll_Success() throws Exception {
+        Long tutorId = 1L;
+        OffsetDateTime date = OffsetDateTime.now();
+        Tutor tutor = new Tutor("renato", new PhoneNumber("123345678"), "rua 3", OffsetDateTime.now(), OffsetDateTime.now());
         List<Pet> pets = new ArrayList<>();
-        pets.add(new Pet("flor", Gender.F, PetSize.SMALL, "york", 1L, "ok", OffsetDateTime.now(), OffsetDateTime.now()));
-        pets.add(new Pet("kiwi", Gender.M, PetSize.MEDIUM, "shitzu", 1L, "ok", OffsetDateTime.now(), OffsetDateTime.now()));
-        pets.add(new Pet("manu", Gender.F, PetSize.LARGE, "dalmata", 1L, "ok", OffsetDateTime.now(), OffsetDateTime.now()));
-        pets.add(new Pet("luke", Gender.M, PetSize.SMALL, "york", 1L, "ok", OffsetDateTime.now(), OffsetDateTime.now()));
-        pets.add(new Pet("zeus", Gender.M, PetSize.LARGE, "dalmata", 1L, "ok", OffsetDateTime.now(), OffsetDateTime.now()));
+        pets.add(new Pet("flor", Gender.F, PetSize.SMALL, "york", tutorId, "ok", date, date));
+        pets.add(new Pet("kiwi", Gender.M, PetSize.MEDIUM, "shitzu", tutorId, "ok", date, date));
+        pets.add(new Pet("manu", Gender.F, PetSize.LARGE, "dalmata", tutorId, "ok", date, date));
+        pets.add(new Pet("luke", Gender.M, PetSize.SMALL, "york", tutorId, "ok", date, date));
+        pets.add(new Pet("zeus", Gender.M, PetSize.LARGE, "dalmata", tutorId, "ok", date, date));
     
         when(petUseCase.getAll()).thenReturn(pets);
+        when(tutorUseCase.getTutor(tutorId)).thenReturn(tutor);
 
         mockMvc.perform(get("/pet/all").
         contentType(MediaType.APPLICATION_JSON))
@@ -164,46 +170,52 @@ public class PetControllerTest {
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$", hasSize(5))) 
 
+        .andExpect(jsonPath("$[0].name").value("flor")) 
+        .andExpect(jsonPath("$[0].tutorName").value("renato"))
         .andExpect(jsonPath("$[0].name").value("flor"))
-        .andExpect(jsonPath("$[0].gender").value("F"))
         .andExpect(jsonPath("$[0].size").value("SMALL"))
         .andExpect(jsonPath("$[0].breed").value("york"))
         .andExpect(jsonPath("$[0].tutorId").value(1))
-        .andExpect(jsonPath("$[0].observation").value("ok"))
+        .andExpect(jsonPath("$[0].observations").value("ok"))
 
         .andExpect(jsonPath("$[1].name").value("kiwi"))
+        .andExpect(jsonPath("$[1].tutorName").value("renato"))
         .andExpect(jsonPath("$[1].gender").value("M"))
         .andExpect(jsonPath("$[1].size").value("MEDIUM"))
         .andExpect(jsonPath("$[1].breed").value("shitzu"))
         .andExpect(jsonPath("$[1].tutorId").value(1))
-        .andExpect(jsonPath("$[1].observation").value("ok"))
+        .andExpect(jsonPath("$[1].observations").value("ok"))
 
         .andExpect(jsonPath("$[2].name").value("manu"))
+        .andExpect(jsonPath("$[2].tutorName").value("renato"))
         .andExpect(jsonPath("$[2].gender").value("F"))
         .andExpect(jsonPath("$[2].size").value("LARGE"))
         .andExpect(jsonPath("$[2].breed").value("dalmata"))
         .andExpect(jsonPath("$[2].tutorId").value(1))
-        .andExpect(jsonPath("$[2].observation").value("ok"))
+        .andExpect(jsonPath("$[2].observations").value("ok"))
 
         .andExpect(jsonPath("$[3].name").value("luke"))
+        .andExpect(jsonPath("$[3].tutorName").value("renato"))
         .andExpect(jsonPath("$[3].gender").value("M"))
         .andExpect(jsonPath("$[3].size").value("SMALL"))
         .andExpect(jsonPath("$[3].breed").value("york"))
         .andExpect(jsonPath("$[3].tutorId").value(1))
-        .andExpect(jsonPath("$[3].observation").value("ok"))
+        .andExpect(jsonPath("$[3].observations").value("ok"))
 
         .andExpect(jsonPath("$[4].name").value("zeus"))
+        .andExpect(jsonPath("$[4].tutorName").value("renato"))
         .andExpect(jsonPath("$[4].gender").value("M"))
         .andExpect(jsonPath("$[4].size").value("LARGE"))
         .andExpect(jsonPath("$[4].breed").value("dalmata"))
         .andExpect(jsonPath("$[4].tutorId").value(1))
-        .andExpect(jsonPath("$[4].observation").value("ok"));
+        .andExpect(jsonPath("$[4].observations").value("ok"));
 
+        verify(tutorUseCase, times(10)).getTutor(tutorId);
         verify(petUseCase, times(1)).getAll();
     }
 
     @Test
-    public void deletePet() throws Exception {
+    public void deletePet_Success() throws Exception {
         Long petId = 1L;
         
         doNothing().when(petUseCase).delete(petId);
@@ -216,17 +228,20 @@ public class PetControllerTest {
 
     @Test
     public void testAddPet_ErrorDomainValidation_ShouldReturn422() throws Exception {
+        Tutor tutor = new Tutor("renato", new PhoneNumber("123345678"), "rua 3", OffsetDateTime.now(), OffsetDateTime.now());
+
+        when(tutorUseCase.getTutor(anyLong())).thenReturn(tutor);
         when(petUseCase.execute(any(AddPetToTutorCommand.class)))
             .thenThrow(new DomainValidationException("Nome do Pet é obrigatório"));
 
          String requestJson = """
                             {
                             "name": "",
-                            "gender": "Gender.F",
-                            "size": "PetSize.SMALL",
+                            "gender": "F",
+                            "size": "SMALL",
                             "breed": "york",
                             "tutorId": "1",
-                            "observation": "idoso",
+                            "observation": "idoso"
                             }
                             """;
 
@@ -240,6 +255,7 @@ public class PetControllerTest {
             .andExpect(jsonPath("$.path").value("/pet"))
             .andExpect(jsonPath("$.timestamp").exists());
 
+        verify(tutorUseCase, times(1)).getTutor(anyLong());
         verify(petUseCase, times(1)).execute(any(AddPetToTutorCommand.class));
     }
 
@@ -247,18 +263,13 @@ public class PetControllerTest {
     public void testUpdatePet_NotFound_ShouldReturn404() throws Exception {
         Long petId = 99L;
 
-        doThrow(new PetNotFoundException("Pet id: " + petId + " não encontrado"))
+        doThrow(new PetNotFoundException("Pet não encontrado"))
         .when(petUseCase)
         .update(eq(petId), any(UpdatePetCommand.class));
 
         String requestJson = """
                             {
-                            "name": "",
-                            "gender": "Gender.F",
-                            "size": "PetSize.SMALL",
-                            "breed": "york",
-                            "tutorId": "1",
-                            "observation": "idoso",
+                            "observations": "idoso"
                             }
                             """;
 
@@ -267,25 +278,25 @@ public class PetControllerTest {
             .content(requestJson))
             .andExpect(status().isNotFound())
             .andExpect(jsonPath("$.code").value("PET_NOT_FOUND"))
-            .andExpect(jsonPath("$.message").value("Pet id: " + petId + " não encontrado"))
+            .andExpect(jsonPath("$.message").value("Pet não encontrado"))
             .andExpect(jsonPath("$.status").value(404))
             .andExpect(jsonPath("$.path").value("/pet/" + petId))
             .andExpect(jsonPath("$.timestamp").exists());
 
-        verify(petUseCase, times(1)).update(petId, any(UpdatePetCommand.class));
+        verify(petUseCase, times(1)).update(eq(petId), any(UpdatePetCommand.class));
     }
 
     @Test
     public void testGetPet_NotFound_ShouldReturn404() throws Exception {
         Long petId = 99L;
 
-        when(petUseCase.getPet(petId)).thenThrow(new PetNotFoundException("Pet id: " + petId + " não encontrado"));
+        when(petUseCase.getPet(petId)).thenThrow(new PetNotFoundException("Pet não encontrado"));
 
         mockMvc.perform(get("/pet/{id}", petId)
             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isNotFound())
             .andExpect(jsonPath("$.code").value("PET_NOT_FOUND"))
-            .andExpect(jsonPath("$.message").value("Pet id: " + petId + " não encontrado"))
+            .andExpect(jsonPath("$.message").value("Pet não encontrado"))
             .andExpect(jsonPath("$.status").value(404))
             .andExpect(jsonPath("$.path").value("/pet/" + petId))
             .andExpect(jsonPath("$.timestamp").exists());
@@ -298,14 +309,14 @@ public class PetControllerTest {
     public void testDeletePet_NotFound_ShouldReturn404() throws Exception {
         Long petId = 99L;
 
-        doThrow(new PetNotFoundException("Pet id: " + petId + " não encontrado"))
+        doThrow(new PetNotFoundException("Pet não encontrado"))
         .when(petUseCase)
         .delete(petId);
 
         mockMvc.perform(delete("/pet/{id}", petId))
             .andExpect(status().isNotFound())
             .andExpect(jsonPath("$.code").value("PET_NOT_FOUND"))
-            .andExpect(jsonPath("$.message").value("Pet id: " + petId + " não encontrado"))
+            .andExpect(jsonPath("$.message").value("Pet não encontrado"))
             .andExpect(jsonPath("$.status").value(404))
             .andExpect(jsonPath("$.path").value("/pet/" + petId))
             .andExpect(jsonPath("$.timestamp").exists());

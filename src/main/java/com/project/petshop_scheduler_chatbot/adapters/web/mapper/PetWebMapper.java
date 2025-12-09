@@ -22,14 +22,16 @@ public class PetWebMapper {
     }
 
     public static AddPetToTutorResponse toResponse(AddPetToTutorResult r, String tutorName) {
-        return new AddPetToTutorResponse(r.getName(),
+        return new AddPetToTutorResponse(r.getPetId(),
+                                        r.getPetName(),
                                         r.getTutorId(),
                                         tutorName);
     }
 
 
-    public static UpdatePetCommand toCommand(UpdatePetRequest request) {
-        return new UpdatePetCommand(request.getPetId(), request.getObservations());
+    public static UpdatePetCommand toCommand(Long id, UpdatePetRequest request) {
+        return new UpdatePetCommand(id,
+                                    request.getObservations());
     }
 
     public static GetPetResponse toResponse(Pet pet, String tutorName) {

@@ -19,11 +19,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -49,9 +49,10 @@ public class ProfessionalControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @Mock
+    @MockitoBean
     private ProfessionalUseCase professionalUseCase;
-    @Mock
+
+    @MockitoBean
     private TimeOffUseCase timeOffUseCase;
 
     @Test
@@ -159,7 +160,7 @@ public class ProfessionalControllerTest {
          String requestJson = """
                             {
                             "name": "",
-                            "function": "Office.VET"
+                            "function": "VET"
                             }
                             """;
 
@@ -187,7 +188,7 @@ public class ProfessionalControllerTest {
         String requestJson = """
                             {
                             "name": "amanda",
-                            "function": "Office.VET"
+                            "function": "VET"
                             }
                             """;
 

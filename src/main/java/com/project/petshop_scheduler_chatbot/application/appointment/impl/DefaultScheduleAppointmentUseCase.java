@@ -10,11 +10,10 @@ import com.project.petshop_scheduler_chatbot.application.appointment.ScheduleApp
 import com.project.petshop_scheduler_chatbot.application.appointment.ScheduleAppointmentResult;
 import com.project.petshop_scheduler_chatbot.application.appointment.ScheduleAppointmentUseCase;
 import com.project.petshop_scheduler_chatbot.application.exceptions.AppointmentOverlapException;
-import com.project.petshop_scheduler_chatbot.application.exceptions.PetNotFoundException;
 import com.project.petshop_scheduler_chatbot.application.exceptions.PetOverlapException;
 import com.project.petshop_scheduler_chatbot.application.exceptions.ProfessionalNotFoundException;
 import com.project.petshop_scheduler_chatbot.application.exceptions.ProfessionalTimeOffException;
-import com.project.petshop_scheduler_chatbot.application.exceptions.ServiceNotFoundException;
+import com.project.petshop_scheduler_chatbot.application.exceptions.PetServiceNotFoundException;
 import com.project.petshop_scheduler_chatbot.application.exceptions.TutorNotFoundException;
 import com.project.petshop_scheduler_chatbot.application.exceptions.WorkingHoursOutsideException;
 import com.project.petshop_scheduler_chatbot.core.domain.Appointment;
@@ -92,18 +91,17 @@ public class DefaultScheduleAppointmentUseCase implements ScheduleAppointmentUse
                                                                         appointment.getStatus()
                                                                         );
         return (result);
-
     }
 
     private void validations(ScheduleAppointmentCommand command) {
         if (command.getServiceId() == null || command.getServiceId() <= 0)
-            throw new ServiceNotFoundException("Necessário vincular um serviço");
+            throw new DomainValidationException("Necessário vincular um serviço");
         if (command.getPetId() == null || command.getPetId() <= 0)
-            throw new PetNotFoundException("Necessário vincular um pet");
+            throw new DomainValidationException("Necessário vincular um pet");
         if (command.getTutorId() == null || command.getTutorId() <= 0)
-            throw new TutorNotFoundException("Necessário vincular um tutor");
+            throw new DomainValidationException("Necessário vincular um tutor");
         if (command.getProfessionalId() == null || command.getProfessionalId() <= 0)
-            throw new ProfessionalNotFoundException("Necessário vincular um profissional");
+            throw new DomainValidationException("Necessário vincular um profissional");
         if (command.getStartAt() == null || command.getStartAt().isBefore(timeProvider.nowInUTC()))
             throw new DomainValidationException("Horário de agendamento da consulta deve estar no futuro");
         if (!tutorRepository.existsById(command.getTutorId()))
@@ -139,7 +137,7 @@ public class DefaultScheduleAppointmentUseCase implements ScheduleAppointmentUse
     private PetService getPetServiceInstance(ScheduleAppointmentCommand command) {
         Optional<PetService> petService = petServiceRepository.findById(command.getServiceId());
         if (petService.isEmpty())
-            throw new ServiceNotFoundException("Não foi possível encontrar o serviço");
+            throw new PetServiceNotFoundException("Não foi possível encontrar o serviço");
         return (petService.get());
     }
 

@@ -71,7 +71,7 @@ public class PetUseCaseTest {
         assertThat(result).isNotNull();
         assertThat(result.getPetId()).isEqualTo(petId);
         assertThat(result.getTutorId()).isEqualTo(command.getTutorId());
-        assertThat(result.getName()).isEqualTo(command.getName());
+        assertThat(result.getPetName()).isEqualTo(command.getName());
         assertThat(result.getObservation()).isEqualTo(command.getObservation());
 
         verify(petRepository, times(1)).save(any(Pet.class));

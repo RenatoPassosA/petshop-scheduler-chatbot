@@ -21,7 +21,7 @@ public class ProfessionalTimeOffEntity {
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "professional_id", nullable = false)
     private ProfessionalEntity professional;
-    @Column(nullable = true)
+    @Column(nullable = false)
     private String reason;
     @Column(nullable = false)
     private OffsetDateTime startAt;
@@ -29,15 +29,19 @@ public class ProfessionalTimeOffEntity {
     private OffsetDateTime endAt;
     @Column(nullable = false)
     private OffsetDateTime createdAt;
+    @Column(nullable = false)
+    private OffsetDateTime	updatedAt;
 
     public ProfessionalTimeOffEntity () {
     }
 
-    public ProfessionalTimeOffEntity (String reason, OffsetDateTime startAt, OffsetDateTime endAt, OffsetDateTime createdAt) {
+    public ProfessionalTimeOffEntity (ProfessionalEntity professional, String reason, OffsetDateTime startAt, OffsetDateTime endAt, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
+        this.professional = professional;
         this.reason = reason;
         this.startAt = startAt;
         this.endAt = endAt;
         this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 
     public Long getId() {
@@ -62,6 +66,10 @@ public class ProfessionalTimeOffEntity {
 
     public OffsetDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public OffsetDateTime getUpdatedAt() {
+        return updatedAt;
     }
 
     public void setProfessional(ProfessionalEntity professional) {

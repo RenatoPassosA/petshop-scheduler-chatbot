@@ -2,12 +2,12 @@ package com.project.petshop_scheduler_chatbot.application.exceptions;
 
 import com.project.petshop_scheduler_chatbot.core.domain.exceptions.BusinessException;
 
-public class ServiceNotFoundException extends BusinessException {
-    public ServiceNotFoundException (String message) {
+public class PetServiceNotFoundException extends BusinessException {
+    public PetServiceNotFoundException (String message) {
         super(message);
     }
 
-    public ServiceNotFoundException (String message, Throwable cause) {
+    public PetServiceNotFoundException (String message, Throwable cause) {
         super(message, cause);
     }
 }

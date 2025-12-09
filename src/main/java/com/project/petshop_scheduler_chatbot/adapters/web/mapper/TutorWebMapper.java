@@ -30,7 +30,7 @@ public class TutorWebMapper {
 
     public static GetTutorResponse toResponse(Tutor r) {
         return new GetTutorResponse(r.getName(),
-                                r.getPhoneNumber(),
+                                r.getPhoneNumber().value(),
                                 r.getAddress());
     }
 }

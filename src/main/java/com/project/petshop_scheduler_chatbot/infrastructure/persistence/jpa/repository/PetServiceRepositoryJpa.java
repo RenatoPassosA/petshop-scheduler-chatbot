@@ -5,7 +5,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
-import com.project.petshop_scheduler_chatbot.application.exceptions.ServiceNotFoundException;
+import com.project.petshop_scheduler_chatbot.application.exceptions.PetServiceNotFoundException;
 import com.project.petshop_scheduler_chatbot.core.domain.PetService;
 import com.project.petshop_scheduler_chatbot.core.domain.exceptions.DomainValidationException;
 import com.project.petshop_scheduler_chatbot.core.repository.PetServiceRepository;
@@ -52,6 +52,14 @@ public class PetServiceRepositoryJpa implements PetServiceRepository {
     }
 
     @Override
+    public List<PetService> searchByName(String fragment) {
+        return petServiceEntityRepository.findByNameContainingIgnoreCase(fragment)
+                .stream()
+                .map(petServiceMapper::toDomain)
+                .toList();
+    }
+
+    @Override
     public List<PetService> getAll() {
         return (petServiceEntityRepository.findAll()
             .stream()
@@ -65,7 +73,7 @@ public class PetServiceRepositoryJpa implements PetServiceRepository {
             throw new DomainValidationException("Id inválido");
         return findById(id)
         .map(PetService::getDuration)
-        .orElseThrow(() -> new ServiceNotFoundException("Serviço não encontrado"));
+        .orElseThrow(() -> new PetServiceNotFoundException("Serviço não encontrado"));
     }
 
     @Override

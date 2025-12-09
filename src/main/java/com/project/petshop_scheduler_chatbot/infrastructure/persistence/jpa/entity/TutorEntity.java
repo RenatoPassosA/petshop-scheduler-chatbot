@@ -1,9 +1,11 @@
 package com.project.petshop_scheduler_chatbot.infrastructure.persistence.jpa.entity;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -22,8 +24,9 @@ public class TutorEntity {
     private String		phoneNumber;
     @Column(nullable = false)
     private String			address;
-    @Column(nullable = false)
-    private List<Long>      petIds;
+    @ElementCollection
+    @Column(name = "pet_ids", nullable = false)
+    private List<Long> petIds = new ArrayList<>();
     @Column(nullable = false)
     private OffsetDateTime	createdAt;
     @Column(nullable = false)

@@ -30,6 +30,7 @@ public class DefaultProfessionalUseCase implements ProfessionalUseCase{
     @Override
     @Transactional
     public AddProfessionalResult execute(AddProfessionalCommand professionalCommand) {
+        
         validations(professionalCommand);
         Professional professional = new Professional(professionalCommand.getName(),
                                                 professionalCommand.getFunction(),

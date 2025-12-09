@@ -2,18 +2,24 @@ package com.project.petshop_scheduler_chatbot.adapters.web.dto.pet;
 
 public class AddPetToTutorResponse {
 
-    private String			name;
+    private Long            petId;
+    private String			petName;
     private Long            tutorId;
     private String          tutorName;
 
-    public AddPetToTutorResponse(String name, Long tutorId, String tutorName) {
-        this.name = name;
+    public AddPetToTutorResponse(Long petId, String petName, Long tutorId, String tutorName) {
+        this.petId = petId;
+        this.petName = petName;
         this.tutorId = tutorId;
         this.tutorName = tutorName;
     }
 
-    public String getName() {
-        return name;
+    public Long getPetId() {
+        return petId;
+    }
+
+    public String getPetName() {
+        return petName;
     }
 
     public Long getTutorId() {
@@ -24,8 +30,8 @@ public class AddPetToTutorResponse {
         return tutorName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setPetName(String name) {
+        this.petName = name;
     }
 
     public void setTutorId(Long tutorId) {

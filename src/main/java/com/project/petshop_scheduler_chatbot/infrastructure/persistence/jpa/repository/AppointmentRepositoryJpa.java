@@ -18,7 +18,7 @@ public class AppointmentRepositoryJpa implements AppointmentRepository {
     final private AppointmentEntityRepository appointmentEntityRepository;
     final long maxDurationMinutes;
 
-    public AppointmentRepositoryJpa (AppointmentMapper appointmentMapper, AppointmentEntityRepository appointmentEntityRepository, @Value("${scheduling.max-duration-minutes:180}") long maxDurationMinutes) {
+    public AppointmentRepositoryJpa (AppointmentMapper appointmentMapper, AppointmentEntityRepository appointmentEntityRepository, @Value("${scheduling.max-duration-minutes:120}") long maxDurationMinutes) {
         this.appointmentMapper = appointmentMapper;
         this.appointmentEntityRepository = appointmentEntityRepository;
         this.maxDurationMinutes = maxDurationMinutes;
@@ -116,8 +116,4 @@ public class AppointmentRepositoryJpa implements AppointmentRepository {
     public boolean existsOwnership(Long tutorId, Long appointmentId) {
         return (appointmentEntityRepository.existsByIdAndTutorId(appointmentId, tutorId));
     }
-
-
-
-
 }
