@@ -21,7 +21,7 @@ public class StartMenuHandler {
             String tutorName = tutorRepository.findByPhone(phone).get().getName();
             Long tutorId = tutorRepository.findByPhone(phone).get().getId();
             conversationSession.setCurrentState(ConversationState.STATE_MAIN_MENU);
-            conversationSession.setTempTutorName(tutorName);
+            conversationSession.setRegisteredTutorName(tutorName);
             conversationSession.setTutorId(tutorId);
             return ProcessIncomingMessageResult.interactive(MenuMessages.mainMenu(tutorName));
         }

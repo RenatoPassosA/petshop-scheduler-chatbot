@@ -15,5 +15,5 @@ public interface AppointmentRepository {
     boolean existsOverlapForPet(Long petId, OffsetDateTime start, OffsetDateTime end);
     boolean existsOverlapForPetExcluding(Long petId, OffsetDateTime start, OffsetDateTime end, Long appointmentId);
     boolean existsOwnership(Long tutorId, Long appointmentId);
-    // List<Appointment> listByProfessionalBetween(Long professionalId, OffsetDateTime start, OffsetDateTime end);
+    List<Appointment> listByProfessionalBetween(Long professionalId, OffsetDateTime start, OffsetDateTime end);
 }

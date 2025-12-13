@@ -1,14 +1,17 @@
 package com.project.petshop_scheduler_chatbot.core.domain.chatbot;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 
 public class ConversationSession {
     private String              waId; //numero/ID do whatsapp
     private ConversationState   currentState;
     private Long                tutorId;
     private Long                petId;
+    private List<Long>          allTutorsPets;
     private Long                chosenServiceId;
     private Long                appointmentId;
+    private String              registeredTutorName;
     private OffsetDateTime      lastInteraction;
     private boolean             chatWithHuman;
 
@@ -47,12 +50,20 @@ public class ConversationSession {
         return petId;
     }
 
+    public List<Long> getAllTutorsPets() {
+        return allTutorsPets;
+    }
+
     public Long getChoosenServiceId() {
         return chosenServiceId;
     }
 
     public Long getAppointmentId() {
         return appointmentId;
+    }
+
+    public String getRegisteredTutorName() {
+        return registeredTutorName;
     }
 
     public OffsetDateTime getLastInteraction() {
@@ -106,6 +117,10 @@ public class ConversationSession {
     public void setPetId(Long petId) {
         this.petId = petId;
     }
+    
+    public void setAllTutorsPets(List<Long> allTutorsPets) {
+        this.allTutorsPets = allTutorsPets;
+    }
 
     public void setChoosenServiceId(Long chosenServiceId) {
         this.chosenServiceId = chosenServiceId;
@@ -113,6 +128,10 @@ public class ConversationSession {
 
     public void setAppointmentId(Long appointmentId) {
         this.appointmentId = appointmentId;
+    }
+
+    public void setRegisteredTutorName(String registeredTutorName) {
+        this.registeredTutorName = registeredTutorName;
     }
 
     public void setLastInteraction(OffsetDateTime lastInteraction) {

@@ -54,6 +54,6 @@ public class AppointmentWebMapper {
     }
 
     static public CancelAppointmentCommand toCommand(Long appointmentId, CancelAppointmentRequest r){
-        return new CancelAppointmentCommand(appointmentId, r.getReason());
+        return new CancelAppointmentCommand(appointmentId);
     }
 }

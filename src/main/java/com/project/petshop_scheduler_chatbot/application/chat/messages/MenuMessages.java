@@ -16,7 +16,7 @@ public class MenuMessages {
         }
 
     public static InteractiveMessage mainMenu(String name) {
-        return new InteractiveMessage("Oi " + name + " ! Bom te ver por aqui de novo 🐶\n O que você deseja fazer hoje?",
+        return new InteractiveMessage("Oi " + name + " ! 🐶\n O que você deseja fazer hoje?",
         List.of(new ButtonOption("SCHEDULE", "Marcar serviço"),
                     new ButtonOption("RESCHEDULE", "Reagendar serviço"),
                     new ButtonOption("CANCEL_SCHEDULE", "Cancelar serviço"),

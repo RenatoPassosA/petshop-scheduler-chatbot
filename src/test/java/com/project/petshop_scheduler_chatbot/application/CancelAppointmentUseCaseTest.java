@@ -61,7 +61,7 @@ public class CancelAppointmentUseCaseTest {
         Long serviceId = 5L;
         OffsetDateTime provided = OffsetDateTime.parse("2025-01-01T00:00:00Z");
         OffsetDateTime startAt = OffsetDateTime.parse("2025-12-08T12:30:00Z");
-        CancelAppointmentCommand command = new CancelAppointmentCommand(appointmentId, "pet viajaando");
+        CancelAppointmentCommand command = new CancelAppointmentCommand(appointmentId);
         Appointment appointment = new Appointment(petId, tutorId, professionalId, serviceId, startAt, 120, AppointmentStatus.SCHEDULED, "nenhuma", provided, provided);
         Appointment appointmentWithId = appointment.withPersistenceId(appointmentId);
         PetService petService = new PetService("tosa", new BigDecimal(100), 150, provided, provided);
@@ -88,7 +88,7 @@ public class CancelAppointmentUseCaseTest {
     @Test
     public void cancelAppointment_Fail_DomainValidationException() {
         Long appointmentId = null;
-        CancelAppointmentCommand command = new CancelAppointmentCommand(appointmentId, "pet viajaando");
+        CancelAppointmentCommand command = new CancelAppointmentCommand(appointmentId);
 
         assertThrows(DomainValidationException.class, () -> {
                 defaultCancelAppointmentUseCase.execute(command);
@@ -103,7 +103,7 @@ public class CancelAppointmentUseCaseTest {
     @Test
     public void cancelAppointment_Fail_AppointmentNotFoundException() {
         Long appointmentId = 1L;
-        CancelAppointmentCommand command = new CancelAppointmentCommand(appointmentId, "pet viajaando");
+        CancelAppointmentCommand command = new CancelAppointmentCommand(appointmentId);
 
         when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.empty());
 
@@ -124,7 +124,7 @@ public class CancelAppointmentUseCaseTest {
         Long professionalId = 4L;
         Long serviceId = 5L;
         OffsetDateTime provided = OffsetDateTime.parse("2025-01-01T00:00:00Z");
-        CancelAppointmentCommand command = new CancelAppointmentCommand(appointmentId, "pet viajaando");
+        CancelAppointmentCommand command = new CancelAppointmentCommand(appointmentId);
         Appointment appointment = new Appointment(petId, tutorId, professionalId, serviceId, provided, 120, AppointmentStatus.COMPLETED, "nenhuma", provided, provided);
 
         when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointment));
@@ -146,7 +146,7 @@ public class CancelAppointmentUseCaseTest {
         Long professionalId = 4L;
         Long serviceId = 5L;
         OffsetDateTime provided = OffsetDateTime.parse("2025-01-01T00:00:00Z");
-        CancelAppointmentCommand command = new CancelAppointmentCommand(appointmentId, "pet viajaando");
+        CancelAppointmentCommand command = new CancelAppointmentCommand(appointmentId);
         Appointment appointment = new Appointment(petId, tutorId, professionalId, serviceId, provided, 120, AppointmentStatus.SCHEDULED, "nenhuma", provided, provided);
 
         when(timeProvider.nowInUTC()).thenReturn(provided);

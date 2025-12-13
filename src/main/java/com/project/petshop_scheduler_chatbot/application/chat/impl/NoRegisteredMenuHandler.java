@@ -2,6 +2,7 @@ package com.project.petshop_scheduler_chatbot.application.chat.impl;
 
 import com.project.petshop_scheduler_chatbot.application.chat.ProcessIncomingMessageCommand;
 import com.project.petshop_scheduler_chatbot.application.chat.ProcessIncomingMessageResult;
+import com.project.petshop_scheduler_chatbot.application.chat.impl.utils.ServicesFormatedList;
 import com.project.petshop_scheduler_chatbot.application.chat.messages.MenuMessages;
 import com.project.petshop_scheduler_chatbot.core.domain.chatbot.ConversationSession;
 import com.project.petshop_scheduler_chatbot.core.domain.chatbot.ConversationState;

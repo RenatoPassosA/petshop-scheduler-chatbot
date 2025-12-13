@@ -1,6 +1,7 @@
 package com.project.petshop_scheduler_chatbot.infrastructure.persistence.jpa.repository;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -116,4 +117,17 @@ public class AppointmentRepositoryJpa implements AppointmentRepository {
     public boolean existsOwnership(Long tutorId, Long appointmentId) {
         return (appointmentEntityRepository.existsByIdAndTutorId(appointmentId, tutorId));
     }
+
+    @Override
+    public List<Appointment> listByProfessionalBetween(Long professionalId, OffsetDateTime start, OffsetDateTime end) {
+        List<AppointmentEntity> candidates = appointmentEntityRepository.findAllByProfessionalIdAndStartAtBetween(professionalId, start, end);
+        List<Appointment> appointmentList = new ArrayList<>();
+        for (AppointmentEntity appointment : candidates) {
+            appointmentList.add(appointmentMapper.toDomain(appointment));
+        }
+        return appointmentList;
+    }
+    
 }
+    
+

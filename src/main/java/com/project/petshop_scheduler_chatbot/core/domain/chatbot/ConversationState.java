@@ -9,6 +9,7 @@ public enum ConversationState {
     STATE_REGISTER_TUTOR_START,
     STATE_REGISTER_TUTOR_NAME,
     STATE_REGISTER_TUTOR_ADDRESS,
+    STATE_REGISTER_TUTOR_CONFIRM,
     
     //registrar novo pet
     STATE_REGISTER_PET_START,
