@@ -14,6 +14,7 @@ public class PetServiceMapper {
         return new PetServiceEntity(petService.getName(),
                                     petService.getPrice(),
                                     petService.getDuration(),
+                                    petService.getCanDo(),
                                     petService.getCreatedAt(),
                                     petService.getUpdatedAt()
                                     );
@@ -26,6 +27,7 @@ public class PetServiceMapper {
         PetService petService = new PetService(entity.getName(),
                                             entity.getPrice(),
                                             entity.getDuration(),
+                                            entity.getCanDo(),
                                             entity.getCreatedAt(),
                                             entity.getUpdatedAt()
                                             );

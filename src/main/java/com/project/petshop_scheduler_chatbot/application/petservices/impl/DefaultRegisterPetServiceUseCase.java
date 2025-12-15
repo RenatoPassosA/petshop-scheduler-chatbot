@@ -36,6 +36,7 @@ public class DefaultRegisterPetServiceUseCase implements PetServiceUseCase {
         PetService petService = new PetService(service.getName(),
                                             service.getPrice(),
                                             service.getDuration(),
+                                            service.getCanDo(),
                                             timeProvider.nowInUTC(),
                                             timeProvider.nowInUTC());
         petService = petServiceRepository.save(petService);
@@ -59,6 +60,8 @@ public class DefaultRegisterPetServiceUseCase implements PetServiceUseCase {
             throw new DomainValidationException("Duração válida do serviço é obrigatória (entre 30 e 180 minutos)");
         if (service.getDuration() % scheduleStep != 0)
             throw new DomainValidationException("Normalizar duração de serviço terminando em multiplos de 15");
+        if (service.getCanDo() == null)
+            throw new DomainValidationException("Informar profissional capacitado");
     }
 
     @Override

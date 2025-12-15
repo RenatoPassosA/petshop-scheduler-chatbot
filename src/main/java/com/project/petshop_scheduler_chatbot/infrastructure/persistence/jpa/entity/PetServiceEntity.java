@@ -3,6 +3,8 @@ package com.project.petshop_scheduler_chatbot.infrastructure.persistence.jpa.ent
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
+import com.project.petshop_scheduler_chatbot.core.domain.valueobject.Office;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -23,6 +25,8 @@ public class PetServiceEntity {
     @Column(nullable = false)
     private int			    duration;
     @Column(nullable = false)
+    private Office          canDo;
+    @Column(nullable = false)
     private OffsetDateTime	createdAt;
     @Column(nullable = false)
     private OffsetDateTime	updatedAt;
@@ -31,10 +35,11 @@ public class PetServiceEntity {
     public PetServiceEntity (){
     }
 
-    public PetServiceEntity (String name, BigDecimal price, int duration, OffsetDateTime createdAt, OffsetDateTime updatedAt){
+    public PetServiceEntity (String name, BigDecimal price, int duration, Office canDo, OffsetDateTime createdAt, OffsetDateTime updatedAt){
         this.name = name;
         this.price = price; 
         this.duration = duration;
+        this.canDo = canDo;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;  
     }
@@ -53,6 +58,10 @@ public class PetServiceEntity {
 
     public int getDuration() {
         return duration;
+    }
+
+    public Office getCanDo() {
+        return canDo;
     }
 
     public OffsetDateTime getCreatedAt() {

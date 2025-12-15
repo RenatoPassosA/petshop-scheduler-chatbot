@@ -113,8 +113,8 @@ public class RegisterPetHandler {
                         conversationSession.getTutorId(),
                         conversationSession.getTempPetObs());
         petUseCase.execute(command);
-        conversationSession.setCurrentState(ConversationState.STATE_MAIN_MENU);
-        return ProcessIncomingMessageResult.interactive(MenuMessages.mainMenu(conversationSession.getRegisteredTutorName()));
+        conversationSession.setCurrentState(ConversationState.STATE_START);
+        return ProcessIncomingMessageResult.text("Agradecemos a preferencia!\nEstamos aguardando o seu pet!"); 
     }
 
     private boolean checkError_STATE_REGISTER_PET_START(ProcessIncomingMessageCommand messageCommand) {

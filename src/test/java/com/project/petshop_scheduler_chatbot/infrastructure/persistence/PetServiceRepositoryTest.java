@@ -18,6 +18,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import com.project.petshop_scheduler_chatbot.core.domain.PetService;
+import com.project.petshop_scheduler_chatbot.core.domain.valueobject.Office;
 import com.project.petshop_scheduler_chatbot.infrastructure.persistence.jpa.mapper.PetServiceMapper;
 import com.project.petshop_scheduler_chatbot.infrastructure.persistence.jpa.repository.PetServiceEntityRepository;
 import com.project.petshop_scheduler_chatbot.infrastructure.persistence.jpa.repository.PetServiceRepositoryJpa;
@@ -45,7 +46,7 @@ public class PetServiceRepositoryTest {
 
     private PetService GeneratePetService(String name, Long price, int duration) {
         OffsetDateTime provided = OffsetDateTime.now();
-        return new PetService(name, new BigDecimal(price), duration, provided, provided);
+        return new PetService(name, new BigDecimal(price), duration, Office.AUX, provided, provided);
     }
 
     @Test

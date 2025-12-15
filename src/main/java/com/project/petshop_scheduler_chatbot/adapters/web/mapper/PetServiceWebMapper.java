@@ -13,7 +13,8 @@ public class PetServiceWebMapper {
      public static AddPetServiceCommand toCommand(AddPetServiceRequest request) {
         return new AddPetServiceCommand(request.getName(),
                                     request.getPrice(),
-                                    request.getDuration());
+                                    request.getDuration(),
+                                    request.getCanDo());
      }
 
 

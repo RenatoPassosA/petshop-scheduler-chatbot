@@ -6,6 +6,5 @@ import com.project.petshop_scheduler_chatbot.core.domain.chatbot.ConversationSes
 
 public interface ConversationSessionRepository {
     Optional<ConversationSession> findByWaId(String waId);
-    void save(ConversationSession session);
-    void deleteByWaId(String waId); 
+    ConversationSession save(ConversationSession session);
 }

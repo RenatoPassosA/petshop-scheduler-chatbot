@@ -36,6 +36,7 @@ import com.project.petshop_scheduler_chatbot.core.domain.application.TimeProvide
 import com.project.petshop_scheduler_chatbot.core.domain.exceptions.DomainValidationException;
 import com.project.petshop_scheduler_chatbot.core.domain.policy.BusinessHoursPolicy;
 import com.project.petshop_scheduler_chatbot.core.domain.valueobject.AppointmentStatus;
+import com.project.petshop_scheduler_chatbot.core.domain.valueobject.Office;
 import com.project.petshop_scheduler_chatbot.core.repository.AppointmentRepository;
 import com.project.petshop_scheduler_chatbot.core.repository.PetRepository;
 import com.project.petshop_scheduler_chatbot.core.repository.PetServiceRepository;
@@ -95,7 +96,7 @@ public class ScheduleAppointmentUseCaseTest {
         Long serviceId = 5L;
         ScheduleAppointmentCommand command = new ScheduleAppointmentCommand(petId, tutorId, professionalId, serviceId, startAt, "ouvido inflamado");
         int duration = 180;
-        PetService petService = new PetService("tosa", new BigDecimal(100), duration, provided, provided);
+        PetService petService = new PetService("tosa", new BigDecimal(100), duration, Office.AUX, provided, provided);
         OffsetDateTime endAt = startAt.plusMinutes(petService.getDuration());
         Appointment appointmentWithId = new Appointment(petId,tutorId, professionalId, serviceId, startAt, duration, AppointmentStatus.SCHEDULED, "ouvido inflamado", provided, provided)
         .withPersistenceId(appointmentId);
@@ -407,7 +408,7 @@ public class ScheduleAppointmentUseCaseTest {
         Long professionalId = 3L;
         Long serviceId = 5L;
         ScheduleAppointmentCommand command = new ScheduleAppointmentCommand(petId, tutorId, professionalId, serviceId, startAt, "ouvido inflamado");
-        PetService petService = new PetService("tosa", new BigDecimal(100), 180, provided, provided);
+        PetService petService = new PetService("tosa", new BigDecimal(100), 180, Office.AUX, provided, provided);
         OffsetDateTime endAt = startAt.plusMinutes(petService.getDuration());
 
 
@@ -441,7 +442,7 @@ public class ScheduleAppointmentUseCaseTest {
         Long professionalId = 3L;
         Long serviceId = 5L;
         ScheduleAppointmentCommand command = new ScheduleAppointmentCommand(petId, tutorId, professionalId, serviceId, startAt, "ouvido inflamado");
-        PetService petService = new PetService("tosa", new BigDecimal(100), 180, provided, provided);
+        PetService petService = new PetService("tosa", new BigDecimal(100), 180, Office.AUX, provided, provided);
         OffsetDateTime endAt = startAt.plusMinutes(petService.getDuration());
 
 
@@ -476,7 +477,7 @@ public class ScheduleAppointmentUseCaseTest {
         Long professionalId = 3L;
         Long serviceId = 5L;
         ScheduleAppointmentCommand command = new ScheduleAppointmentCommand(petId, tutorId, professionalId, serviceId, startAt, "ouvido inflamado");
-        PetService petService = new PetService("tosa", new BigDecimal(100), 180, provided, provided);
+        PetService petService = new PetService("tosa", new BigDecimal(100), 180, Office.AUX, provided, provided);
         OffsetDateTime endAt = startAt.plusMinutes(petService.getDuration());
 
 
@@ -513,7 +514,7 @@ public class ScheduleAppointmentUseCaseTest {
         Long professionalId = 3L;
         Long serviceId = 5L;
         ScheduleAppointmentCommand command = new ScheduleAppointmentCommand(petId, tutorId, professionalId, serviceId, startAt, "ouvido inflamado");
-        PetService petService = new PetService("tosa", new BigDecimal(100), 180, provided, provided);
+        PetService petService = new PetService("tosa", new BigDecimal(100), 180, Office.AUX, provided, provided);
         OffsetDateTime endAt = startAt.plusMinutes(petService.getDuration());
 
 

@@ -72,7 +72,7 @@ public class RegisterTutorHandler {
         AddTutorCommand command = new AddTutorCommand(conversationSession.getTempTutorName(), phone, conversationSession.getTempTutorAddress());
         tutorUseCase.execute(command);
         conversationSession.setCurrentState(ConversationState.STATE_START);
-        return startMenuHandler.STATE_START_handler(conversationSession);
+        return ProcessIncomingMessageResult.text("Agradecemos a preferencia!"); 
         }
 
     private boolean checkError_STATE_REGISTER_TUTOR_START(ProcessIncomingMessageCommand messageCommand) {

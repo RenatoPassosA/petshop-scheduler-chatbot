@@ -31,6 +31,7 @@ import com.project.petshop_scheduler_chatbot.core.domain.PetService;
 import com.project.petshop_scheduler_chatbot.core.domain.application.TimeProvider;
 import com.project.petshop_scheduler_chatbot.core.domain.exceptions.DomainValidationException;
 import com.project.petshop_scheduler_chatbot.core.domain.exceptions.InvalidAppointmentStateException;
+import com.project.petshop_scheduler_chatbot.core.domain.valueobject.Office;
 import com.project.petshop_scheduler_chatbot.core.repository.PetServiceRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -53,8 +54,8 @@ public class PetServiceUseCaseTest {
     public void addValidPetService() {
         Long petServiceId = 10L;
         OffsetDateTime provided = OffsetDateTime.parse("2025-01-01T00:00:00Z");
-        AddPetServiceCommand command = new AddPetServiceCommand("tosa", new BigDecimal(100), 180);
-        PetService petService = new PetService("tosa", new BigDecimal(100), 180, provided, provided);
+        AddPetServiceCommand command = new AddPetServiceCommand("tosa", new BigDecimal(100), 180, Office.AUX);
+        PetService petService = new PetService("tosa", new BigDecimal(100), 180, Office.AUX, provided, provided);
         PetService petServiceWithId = petService.withPersistenceId(petServiceId);
 
         when(timeProvider.nowInUTC()).thenReturn(provided);
@@ -77,7 +78,7 @@ public class PetServiceUseCaseTest {
 
     @Test
     public void addPetService_Fail_DomainValidationException() {
-                AddPetServiceCommand command = new AddPetServiceCommand("tosa", new BigDecimal(100), 10);
+                AddPetServiceCommand command = new AddPetServiceCommand("tosa", new BigDecimal(100), 10, Office.AUX);
 
     
         assertThrows(DomainValidationException.class, () -> {
@@ -90,7 +91,7 @@ public class PetServiceUseCaseTest {
 
     @Test
     public void addPetService_Fail_DomainValidationException_NotMultiple15() {
-                AddPetServiceCommand command = new AddPetServiceCommand("tosa", new BigDecimal(100), 155);
+                AddPetServiceCommand command = new AddPetServiceCommand("tosa", new BigDecimal(100), 155, Office.AUX);
 
     
         assertThrows(DomainValidationException.class, () -> {
@@ -104,9 +105,9 @@ public class PetServiceUseCaseTest {
     @Test
     public void addPetService_Fail_DuplicatedName() {
         OffsetDateTime provided = OffsetDateTime.parse("2025-01-01T00:00:00Z");
-        AddPetServiceCommand command = new AddPetServiceCommand("tosa", new BigDecimal(100), 180);
+        AddPetServiceCommand command = new AddPetServiceCommand("tosa", new BigDecimal(100), 180, Office.AUX);
 
-        List<PetService> existing = List.of(new PetService("tosa", new BigDecimal(80), 120, provided, provided));
+        List<PetService> existing = List.of(new PetService("tosa", new BigDecimal(80), 120, Office.AUX, provided, provided));
 
         when(petServiceRepository.findByName(command.getName())).thenReturn(existing);
 
@@ -122,7 +123,7 @@ public class PetServiceUseCaseTest {
     public void getPetService_Sucess() {
         Long petServiceId = 10L;
         OffsetDateTime provided = OffsetDateTime.parse("2025-01-01T00:00:00Z");
-        PetService expectedPetService = new PetService("tosa", new BigDecimal(100), 180, provided, provided);
+        PetService expectedPetService = new PetService("tosa", new BigDecimal(100), 180, Office.AUX, provided, provided);
         PetService expectedPetServiceWithId = expectedPetService.withPersistenceId(petServiceId);
 
         when(petServiceRepository.findById(petServiceId)).thenReturn(Optional.of(expectedPetServiceWithId));
@@ -155,9 +156,9 @@ public class PetServiceUseCaseTest {
     public void getAll_PopulatedList() {
         OffsetDateTime provided = OffsetDateTime.parse("2025-01-01T00:00:00Z");
         List<PetService> petServiceList = new ArrayList<>();
-        petServiceList.add(new PetService("tosa", new BigDecimal(80), 120, provided, provided));
-        petServiceList.add(new PetService("banho", new BigDecimal(60), 120, provided, provided));
-        petServiceList.add(new PetService("banho e tosa", new BigDecimal(120), 180, provided, provided));
+        petServiceList.add(new PetService("tosa", new BigDecimal(80), 120, Office.AUX, provided, provided));
+        petServiceList.add(new PetService("banho", new BigDecimal(60), 120, Office.AUX, provided, provided));
+        petServiceList.add(new PetService("banho e tosa", new BigDecimal(120), 180, Office.AUX, provided, provided));
 
         when(petServiceRepository.getAll()).thenReturn(petServiceList);
 
@@ -188,7 +189,7 @@ public class PetServiceUseCaseTest {
     public void update_Success() {
         Long petServiceId = 10L;
         OffsetDateTime provided = OffsetDateTime.parse("2025-01-01T00:00:00Z");
-        PetService expectedPetService = new PetService("tosa", new BigDecimal(100), 180, provided, provided);
+        PetService expectedPetService = new PetService("tosa", new BigDecimal(100), 180, Office.AUX, provided, provided);
         PetService expectedPetServiceWithId = expectedPetService.withPersistenceId(petServiceId);
         UpdatePetServiceCommand command = new UpdatePetServiceCommand(new BigDecimal(200), 200);
 
@@ -208,7 +209,7 @@ public class PetServiceUseCaseTest {
     public void update_PartialUpdate_Success() {
         Long petServiceId = 10L;
         OffsetDateTime provided = OffsetDateTime.parse("2025-01-01T00:00:00Z");
-        PetService expectedPetService = new PetService("tosa", new BigDecimal(100), 150, provided, provided);
+        PetService expectedPetService = new PetService("tosa", new BigDecimal(100), 150, Office.AUX, provided, provided);
         PetService expectedPetServiceWithId = expectedPetService.withPersistenceId(petServiceId);
         UpdatePetServiceCommand command = new UpdatePetServiceCommand(null, 180);
 

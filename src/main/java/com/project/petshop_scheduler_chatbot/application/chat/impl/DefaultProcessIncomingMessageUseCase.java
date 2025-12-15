@@ -1,7 +1,5 @@
 package com.project.petshop_scheduler_chatbot.application.chat.impl;
 
-import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -10,10 +8,8 @@ import com.project.petshop_scheduler_chatbot.application.chat.ProcessIncomingMes
 import com.project.petshop_scheduler_chatbot.application.chat.ProcessIncomingMessageResult;
 import com.project.petshop_scheduler_chatbot.application.chat.ProcessIncomingMessageUseCase;
 import com.project.petshop_scheduler_chatbot.application.chat.impl.utils.ServicesFormatedList;
-import com.project.petshop_scheduler_chatbot.core.domain.PetService;
 import com.project.petshop_scheduler_chatbot.core.domain.application.TimeProvider;
 import com.project.petshop_scheduler_chatbot.core.domain.chatbot.ConversationSession;
-import com.project.petshop_scheduler_chatbot.core.domain.chatbot.ConversationState;
 import com.project.petshop_scheduler_chatbot.core.domain.exceptions.DomainValidationException;
 import com.project.petshop_scheduler_chatbot.core.domain.policy.BusinessHoursPolicy;
 import com.project.petshop_scheduler_chatbot.core.repository.AppointmentRepository;
@@ -28,20 +24,14 @@ import com.project.petshop_scheduler_chatbot.core.repository.TutorRepository;
 public class DefaultProcessIncomingMessageUseCase implements ProcessIncomingMessageUseCase{
 
     private final ConversationSessionRepository conversationSessionRepository;
-    private final AppointmentRepository appointmentRepository;
-    private final PetServiceRepository petServiceRepository;
-    private final ProfessionalTimeOffRepository professionalTimeOffRepository;
-    private final PetRepository petRepository;
-    private final TutorRepository tutorRepository;
-    private final ProfessionalRepository professionalRepository;
-    private final BusinessHoursPolicy businessHoursPolicy;
     private final TimeProvider timeProvider;
-
     private final StartMenuHandler startMenuHandler;
     private final NoRegisteredMenuHandler noRegisteredMenuHandler;
     private final MainMenuHandler mainMenuHandler;
     private final RegisterTutorHandler registerTutorHandler;
     private final RegisterPetHandler registerPetHandler;
+    private final ScheduleHandler scheduleHandler;
+    private final RescheduleHandler rescheduleHandler;
     private final CancelScheduleHandler cancelScheduleHandler;
 
     private final ServicesFormatedList servicesFormatedList;
@@ -61,22 +51,19 @@ public class DefaultProcessIncomingMessageUseCase implements ProcessIncomingMess
                                         MainMenuHandler mainMenuHandler,
                                         RegisterTutorHandler registerTutorHandler,
                                         RegisterPetHandler registerPetHandler,
+                                        ScheduleHandler scheduleHandler,
+                                        RescheduleHandler rescheduleHandler,
                                         CancelScheduleHandler cancelScheduleHandler,
                                     ServicesFormatedList servicesFormatedList) {
         this.conversationSessionRepository = conversationSessionRepository;
-        this.appointmentRepository = appointmentRepository;
-        this.petServiceRepository = petServiceRepository;
-        this.professionalTimeOffRepository = professionalTimeOffRepository;
-        this.petRepository = petRepository;
-        this.tutorRepository = tutorRepository;
-        this.professionalRepository = professionalRepository;
-        this.businessHoursPolicy = businessHoursPolicy;
         this.timeProvider = timeProvider;
         this.startMenuHandler = startMenuHandler;
         this.noRegisteredMenuHandler = noRegisteredMenuHandler;
         this.mainMenuHandler = mainMenuHandler;
         this.registerTutorHandler = registerTutorHandler;
         this.registerPetHandler = registerPetHandler;
+        this.scheduleHandler = scheduleHandler;
+        this.rescheduleHandler = rescheduleHandler;
         this.cancelScheduleHandler = cancelScheduleHandler;
         this.servicesFormatedList = servicesFormatedList;
     }
@@ -85,18 +72,17 @@ public class DefaultProcessIncomingMessageUseCase implements ProcessIncomingMess
     public ProcessIncomingMessageResult execute(ProcessIncomingMessageCommand messageCommand) {
         validations(messageCommand);
         ConversationSession conversationSession = getConversationSession(messageCommand.getWaId());
-        conversationSession.setLastInteraction(OffsetDateTime.now());
+        conversationSession.setLastInteraction(timeProvider.nowInUTC());
 
         ProcessIncomingMessageResult state = processState(conversationSession, messageCommand);
-
-
-
+        conversationSessionRepository.save(conversationSession);
+        return state;
     }
 
     private void validations(ProcessIncomingMessageCommand messageCommand) {
         if (messageCommand == null)
             throw new DomainValidationException("Dados inválidos");
-        if (messageCommand.getText() == null || messageCommand.getText().isBlank())
+        if (messageCommand.getText() == null && messageCommand.getButtonId() == null)
             throw new DomainValidationException("Mensagem inválida");
         if (messageCommand.getPhoneNumberId() == null || messageCommand.getPhoneNumberId().isBlank())
             throw new DomainValidationException("Numero de telefone inválido");
@@ -112,7 +98,7 @@ public class DefaultProcessIncomingMessageUseCase implements ProcessIncomingMess
 
     private ProcessIncomingMessageResult processState(ConversationSession conversationSession, ProcessIncomingMessageCommand messageCommand) {
         if (conversationSession.isChatWithHuman())
-            return null;
+            return ProcessIncomingMessageResult.text("Você será atendido por um humano");
         return checkConversationState(conversationSession, messageCommand);
 
     }
@@ -158,35 +144,41 @@ public class DefaultProcessIncomingMessageUseCase implements ProcessIncomingMess
             case STATE_REGISTER_PET_OBS:
                 return registerPetHandler.handle_STATE_REGISTER_PET_OBS(conversationSession, messageCommand);
 
+            case STATE_REGISTER_PET_CONFIRM:
+                return registerPetHandler.handle_STATE_REGISTER_PET_CONFIRM(conversationSession, messageCommand);
+
             case STATE_CHECK_SERVICES:
                 return servicesFormatedList.sendServicesList();
 
             case STATE_SCHEDULE_START:
-                break;
+                return scheduleHandler.handle_STATE_SCHEDULE_START(conversationSession, messageCommand);
                 
             case STATE_SCHEDULE_CHOOSE_PET:
-                break;
+                return scheduleHandler.handle_STATE_SCHEDULE_CHOOSE_PET(conversationSession, messageCommand);
 
             case STATE_SCHEDULE_CHOOSE_SERVICE:
-                break;
+                return scheduleHandler.handle_STATE_SCHEDULE_CHOOSE_SERVICE(conversationSession, messageCommand);
 
             case STATE_SCHEDULE_CHOOSE_SLOT:
-                break;
+                return scheduleHandler.handle_STATE_SCHEDULE_CHOOSE_SLOT(conversationSession, messageCommand);
+
+            case STATE_SCHEDULE_OBS:
+                return scheduleHandler.handle_STATE_SCHEDULE_OBS(conversationSession, messageCommand);
 
             case STATE_SCHEDULE_CONFIRM:
-                break;
+                return scheduleHandler.handle_STATE_SCHEDULE_CONFIRM(conversationSession, messageCommand);
 
             case STATE_RESCHEDULE_START:
-                break;
+                return rescheduleHandler.handle_STATE_RESCHEDULE_START(conversationSession, messageCommand);
             
             case STATE_RESCHEDULE_CHOOSE_APPOINTMENT:
-                break;
+                return rescheduleHandler.handle_STATE_RESCHEDULE_CHOOSE_APPOINTMENT(conversationSession, messageCommand);
 
             case STATE_RESCHEDULE_CHOOSE_SLOT:
-                break;
+                return rescheduleHandler.handle_STATE_RESCHEDULE_CHOOSE_SLOT(conversationSession, messageCommand);
 
             case STATE_RESCHEDULE_CONFIRM:
-                break;
+                return rescheduleHandler.handle_STATE_RESCHEDULE_CONFIRM(conversationSession, messageCommand);
 
             case STATE_CANCEL_SCHEDULE_START:
                 return cancelScheduleHandler.handle_STATE_CANCEL_SCHEDULE_START(conversationSession, messageCommand);
@@ -197,15 +189,9 @@ public class DefaultProcessIncomingMessageUseCase implements ProcessIncomingMess
             case STATE_CANCEL_SCHEDULE_CONFIRM:
                 return cancelScheduleHandler.handle_STATE_CANCEL_SCHEDULE_CONFIRM(conversationSession, messageCommand);
 
-            case STATE_CHAT_WITH_HUMAN:
-                break;
-
             default:
-                break;
+                return startMenuHandler.STATE_START_handler(conversationSession);
         }
     }
-
-
-
-     
+ 
 }

@@ -27,6 +27,7 @@ public enum ConversationState {
     STATE_SCHEDULE_CHOOSE_PET,
     STATE_SCHEDULE_CHOOSE_SERVICE,
     STATE_SCHEDULE_CHOOSE_SLOT,
+    STATE_SCHEDULE_OBS,
     STATE_SCHEDULE_CONFIRM,
 
     //reagendar serviço

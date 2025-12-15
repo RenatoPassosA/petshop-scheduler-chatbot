@@ -38,6 +38,7 @@ import com.project.petshop_scheduler_chatbot.core.domain.PetService;
 import com.project.petshop_scheduler_chatbot.core.domain.exceptions.DomainValidationException;
 import com.project.petshop_scheduler_chatbot.application.exceptions.PetServiceNotFoundException;
 import com.project.petshop_scheduler_chatbot.core.domain.exceptions.InvalidAppointmentStateException;
+import com.project.petshop_scheduler_chatbot.core.domain.valueobject.Office;
 
 @ExtendWith(MockitoExtension.class)
 @WebMvcTest(PetServiceController.class)
@@ -95,7 +96,7 @@ public class PetServiceControllerTest {
     @Test
     public void testGetPetService() throws Exception {
         Long serviceId = 1L;
-        PetService petService = new PetService("massagem", new BigDecimal(220), 60, OffsetDateTime.now(), OffsetDateTime.now());
+        PetService petService = new PetService("massagem", new BigDecimal(220), 60, Office.AUX, OffsetDateTime.now(), OffsetDateTime.now());
 
         when(petServiceUseCase.getPetService(serviceId)).thenReturn(petService);
 
@@ -112,10 +113,10 @@ public class PetServiceControllerTest {
     @Test
     public void getAll() throws Exception {
         List<PetService> services = new ArrayList<>();
-        services.add(new PetService("massagem", new BigDecimal(220), 60, OffsetDateTime.now(), OffsetDateTime.now()));
-        services.add(new PetService("tosa", new BigDecimal(70), 90, OffsetDateTime.now(), OffsetDateTime.now()));
-        services.add(new PetService("banho", new BigDecimal(50), 60, OffsetDateTime.now(), OffsetDateTime.now()));
-        services.add(new PetService("banho e tosa", new BigDecimal(110), 150, OffsetDateTime.now(), OffsetDateTime.now()));
+        services.add(new PetService("massagem", new BigDecimal(220), 60, Office.AUX, OffsetDateTime.now(), OffsetDateTime.now()));
+        services.add(new PetService("tosa", new BigDecimal(70), 90, Office.AUX, OffsetDateTime.now(), OffsetDateTime.now()));
+        services.add(new PetService("banho", new BigDecimal(50), 60, Office.AUX, OffsetDateTime.now(), OffsetDateTime.now()));
+        services.add(new PetService("banho e tosa", new BigDecimal(110), 150, Office.AUX, OffsetDateTime.now(), OffsetDateTime.now()));
     
         when(petServiceUseCase.getAll()).thenReturn(services);
 

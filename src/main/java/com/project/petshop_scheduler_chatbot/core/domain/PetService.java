@@ -5,19 +5,21 @@ import java.math.RoundingMode;
 import java.time.OffsetDateTime;
 
 import com.project.petshop_scheduler_chatbot.core.domain.exceptions.DomainValidationException;
+import com.project.petshop_scheduler_chatbot.core.domain.valueobject.Office;
 
 public class PetService {
     private Long			id;
     private String			name;
     private BigDecimal  	price;
     private int			    duration;
+    private Office          canDo;
     private OffsetDateTime	createdAt;
     private OffsetDateTime	updatedAt;
 
     public PetService() {
     }
 
-    public PetService(String name, BigDecimal price, int duration, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
+    public PetService(String name, BigDecimal price, int duration, Office canDo, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
         if (name == null)
             throw new DomainValidationException("Nome do Serviço é obrigatório");
         name = name.trim();
@@ -25,11 +27,12 @@ public class PetService {
         this.name = name;
         this.price = normalizePrice(price); 
         this.duration = duration;
+        this.canDo = canDo;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;  
     }
 
-    private PetService(Long id, String name, BigDecimal price, int duration, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
+    private PetService(Long id, String name, BigDecimal price, int duration, Office canDo, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
         if (name == null)
             throw new DomainValidationException("Nome do Serviço é obrigatório");
         name = name.trim();
@@ -38,6 +41,7 @@ public class PetService {
         this.name = name;
         this.price = normalizePrice(price); 
         this.duration = duration;
+        this.canDo = canDo;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;  
     }
@@ -52,6 +56,8 @@ public class PetService {
             throw new DomainValidationException("Duração válida do serviço é obrigatória (entre 30 e 180 minutos)");
         if (duration % scheduleStep != 0)
             throw new DomainValidationException("Normalizar duração de serviço terminando em multiplos de 15");
+        if (canDo == null)
+            throw new DomainValidationException("Informar profissional capacitado");
     }
 
     private BigDecimal normalizePrice(BigDecimal price) {
@@ -69,7 +75,7 @@ public class PetService {
     public PetService withPersistenceId (Long id) {
         if (id == null || id < 0)
             throw new DomainValidationException("Id inválido");
-        return new PetService(id, this.name, this.price, this.duration, this.createdAt, this.updatedAt);
+        return new PetService(id, this.name, this.price, this.duration, this.canDo, this.createdAt, this.updatedAt);
     }
 
     public Long getId() {
@@ -86,6 +92,10 @@ public class PetService {
 
     public int getDuration() {
         return duration;
+    }
+
+    public Office getCanDo() {
+        return canDo;
     }
 
     public OffsetDateTime getCreatedAt() {
@@ -109,5 +119,9 @@ public class PetService {
     public void setDuration(int duration) {
         this.updatedAt = OffsetDateTime.now();
         this.duration = duration;
+    }
+
+    public void setCandDo(Office canDo) {
+        this.canDo = canDo;
     }
 }

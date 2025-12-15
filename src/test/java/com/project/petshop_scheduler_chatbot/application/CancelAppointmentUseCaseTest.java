@@ -30,6 +30,7 @@ import com.project.petshop_scheduler_chatbot.core.domain.application.TimeProvide
 import com.project.petshop_scheduler_chatbot.core.domain.exceptions.DomainValidationException;
 import com.project.petshop_scheduler_chatbot.core.domain.exceptions.InvalidAppointmentStateException;
 import com.project.petshop_scheduler_chatbot.core.domain.valueobject.AppointmentStatus;
+import com.project.petshop_scheduler_chatbot.core.domain.valueobject.Office;
 import com.project.petshop_scheduler_chatbot.core.repository.AppointmentRepository;
 import com.project.petshop_scheduler_chatbot.core.repository.PetServiceRepository;
 
@@ -64,7 +65,7 @@ public class CancelAppointmentUseCaseTest {
         CancelAppointmentCommand command = new CancelAppointmentCommand(appointmentId);
         Appointment appointment = new Appointment(petId, tutorId, professionalId, serviceId, startAt, 120, AppointmentStatus.SCHEDULED, "nenhuma", provided, provided);
         Appointment appointmentWithId = appointment.withPersistenceId(appointmentId);
-        PetService petService = new PetService("tosa", new BigDecimal(100), 150, provided, provided);
+        PetService petService = new PetService("tosa", new BigDecimal(100), 150, Office.AUX, provided, provided);
 
         when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointmentWithId));
         when(petServiceRepository.findById(serviceId)).thenReturn(Optional.of(petService));
