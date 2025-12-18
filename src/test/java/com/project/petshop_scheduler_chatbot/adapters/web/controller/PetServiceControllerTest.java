@@ -54,7 +54,7 @@ public class PetServiceControllerTest {
     public void testAddPetService() throws Exception {
         Long serviceId = 1L;
         
-        AddPetServiceResult result = new AddPetServiceResult(serviceId, "tosa", new BigDecimal(100), 180);
+        AddPetServiceResult result = new AddPetServiceResult(serviceId, "tosa", new BigDecimal(100), 180, "AUX");
 
         when(petServiceUseCase.register(Mockito.any(AddPetServiceCommand.class))).thenReturn(result);
 
@@ -62,7 +62,8 @@ public class PetServiceControllerTest {
             {
             "name": "tosa",
             "price": "100",
-            "duration": "180"
+            "duration": "180",
+            "canDo": "AUX"
             }
             """;
 
@@ -72,7 +73,7 @@ public class PetServiceControllerTest {
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.id").value(1))
         .andExpect(jsonPath("$.name").value("tosa"))
-        .andExpect(jsonPath("$.price").value("100"))
+        .andExpect(jsonPath("$.price").value(100))
         .andExpect(jsonPath("$.duration").value("180"));
 
         verify(petServiceUseCase, times(1)).register(Mockito.any(AddPetServiceCommand.class));
@@ -170,7 +171,8 @@ public class PetServiceControllerTest {
                             {
                             "name": "tosa premium",
                             "price": "200",
-                            "duration": "150"
+                            "duration": "150",
+                            "canDo": "AUX"
                             }
                             """;
 
@@ -196,7 +198,8 @@ public class PetServiceControllerTest {
                             {
                             "name": "",
                             "price": "200",
-                            "duration": "150"
+                            "duration": "150",
+                            "canDo": "AUX"
                             }
                             """;
 

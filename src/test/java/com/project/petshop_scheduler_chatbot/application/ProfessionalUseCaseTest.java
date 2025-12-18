@@ -35,11 +35,8 @@ import com.project.petshop_scheduler_chatbot.core.repository.ProfessionalReposit
 @ExtendWith(MockitoExtension.class)
 public class ProfessionalUseCaseTest {
 
-    @Mock
-    private ProfessionalRepository professionalRepository;
-
-    @Mock
-    private TimeProvider timeProvider;
+    @Mock private ProfessionalRepository professionalRepository;
+    @Mock private TimeProvider timeProvider;
 
     private ProfessionalUseCase professionalUseCase;
 

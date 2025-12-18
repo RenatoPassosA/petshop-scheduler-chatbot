@@ -37,14 +37,9 @@ import com.project.petshop_scheduler_chatbot.core.repository.PetServiceRepositor
 @ExtendWith(MockitoExtension.class)
 public class CancelAppointmentUseCaseTest {
 
-    @Mock
-    private AppointmentRepository appointmentRepository;
-
-    @Mock
-    private PetServiceRepository petServiceRepository;
-
-    @Mock
-    private TimeProvider timeProvider;
+    @Mock private AppointmentRepository appointmentRepository;
+    @Mock private PetServiceRepository petServiceRepository;
+    @Mock private TimeProvider timeProvider;
 
     private DefaultCancelAppointmentUseCase defaultCancelAppointmentUseCase;
 

@@ -41,13 +41,37 @@ public class ConversationSession {
     private String              tempPetBreed;
     private String              tempPetObs;
 
-    
-
     public ConversationSession(String waId) {
         this.waId = waId;
         this.currentState = ConversationState.STATE_START;
         this.lastInteraction = OffsetDateTime.now();
     }
+
+    public void resetFlowData() {
+        this.petId = null;
+        this.chosenServiceId = null;
+        this.chosenSlot = null;
+        this.observations = null;
+        this.appointmentId = null;
+
+        this.chosenAppointmentId = null;
+        this.chosenAppointment = null;
+
+        this.allTutorsPets = null;
+        this.slots = null;
+
+        this.tempTutorName = null;
+        this.tempTutorAddress = null;
+
+
+        this.tempPetName = null;
+        this.tempPetGender = null;
+        this.tempPetSize = null;
+        this.tempPetBreed = null;
+        this.tempPetObs = null;
+    }
+
+
 
     public String getWaId() {
         return waId;
@@ -65,7 +89,7 @@ public class ConversationSession {
         return petId;
     }
 
-    public Long getChoosenServiceId() {
+    public Long getChosenServiceId() {
         return chosenServiceId;
     }
 
@@ -153,7 +177,7 @@ public class ConversationSession {
         this.petId = petId;
     }
     
-    public void setChoosenServiceId(Long chosenServiceId) {
+    public void setChosenServiceId(Long chosenServiceId) {
         this.chosenServiceId = chosenServiceId;
     }
 

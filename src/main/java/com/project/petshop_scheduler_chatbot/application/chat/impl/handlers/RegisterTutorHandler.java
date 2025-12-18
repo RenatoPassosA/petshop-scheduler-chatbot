@@ -1,6 +1,8 @@
-package com.project.petshop_scheduler_chatbot.application.chat.impl;
+package com.project.petshop_scheduler_chatbot.application.chat.impl.handlers;
 
 import java.util.List;
+
+import org.springframework.stereotype.Component;
 
 import com.project.petshop_scheduler_chatbot.application.chat.ProcessIncomingMessageCommand;
 import com.project.petshop_scheduler_chatbot.application.chat.ProcessIncomingMessageResult;
@@ -12,6 +14,7 @@ import com.project.petshop_scheduler_chatbot.core.domain.chatbot.ConversationSes
 import com.project.petshop_scheduler_chatbot.core.domain.chatbot.ConversationState;
 import com.project.petshop_scheduler_chatbot.core.domain.valueobject.PhoneNumber;
 
+@Component
 public class RegisterTutorHandler {
 
     private final TutorUseCase tutorUseCase;
@@ -64,6 +67,7 @@ public class RegisterTutorHandler {
         }
 
         if ("NO".equals(messageCommand.getButtonId())) {
+            conversationSession.resetFlowData();
             conversationSession.setCurrentState(ConversationState.STATE_START);
             return startMenuHandler.STATE_START_handler(conversationSession);
         }
@@ -71,6 +75,7 @@ public class RegisterTutorHandler {
         PhoneNumber phone = new PhoneNumber(conversationSession.getWaId());
         AddTutorCommand command = new AddTutorCommand(conversationSession.getTempTutorName(), phone, conversationSession.getTempTutorAddress());
         tutorUseCase.execute(command);
+        conversationSession.resetFlowData();
         conversationSession.setCurrentState(ConversationState.STATE_START);
         return ProcessIncomingMessageResult.text("Agradecemos a preferencia!"); 
         }

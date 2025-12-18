@@ -38,17 +38,10 @@ import com.project.petshop_scheduler_chatbot.core.repository.ProfessionalTimeOff
 @ExtendWith(MockitoExtension.class)
 public class RescheduleAppointmentUseCaseTest {
 
-    @Mock
-    private AppointmentRepository appointmentRepository;
-
-    @Mock
-    private ProfessionalTimeOffRepository professionalTimeOffRepository;
-
-    @Mock
-    private BusinessHoursPolicy businessHoursPolicy;
-
-    @Mock
-    private TimeProvider timeProvider;
+    @Mock private AppointmentRepository appointmentRepository;
+    @Mock private ProfessionalTimeOffRepository professionalTimeOffRepository;
+    @Mock private BusinessHoursPolicy businessHoursPolicy;
+    @Mock private TimeProvider timeProvider;
 
     private DefaultRescheduleAppointmentUseCase defaultRescheduleAppointmentUseCase;
 
@@ -62,7 +55,7 @@ public class RescheduleAppointmentUseCaseTest {
         Long appointmentId = 1L;
         OffsetDateTime provided = OffsetDateTime.now();
         OffsetDateTime startAt = OffsetDateTime.parse("2025-12-08T12:30:00Z");
-        OffsetDateTime newStartAt = OffsetDateTime.parse("2025-12-11T12:30:00Z");
+        OffsetDateTime newStartAt = OffsetDateTime.parse("2100-12-11T12:30:00Z");
         Long petId = 2L;
         Long tutorId = 3L;
         Long professionalId = 4L;
@@ -228,7 +221,7 @@ public class RescheduleAppointmentUseCaseTest {
         Long appointmentId = 1L;
         OffsetDateTime provided = OffsetDateTime.now();
         OffsetDateTime startAt = OffsetDateTime.parse("2025-12-08T12:30:00Z");
-        OffsetDateTime newStartAt = OffsetDateTime.parse("2025-12-11T12:30:00Z");
+        OffsetDateTime newStartAt = OffsetDateTime.parse("2100-12-11T12:30:00Z");
         Long petId = 2L;
         Long tutorId = 3L;
         Long professionalId = 4L;
@@ -263,7 +256,7 @@ public class RescheduleAppointmentUseCaseTest {
         Long appointmentId = 1L;
         OffsetDateTime provided = OffsetDateTime.now();
         OffsetDateTime startAt = OffsetDateTime.parse("2025-12-08T12:30:00Z");
-        OffsetDateTime newStartAt = OffsetDateTime.parse("2025-12-11T12:30:00Z");
+        OffsetDateTime newStartAt = OffsetDateTime.parse("2100-12-11T12:30:00Z");
         Long petId = 2L;
         Long tutorId = 3L;
         Long professionalId = 4L;

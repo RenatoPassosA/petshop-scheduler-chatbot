@@ -1,4 +1,6 @@
-package com.project.petshop_scheduler_chatbot.application.chat.impl;
+package com.project.petshop_scheduler_chatbot.application.chat.impl.handlers;
+
+import org.springframework.stereotype.Component;
 
 import com.project.petshop_scheduler_chatbot.application.chat.ProcessIncomingMessageResult;
 import com.project.petshop_scheduler_chatbot.application.chat.messages.MenuMessages;
@@ -7,6 +9,7 @@ import com.project.petshop_scheduler_chatbot.core.domain.chatbot.ConversationSta
 import com.project.petshop_scheduler_chatbot.core.domain.valueobject.PhoneNumber;
 import com.project.petshop_scheduler_chatbot.core.repository.TutorRepository;
 
+@Component
 public class StartMenuHandler {
 
     private final TutorRepository tutorRepository;

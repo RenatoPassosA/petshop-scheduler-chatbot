@@ -47,29 +47,14 @@ import com.project.petshop_scheduler_chatbot.core.repository.TutorRepository;
 @ExtendWith(MockitoExtension.class)
 public class ScheduleAppointmentUseCaseTest {
 
-    @Mock
-    private AppointmentRepository appointmentRepository;
-
-    @Mock
-    private PetServiceRepository petServiceRepository;
-
-    @Mock
-    private ProfessionalTimeOffRepository professionalTimeOffRepository;
-
-    @Mock
-    private PetRepository petRepository;
-
-    @Mock
-    private TutorRepository tutorRepository;
-
-    @Mock
-    private ProfessionalRepository professionalRepository;
-
-    @Mock
-    private BusinessHoursPolicy businessHoursPolicy;
-
-    @Mock
-    private TimeProvider timeProvider;
+    @Mock private AppointmentRepository appointmentRepository;
+    @Mock private PetServiceRepository petServiceRepository;
+    @Mock private ProfessionalTimeOffRepository professionalTimeOffRepository;
+    @Mock private PetRepository petRepository;
+    @Mock private TutorRepository tutorRepository;
+    @Mock private ProfessionalRepository professionalRepository;
+    @Mock private BusinessHoursPolicy businessHoursPolicy;
+    @Mock private TimeProvider timeProvider;
 
     private DefaultScheduleAppointmentUseCase defaultScheduleAppointmentUseCase;
 

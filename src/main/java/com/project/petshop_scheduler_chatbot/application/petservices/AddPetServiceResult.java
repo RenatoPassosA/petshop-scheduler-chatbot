@@ -7,12 +7,14 @@ public class AddPetServiceResult {
     final private String		name;
     final private BigDecimal  	price;
     final private Integer		duration;
+    final private String        canDo;
     
-    public AddPetServiceResult (Long id, String name, BigDecimal price, Integer duration) {
+    public AddPetServiceResult (Long id, String name, BigDecimal price, Integer duration, String canDo) {
         this.id = id;
         this.name = name;
         this.price = price;
         this.duration = duration;
+        this.canDo = canDo;
     }
 
     public Long getId() {
@@ -29,5 +31,9 @@ public class AddPetServiceResult {
 
     public Integer getDuration() {
         return duration;
+    }
+
+    public String getCanDo() {
+        return canDo;
     }
 }

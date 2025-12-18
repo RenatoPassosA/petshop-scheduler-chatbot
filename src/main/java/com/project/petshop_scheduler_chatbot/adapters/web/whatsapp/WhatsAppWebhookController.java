@@ -1,4 +1,4 @@
-package com.project.petshop_scheduler_chatbot.adapters.whatsapp.webhook;
+package com.project.petshop_scheduler_chatbot.adapters.web.whatsapp;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -8,11 +8,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.project.petshop_scheduler_chatbot.adapters.web.whatsapp.dto.WhatsAppWebhookPayload;
+
 
 
 @RestController
 @RequestMapping("/whatsapp/webhook")
 public class WhatsAppWebhookController {
+
+    private final WhatsAppWebhookService whatsAppWebhookService;
+
+    public WhatsAppWebhookController(WhatsAppWebhookService whatsAppWebhookService) {
+        this.whatsAppWebhookService = whatsAppWebhookService;
+    }
 
     @GetMapping
     public ResponseEntity<String> verifyWebhook(@RequestParam(name = "hub.mode", required = false) String mode,
@@ -49,11 +57,9 @@ public class WhatsAppWebhookController {
     */
 
     @PostMapping
-    public ResponseEntity<Void> receiveMessage(@RequestBody String body) {
-
-        System.out.println("Recebido do WhatsApp:");
-        System.out.println(body);
-
+    public ResponseEntity<Void> receiveMessage(@RequestBody WhatsAppWebhookPayload payload) {
+        whatsAppWebhookService.handle(payload);
         return ResponseEntity.ok().build();
     }
+    
 }

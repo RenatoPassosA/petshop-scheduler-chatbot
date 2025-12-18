@@ -1,4 +1,6 @@
-package com.project.petshop_scheduler_chatbot.application.chat.impl;
+package com.project.petshop_scheduler_chatbot.application.chat.impl.handlers;
+
+import org.springframework.stereotype.Component;
 
 import com.project.petshop_scheduler_chatbot.application.chat.ProcessIncomingMessageCommand;
 import com.project.petshop_scheduler_chatbot.application.chat.ProcessIncomingMessageResult;
@@ -7,6 +9,7 @@ import com.project.petshop_scheduler_chatbot.application.chat.messages.MenuMessa
 import com.project.petshop_scheduler_chatbot.core.domain.chatbot.ConversationSession;
 import com.project.petshop_scheduler_chatbot.core.domain.chatbot.ConversationState;
 
+@Component
 public class MainMenuHandler {
 
     private final ScheduleHandler scheduleHandler;

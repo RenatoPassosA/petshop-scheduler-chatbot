@@ -1,8 +1,10 @@
-package com.project.petshop_scheduler_chatbot.application.chat.impl;
+package com.project.petshop_scheduler_chatbot.application.chat.impl.handlers;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.stereotype.Component;
 
 import com.project.petshop_scheduler_chatbot.application.appointment.AvailableSlots;
 import com.project.petshop_scheduler_chatbot.application.appointment.ListAvailableSlotsUseCase;
@@ -15,6 +17,8 @@ import com.project.petshop_scheduler_chatbot.application.chat.messages.MenuMessa
 import com.project.petshop_scheduler_chatbot.application.chat.messages.InteractiveBodyMessages.ButtonOption;
 import com.project.petshop_scheduler_chatbot.application.chat.messages.InteractiveBodyMessages.InteractiveMessage;
 import com.project.petshop_scheduler_chatbot.core.domain.Appointment;
+import com.project.petshop_scheduler_chatbot.core.domain.Pet;
+import com.project.petshop_scheduler_chatbot.core.domain.PetService;
 import com.project.petshop_scheduler_chatbot.core.domain.Tutor;
 import com.project.petshop_scheduler_chatbot.core.domain.chatbot.ConversationSession;
 import com.project.petshop_scheduler_chatbot.core.domain.chatbot.ConversationState;
@@ -24,6 +28,7 @@ import com.project.petshop_scheduler_chatbot.core.repository.PetRepository;
 import com.project.petshop_scheduler_chatbot.core.repository.PetServiceRepository;
 import com.project.petshop_scheduler_chatbot.core.repository.TutorRepository;
 
+@Component
 public class RescheduleHandler {
 
     private final StartMenuHandler startMenuHandler;
@@ -93,6 +98,7 @@ public class RescheduleHandler {
         RescheduleAppointmentCommand command = new RescheduleAppointmentCommand(conversationSession.getChosenAppointmentId(),
                                                                                 conversationSession.getChosenSlot().getStartAt());
         rescheduleAppointmentUseCase.execute(command);
+        conversationSession.resetFlowData();
         conversationSession.setCurrentState(ConversationState.STATE_START);
         return ProcessIncomingMessageResult.text("Agradecemos a preferencia!\nEstamos aguardando o seu pet!"); 
     }
@@ -179,7 +185,7 @@ public class RescheduleHandler {
     }
 
     private ProcessIncomingMessageResult generateSlotsButtons(ConversationSession conversationSession, boolean withError) {
-        List<AvailableSlots> availableSlots = listAvailableSlotsUseCase.listSlots(conversationSession.getChosenAppointment().getServiceId());
+        List<AvailableSlots> availableSlots = listAvailableSlotsUseCase.listSlots(conversationSession.getChosenAppointment().getServiceId(), conversationSession.getLastInteraction());
         List<ButtonOption> slotButtons = new ArrayList<>();
 
         for (int i = 0; i < availableSlots.size(); i++) {
@@ -198,22 +204,21 @@ public class RescheduleHandler {
         return ProcessIncomingMessageResult.interactive(new InteractiveMessage("Para qual horário deseja reagendar?\n", slotButtons));
     }
 
-    private String  generateConfirmationMessage(ConversationSession conversationSession, boolean withError) {
+    private String generateConfirmationMessage(ConversationSession conversationSession, boolean withError) {
         AvailableSlots slot = conversationSession.getChosenSlot();
-        String petName = petRepository.findById(conversationSession.getChosenAppointment().getPetId()).get().getName();
-        String serviceName = petServiceRepository.findById(conversationSession.getChosenAppointment().getServiceId()).get().getName();
-        String message;
-        if (withError)
-            message = "⚠️ Não entendi, selecione SIM ou NÃO.\n" +
-                      "Dia: " + DateTimeFormatterHelper.formatDateTime(slot.getStartAt()) + 
-                      "\nPet: " + petName +
-                      "\nServiço: " + serviceName +
-                      "\nProfissional: " + slot.getProfessionalName();
-        else
-            message = "Dia: " + DateTimeFormatterHelper.formatDateTime(slot.getStartAt()) + 
-                      "\nPet: " + petName +
-                      "\nServiço: " + serviceName +
-                      "\nProfissional: " + slot.getProfessionalName();
-        return message;
+
+        String petName = petRepository.findById(conversationSession.getPetId()).map(Pet::getName).orElse("Pet não encontrado");
+
+        String serviceName = petServiceRepository.findById(conversationSession.getChosenServiceId()).map(PetService::getName).orElse("Serviço não encontrado");
+
+        String professionalName =slot.getProfessionalName() != null ? slot.getProfessionalName() : "Profissional selecionado automaticamente";
+
+        String header = withError ? "⚠️ Não entendi, selecione SIM ou NÃO.\n" : "";
+
+        return header +
+            "Dia: " + DateTimeFormatterHelper.formatDateTime(slot.getStartAt()) +
+            "\nPet: " + petName +
+            "\nServiço: " + serviceName +
+            "\nProfissional: " + professionalName;
     }
 }

@@ -1,7 +1,10 @@
 package com.project.petshop_scheduler_chatbot.infrastructure.persistence.jpa.mapper;
 
+import java.time.OffsetDateTime;
+
 import com.project.petshop_scheduler_chatbot.application.appointment.AvailableSlots;
 import com.project.petshop_scheduler_chatbot.core.domain.chatbot.ConversationSession;
+import com.project.petshop_scheduler_chatbot.core.domain.chatbot.ConversationState;
 import com.project.petshop_scheduler_chatbot.infrastructure.persistence.jpa.entity.ConversationSessionEntity;
 
 public final class ConversationSessionMapper {
@@ -11,16 +14,28 @@ public final class ConversationSessionMapper {
     public static ConversationSession toDomain(ConversationSessionEntity entity) {
         ConversationSession session = new ConversationSession(entity.getWaId());
 
-        session.setCurrentState(entity.getCurrentState());
+        if (entity.getCurrentState() != null) {
+            session.setCurrentState(entity.getCurrentState());
+        } else {
+            session.setCurrentState(ConversationState.STATE_START);
+        }
+
         session.setRegisteredTutorName(entity.getRegisteredTutorName());
-        session.setLastInteraction(entity.getLastInteraction());
+
+        if (entity.getLastInteraction() != null) {
+            session.setLastInteraction(entity.getLastInteraction());
+        } else {
+            session.setLastInteraction(OffsetDateTime.now());
+        }
+
         session.setChatWithHuman(entity.isChatWithHuman());
 
         session.setTutorId(entity.getTutorId());
         session.setPetId(entity.getPetId());
-        session.setChoosenServiceId(entity.getChosenServiceId());
+        session.setChosenServiceId(entity.getChosenServiceId());
         session.setObservations(entity.getObservations());
         session.setAppointmentId(entity.getAppointmentId());
+
         session.setChosenAppointmentId(entity.getChosenAppointmentId());
 
         session.setTempTutorName(entity.getTempTutorName());
@@ -36,8 +51,7 @@ public final class ConversationSessionMapper {
             AvailableSlots slot = new AvailableSlots(
                 entity.getChosenSlotStartAt(),
                 entity.getChosenSlotProfessionalId(),
-                null
-            );
+                null);
             session.setChosenSlot(slot);
         } else {
             session.setChosenSlot(null);
@@ -50,20 +64,34 @@ public final class ConversationSessionMapper {
         return session;
     }
 
+ 
     public static ConversationSessionEntity toEntity(ConversationSession session) {
         ConversationSessionEntity entity = new ConversationSessionEntity();
 
         entity.setWaId(session.getWaId());
-        entity.setCurrentState(session.getCurrentState());
+        entity.setCurrentState(
+            session.getCurrentState() != null
+                ? session.getCurrentState()
+                : ConversationState.STATE_START
+        );
+
         entity.setRegisteredTutorName(session.getRegisteredTutorName());
-        entity.setLastInteraction(session.getLastInteraction());
+
+        entity.setLastInteraction(
+            session.getLastInteraction() != null
+                ? session.getLastInteraction()
+                : OffsetDateTime.now()
+        );
+
         entity.setChatWithHuman(session.isChatWithHuman());
+
 
         entity.setTutorId(session.getTutorId());
         entity.setPetId(session.getPetId());
-        entity.setChosenServiceId(session.getChoosenServiceId());
+        entity.setChosenServiceId(session.getChosenServiceId());
         entity.setObservations(session.getObservations());
         entity.setAppointmentId(session.getAppointmentId());
+
         entity.setChosenAppointmentId(session.getChosenAppointmentId());
 
         entity.setTempTutorName(session.getTempTutorName());
@@ -75,7 +103,6 @@ public final class ConversationSessionMapper {
         entity.setTempPetBreed(session.getTempPetBreed());
         entity.setTempPetObs(session.getTempPetObs());
 
-        // persiste os dados necessários do slot
         if (session.getChosenSlot() != null) {
             entity.setChosenSlotStartAt(session.getChosenSlot().getStartAt());
             entity.setChosenSlotProfessionalId(session.getChosenSlot().getProfessionalId());

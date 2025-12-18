@@ -1,9 +1,11 @@
-package com.project.petshop_scheduler_chatbot.application.chat.impl;
+package com.project.petshop_scheduler_chatbot.application.chat.impl.handlers;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.stereotype.Component;
 
 import com.project.petshop_scheduler_chatbot.application.appointment.CancelAppointmentCommand;
 import com.project.petshop_scheduler_chatbot.application.appointment.CancelAppointmentUseCase;
@@ -22,6 +24,7 @@ import com.project.petshop_scheduler_chatbot.core.repository.AppointmentReposito
 import com.project.petshop_scheduler_chatbot.core.repository.PetRepository;
 import com.project.petshop_scheduler_chatbot.core.repository.PetServiceRepository;
 
+@Component
 public class CancelScheduleHandler {
 
     private final AppointmentRepository appointmentRepository;
@@ -53,20 +56,20 @@ public class CancelScheduleHandler {
                                                             MenuMessages.mainMenu(conversationSession.getRegisteredTutorName()));
         }
         List<ButtonOption> appointmentButtons = new ArrayList<>();
-                for (Appointment appointmentList : appointments) {
-                    Optional<PetService> petService = petServiceRepository.findById(appointmentList.getServiceId());
-                    Optional<Pet> pet = petRepository.findById(appointmentList.getPetId());
+        for (Appointment appointmentList : appointments) {
+            Optional<PetService> petService = petServiceRepository.findById(appointmentList.getServiceId());
+            Optional<Pet> pet = petRepository.findById(appointmentList.getPetId());
 
-                    if (petService.isEmpty() || pet.isEmpty()) {
-                        continue;
-                    }
-                    String buttonIndex = appointmentList.getId().toString();
-                    String serviceName = petService.get().getName();
-                    String petName = pet.get().getName();
-                    String serviceDate =  DateTimeFormatterHelper.formatDateTime(appointmentList.getStartAt());
-                    String appointmentInfo = serviceName + " para " + petName + " dia: " + serviceDate;
-                    appointmentButtons.add(new ButtonOption(buttonIndex, appointmentInfo));
-                }
+            if (petService.isEmpty() || pet.isEmpty()) {
+                continue;
+            }
+            String buttonIndex = appointmentList.getId().toString();
+            String serviceName = petService.get().getName();
+            String petName = pet.get().getName();
+            String serviceDate =  DateTimeFormatterHelper.formatDateTime(appointmentList.getStartAt());
+            String appointmentInfo = serviceName + " para " + petName + " dia: " + serviceDate;
+            appointmentButtons.add(new ButtonOption(buttonIndex, appointmentInfo));
+        }
 
         if (appointmentButtons.isEmpty()) {
             conversationSession.setCurrentState(ConversationState.STATE_MAIN_MENU);
@@ -78,7 +81,7 @@ public class CancelScheduleHandler {
     }
 
     public ProcessIncomingMessageResult handle_STATE_CANCEL_SCHEDULE_CHOOSE_APPOINTMENT(ConversationSession conversationSession, ProcessIncomingMessageCommand messageCommand) {
-        Long appointmentId = checkIfButtoIdIsNumeric(messageCommand.getButtonId());
+        Long appointmentId = checkIfButtonIdIsNumeric(messageCommand.getButtonId());
 
         if (appointmentId == null) {
             conversationSession.setCurrentState(ConversationState.STATE_MAIN_MENU);
@@ -131,13 +134,12 @@ public class CancelScheduleHandler {
             conversationSession.setCurrentState(ConversationState.STATE_MAIN_MENU);
             return ProcessIncomingMessageResult.interactiveWithMessage("O que deseja fazer?\n\n", MenuMessages.mainMenu(conversationSession.getRegisteredTutorName()));
         }
-        else {
-            Long appointmentId = conversationSession.getAppointmentId();
-            CancelAppointmentCommand command = new CancelAppointmentCommand(appointmentId);
-            cancelAppointmentUseCase.execute(command);
-            conversationSession.setCurrentState(ConversationState.STATE_FINISHED);
-            return ProcessIncomingMessageResult.text("Agradecemos a preferencia!\n");
-        }
+        Long appointmentId = conversationSession.getAppointmentId();
+        CancelAppointmentCommand command = new CancelAppointmentCommand(appointmentId);
+        cancelAppointmentUseCase.execute(command);
+        conversationSession.resetFlowData();
+        conversationSession.setCurrentState(ConversationState.STATE_FINISHED);
+        return ProcessIncomingMessageResult.text("Agradecemos a preferencia!\n");
     }
 
     private boolean canCancelAppointment(Appointment appointment) {
@@ -165,7 +167,7 @@ public class CancelScheduleHandler {
         return false;
     }
 
-    private Long checkIfButtoIdIsNumeric(String buttonId) {
+    private Long checkIfButtonIdIsNumeric(String buttonId) {
         Long appointmentId;
 
         try {

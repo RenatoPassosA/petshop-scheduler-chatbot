@@ -42,9 +42,10 @@ public class DefaultRegisterPetServiceUseCase implements PetServiceUseCase {
         petService = petServiceRepository.save(petService);
 
         AddPetServiceResult result = new AddPetServiceResult(petService.getId(),
-                                                                petService.getName(),
-                                                                petService.getPrice(),
-                                                                petService.getDuration()
+                                                            petService.getName(),
+                                                            petService.getPrice(),
+                                                            petService.getDuration(),
+                                                            petService.getCanDo().toString()
                                                             );
 
         return (result);

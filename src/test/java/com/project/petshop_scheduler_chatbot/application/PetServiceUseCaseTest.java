@@ -37,11 +37,9 @@ import com.project.petshop_scheduler_chatbot.core.repository.PetServiceRepositor
 @ExtendWith(MockitoExtension.class)
 public class PetServiceUseCaseTest {
 
-    @Mock
-    private PetServiceRepository petServiceRepository;
+    @Mock private PetServiceRepository petServiceRepository;
 
-    @Mock
-    private TimeProvider timeProvider;
+    @Mock private TimeProvider timeProvider;
 
     private PetServiceUseCase petServiceUseCase;
 
@@ -78,7 +76,7 @@ public class PetServiceUseCaseTest {
 
     @Test
     public void addPetService_Fail_DomainValidationException() {
-                AddPetServiceCommand command = new AddPetServiceCommand("tosa", new BigDecimal(100), 10, Office.AUX);
+        AddPetServiceCommand command = new AddPetServiceCommand("tosa", new BigDecimal(100), 10, Office.AUX);
 
     
         assertThrows(DomainValidationException.class, () -> {

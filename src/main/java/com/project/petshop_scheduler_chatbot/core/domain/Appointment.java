@@ -158,6 +158,10 @@ public class Appointment {
         this.serviceId = serviceId;
     }
 
+    public void setStartAt(OffsetDateTime newStartAt) {
+        this.startAt = newStartAt;
+    }
+
     public void setStatus(AppointmentStatus status) {
         this.status = status;
     }

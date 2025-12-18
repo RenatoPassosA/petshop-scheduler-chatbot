@@ -23,7 +23,7 @@ public class PetService {
         if (name == null)
             throw new DomainValidationException("Nome do Serviço é obrigatório");
         name = name.trim();
-        basicValidations(name, duration);
+        basicValidations(name, duration, canDo);
         this.name = name;
         this.price = normalizePrice(price); 
         this.duration = duration;
@@ -36,7 +36,7 @@ public class PetService {
         if (name == null)
             throw new DomainValidationException("Nome do Serviço é obrigatório");
         name = name.trim();
-        basicValidations(name, duration);
+        basicValidations(name, duration, canDo);
         this.id = id;
         this.name = name;
         this.price = normalizePrice(price); 
@@ -46,7 +46,7 @@ public class PetService {
         this.updatedAt = updatedAt;  
     }
 
-    private void    basicValidations(String name, int duration) {
+    private void    basicValidations(String name, int duration, Office canDo) {
 
         int scheduleStep = 15;
 

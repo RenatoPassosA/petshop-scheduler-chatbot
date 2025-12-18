@@ -37,11 +37,8 @@ import com.project.petshop_scheduler_chatbot.core.repository.TutorRepository;
 @ExtendWith(MockitoExtension.class)
 public class TutorUseCaseTest {
 
-    @Mock
-    private TutorRepository tutorRepository;
-
-    @Mock
-    private TimeProvider timeProvider;
+    @Mock private TutorRepository tutorRepository;
+    @Mock private TimeProvider timeProvider;
 
     private TutorUseCase tutorUseCase;
 

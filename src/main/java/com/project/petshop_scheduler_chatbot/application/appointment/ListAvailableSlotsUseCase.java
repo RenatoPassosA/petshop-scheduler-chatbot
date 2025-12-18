@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import org.springframework.stereotype.Component;
+
 import com.project.petshop_scheduler_chatbot.application.petservices.PetServiceUseCase;
 import com.project.petshop_scheduler_chatbot.core.domain.Appointment;
 import com.project.petshop_scheduler_chatbot.core.domain.PetService;
@@ -13,6 +15,7 @@ import com.project.petshop_scheduler_chatbot.core.domain.policy.BusinessHoursPol
 import com.project.petshop_scheduler_chatbot.core.repository.AppointmentRepository;
 import com.project.petshop_scheduler_chatbot.core.repository.ProfessionalRepository;
 
+@Component
 public class ListAvailableSlotsUseCase {
 
     private final BusinessHoursPolicy businessHoursPolicy;
@@ -27,55 +30,57 @@ public class ListAvailableSlotsUseCase {
         this.professionalRepository = professionalRepository;
     }
 
-    public List<AvailableSlots> listSlots(Long serviceId) {
-        Long limit = 10L;
-        Long daysAhead = 7L;
+    public List<AvailableSlots> listSlots(Long serviceId, OffsetDateTime now) {
+        long daysAhead = 7L;
         int step = 30;
-        OffsetDateTime from = OffsetDateTime.now().plusDays(1).withHour(8).withMinute(0);
+
+        OffsetDateTime from = now.plusDays(1).withHour(8).withMinute(0).withSecond(0).withNano(0);
         OffsetDateTime to = from.plusDays(daysAhead);
+
         PetService service = petServiceUseCase.getPetService(serviceId);
         int serviceDuration = service.getDuration();
 
         List<Professional> professionals = professionalRepository.getAll();
-            
         List<AvailableSlots> listSlots = new ArrayList<>();
+
         for (Professional professionalI : professionals) {
-            limit = 10L;
-            OffsetDateTime cursor = from;
-            List<Appointment> appointmentsFromProfessional = appointmentRepository.listByProfessionalBetween(professionalI.getId(), from, to);
-            boolean invalidCandidate = false;
             if (!service.getCanDo().equals(professionalI.getFunction())) {
-                    continue;
-                }
+                continue;
+            }
+
+            long limit = 10L;
+            OffsetDateTime cursor = from;
+
+            List<Appointment> appointmentsFromProfessional =
+                appointmentRepository.listByProfessionalBetween(professionalI.getId(), from, to);
+
             while (cursor.isBefore(to) && limit != 0) {
                 OffsetDateTime start = cursor;
-                OffsetDateTime end = cursor.plusMinutes(Long.valueOf(serviceDuration));
+                OffsetDateTime end = cursor.plusMinutes(serviceDuration);
+                boolean invalidCandidate = false;
+
                 if (!businessHoursPolicy.fits(start, end)) {
-                    cursor = cursor.plusMinutes(step);
-                    continue;
-                }
-                
-                for (Appointment appointment : appointmentsFromProfessional) {
-                    if (start.isBefore(appointment.getStartAt().plusMinutes(appointment.getServiceDuration())) &&
-                        end.isAfter(appointment.getStartAt())) {
+                    invalidCandidate = true;
+                } else {
+                    for (Appointment appointment : appointmentsFromProfessional) {
+                        OffsetDateTime apptEnd = appointment.getStartAt().plusMinutes(appointment.getServiceDuration());
+                        if (start.isBefore(apptEnd) && end.isAfter(appointment.getStartAt())) {
                             invalidCandidate = true;
                             break;
-                        }  
+                        }
+                    }
                 }
-                if(invalidCandidate) {
-                    invalidCandidate = false;
-                    cursor = cursor.plusMinutes(step);
-                    continue;
+                if (!invalidCandidate) {
+                    listSlots.add(new AvailableSlots(start, professionalI.getId(), professionalI.getName()));
+                    limit--;
                 }
-
-                listSlots.add(new AvailableSlots(start, professionalI.getId(), professionalI.getName()));
                 cursor = cursor.plusMinutes(step);
-                limit--;
             }
-            
         }
+
         return filterByStartAt(listSlots);
     }
+
 
     private List<AvailableSlots> filterByStartAt(List<AvailableSlots> listSlots) {
         if (listSlots.isEmpty())

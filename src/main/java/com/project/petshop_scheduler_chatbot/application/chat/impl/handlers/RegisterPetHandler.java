@@ -1,6 +1,8 @@
-package com.project.petshop_scheduler_chatbot.application.chat.impl;
+package com.project.petshop_scheduler_chatbot.application.chat.impl.handlers;
 
 import java.util.List;
+
+import org.springframework.stereotype.Component;
 
 import com.project.petshop_scheduler_chatbot.application.chat.ProcessIncomingMessageCommand;
 import com.project.petshop_scheduler_chatbot.application.chat.ProcessIncomingMessageResult;
@@ -14,6 +16,7 @@ import com.project.petshop_scheduler_chatbot.core.domain.chatbot.ConversationSta
 import com.project.petshop_scheduler_chatbot.core.domain.valueobject.Gender;
 import com.project.petshop_scheduler_chatbot.core.domain.valueobject.PetSize;
 
+@Component
 public class RegisterPetHandler {
 
     private final PetUseCase petUseCase;
@@ -113,6 +116,7 @@ public class RegisterPetHandler {
                         conversationSession.getTutorId(),
                         conversationSession.getTempPetObs());
         petUseCase.execute(command);
+        conversationSession.resetFlowData();
         conversationSession.setCurrentState(ConversationState.STATE_START);
         return ProcessIncomingMessageResult.text("Agradecemos a preferencia!\nEstamos aguardando o seu pet!"); 
     }

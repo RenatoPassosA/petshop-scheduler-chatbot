@@ -35,17 +35,10 @@ import com.project.petshop_scheduler_chatbot.core.repository.ProfessionalTimeOff
 @ExtendWith(MockitoExtension.class)
 public class TimeOffUseCaseTest {
 
-    @Mock
-    private ProfessionalTimeOffRepository professionalTimeOffRepository;
-
-    @Mock
-    private BusinessHoursPolicy businessHoursPolicy;
-
-    @Mock
-    private ProfessionalRepository professionalRepository;
-
-    @Mock
-    private TimeProvider timeProvider;
+    @Mock private ProfessionalTimeOffRepository professionalTimeOffRepository;
+    @Mock private BusinessHoursPolicy businessHoursPolicy;
+    @Mock private ProfessionalRepository professionalRepository;
+    @Mock private TimeProvider timeProvider;
 
     private TimeOffUseCase timeOffUseCase;
 
