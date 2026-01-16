@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 import com.project.petshop_scheduler_chatbot.application.chat.ProcessIncomingMessageCommand;
 import com.project.petshop_scheduler_chatbot.application.chat.ProcessIncomingMessageResult;
+import com.project.petshop_scheduler_chatbot.application.chat.messages.MenuMessages;
 import com.project.petshop_scheduler_chatbot.application.chat.messages.InteractiveBodyMessages.ButtonOption;
 import com.project.petshop_scheduler_chatbot.application.chat.messages.InteractiveBodyMessages.InteractiveMessage;
 import com.project.petshop_scheduler_chatbot.application.tutor.AddTutorCommand;
@@ -77,8 +78,9 @@ public class RegisterTutorHandler {
         tutorUseCase.execute(command);
         conversationSession.resetFlowData();
         conversationSession.setCurrentState(ConversationState.STATE_START);
-        return ProcessIncomingMessageResult.text("Agradecemos a preferencia!"); 
-        }
+        // return ProcessIncomingMessageResult.text("Agradecemos a preferencia!"); 
+        return ProcessIncomingMessageResult.interactiveWithMessage("Agradecemos a preferencia!\n\n", MenuMessages.mainMenu(conversationSession.getRegisteredTutorName()));
+    }
 
     private boolean checkError_STATE_REGISTER_TUTOR_START(ProcessIncomingMessageCommand messageCommand) {
         String id = messageCommand.getButtonId();
@@ -112,14 +114,14 @@ public class RegisterTutorHandler {
                     "Os dados estão corretos?\nNome:" + 
                     conversationSession.getTempTutorName().trim() + 
                     "\nTelefone: " + 
-                    phone.toString() + 
+                    phone.value() + 
                     "\nEndereço: " + 
                     conversationSession.getTempTutorAddress().trim();
         else
             message = "Os dados estão corretos?\nNome:" + 
                     conversationSession.getTempTutorName().trim() + 
                     "\nTelefone: " + 
-                    phone.toString() + 
+                    phone.value() + 
                     "\nEndereço: " + 
                     conversationSession.getTempTutorAddress().trim();
         return message;

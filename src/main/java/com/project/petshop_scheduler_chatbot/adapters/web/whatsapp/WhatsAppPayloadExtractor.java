@@ -8,6 +8,7 @@ public final class WhatsAppPayloadExtractor {
     private WhatsAppPayloadExtractor() {}
 
     public static WhatsAppInbound extract(WhatsAppWebhookPayload payload) {
+        System.out.println("[EXTRACTOR] Iniciando extração do payload");
         if (payload == null || payload.entry() == null || payload.entry().isEmpty()) return null;
 
         var entry = payload.entry().get(0);
@@ -34,7 +35,6 @@ public final class WhatsAppPayloadExtractor {
                 buttonId = msg.interactive().listReply().id();
             }
         }
-
         return new WhatsAppInbound(waId, phoneNumberId, text, buttonId);
     }
 }

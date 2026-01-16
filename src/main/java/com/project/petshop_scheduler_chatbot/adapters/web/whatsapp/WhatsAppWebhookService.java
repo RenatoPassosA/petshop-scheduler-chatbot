@@ -21,6 +21,7 @@ public class WhatsAppWebhookService {
     }
 
     public void handle(WhatsAppWebhookPayload payload) {
+        System.out.println("=== ENTROU NO handle ===");//
         try {
             WhatsAppInbound inbound = WhatsAppPayloadExtractor.extract(payload);
             if (inbound == null)
@@ -34,6 +35,7 @@ public class WhatsAppWebhookService {
             );
 
             ProcessIncomingMessageResult result = processIncomingMessageUseCase.execute(cmd);
+            System.out.println("---------------------------------------" + result.getInteractive());
 
             if (result != null) {
                 chatMessagingPort.send(result, inbound.getWaId());

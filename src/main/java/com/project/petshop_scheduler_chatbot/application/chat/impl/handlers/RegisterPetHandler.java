@@ -118,7 +118,8 @@ public class RegisterPetHandler {
         petUseCase.execute(command);
         conversationSession.resetFlowData();
         conversationSession.setCurrentState(ConversationState.STATE_START);
-        return ProcessIncomingMessageResult.text("Agradecemos a preferencia!\nEstamos aguardando o seu pet!"); 
+        // return ProcessIncomingMessageResult.text("Agradecemos a preferencia!\nEstamos aguardando o seu pet!");
+        return ProcessIncomingMessageResult.interactiveWithMessage("Agradecemos a preferencia!\n\n", MenuMessages.mainMenu(conversationSession.getRegisteredTutorName()));
     }
 
     private boolean checkError_STATE_REGISTER_PET_START(ProcessIncomingMessageCommand messageCommand) {

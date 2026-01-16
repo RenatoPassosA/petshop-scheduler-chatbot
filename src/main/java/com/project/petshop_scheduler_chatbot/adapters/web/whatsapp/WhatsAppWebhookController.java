@@ -10,13 +10,16 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.project.petshop_scheduler_chatbot.adapters.web.whatsapp.dto.WhatsAppWebhookPayload;
 
-
+import org.slf4j.Logger;//
+import org.slf4j.LoggerFactory;//
 
 @RestController
 @RequestMapping("/whatsapp/webhook")
 public class WhatsAppWebhookController {
 
     private final WhatsAppWebhookService whatsAppWebhookService;
+    private static final Logger log = LoggerFactory.getLogger(WhatsAppWebhookController.class);//
+
 
     public WhatsAppWebhookController(WhatsAppWebhookService whatsAppWebhookService) {
         this.whatsAppWebhookService = whatsAppWebhookService;
@@ -58,6 +61,13 @@ public class WhatsAppWebhookController {
 
     @PostMapping
     public ResponseEntity<Void> receiveMessage(@RequestBody WhatsAppWebhookPayload payload) {
+
+        System.out.println("=== ENTROU NO receiveMessage ===");//
+
+        log.error("[WHATSAPP WEBHOOK] POST recebido");//
+        log.error("[WHATSAPP WEBHOOK] Payload: {}", payload);//
+
+
         whatsAppWebhookService.handle(payload);
         return ResponseEntity.ok().build();
     }
