@@ -3,7 +3,6 @@ package com.project.petshop_scheduler_chatbot.infrastructure.messaging;
 import org.springframework.stereotype.Component;
 
 import com.project.petshop_scheduler_chatbot.application.chat.ProcessIncomingMessageResult;
-import com.project.petshop_scheduler_chatbot.application.chat.messages.InteractiveBodyMessages.InteractiveMessage;
 import com.project.petshop_scheduler_chatbot.core.ports.ChatMessagingPort;
 
 @Component
@@ -36,7 +35,7 @@ public class WhatsAppMessagingPortAdapter implements ChatMessagingPort {
     }
 
     private void sendInteractive(ProcessIncomingMessageResult result, String waId) {
-        InteractiveMessage interactive = result.getInteractive();
+        var interactive = result.getInteractive();
         if (interactive == null) return;
 
         String prefix = (result.getText() != null && !result.getText().isBlank())
@@ -45,8 +44,27 @@ public class WhatsAppMessagingPortAdapter implements ChatMessagingPort {
 
         String body = prefix + interactive.body();
 
+        if (interactive.kind() == com.project.petshop_scheduler_chatbot.application.chat.messages.InteractiveBodyMessages.InteractiveMessage.Kind.LIST) {
+            whatsAppHttpClient.sendMessage(
+                WhatsAppSendMessageRequest.interactiveList(
+                    waId,
+                    body,
+                    interactive.listButtonText(),
+                    interactive.listSectionTitle(),
+                    interactive.rows()
+                )
+            );
+            return;
+        }
+
+        // BUTTONS
         whatsAppHttpClient.sendMessage(
-            WhatsAppSendMessageRequest.interactiveButtons(waId, body, interactive.buttons())
+            WhatsAppSendMessageRequest.interactiveButtons(
+                waId,
+                body,
+                interactive.buttons()
+            )
         );
     }
+
 }

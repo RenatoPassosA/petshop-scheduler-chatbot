@@ -20,11 +20,7 @@ public class WhatsAppSendMessageRequest {
         return req;
     }
 
-    public static WhatsAppSendMessageRequest interactiveButtons(
-        String to,
-        String bodyText,
-        List<ButtonOption> options
-    ) {
+    public static WhatsAppSendMessageRequest interactiveButtons(String to, String bodyText, List<ButtonOption> options) {
         WhatsAppSendMessageRequest req = new WhatsAppSendMessageRequest();
         req.to = to;
         req.type = "interactive";
@@ -38,11 +34,31 @@ public class WhatsAppSendMessageRequest {
         req.interactive = new Interactive(
             "button",
             new Body(bodyText),
-            new Action(buttons)
+            Action.forButtons(buttons)
+        );
+        return req;
+    }
+
+    public static WhatsAppSendMessageRequest interactiveList(String to, String bodyText, String listButtonText, String sectionTitle, List<ButtonOption> options) {
+        WhatsAppSendMessageRequest req = new WhatsAppSendMessageRequest();
+        req.to = to;
+        req.type = "interactive";
+
+        List<Row> rows = options.stream()
+            .map(opt -> new Row(opt.id(), opt.title(), null))
+            .toList();
+
+        Section section = new Section(sectionTitle, rows);
+
+        req.interactive = new Interactive(
+            "list",
+            new Body(bodyText),
+            Action.forList(listButtonText, List.of(section))
         );
 
         return req;
     }
+
 
     public static class Text {
         private String body;
@@ -72,13 +88,64 @@ public class WhatsAppSendMessageRequest {
         public String getText() { return text; }
     }
 
-    public static class Action {
-        private List<InteractiveActionButton> buttons;
-        public Action(List<InteractiveActionButton> buttons) {
-            this.buttons = buttons;
-        }
-        public List<InteractiveActionButton> getButtons() { return buttons; }
+    public static class Section {
+    private String title;
+    private List<Row> rows;
+
+    public Section(String title, List<Row> rows) {
+        this.title = title;
+        this.rows = rows;
     }
+
+    public String getTitle() { return title; }
+    public List<Row> getRows() { return rows; }
+    }
+
+    public static class Row {
+        private String id;
+        private String title;
+        private String description; // opcional
+
+        public Row(String id, String title, String description) {
+            this.id = id;
+            this.title = title;
+            this.description = description;
+        }
+
+        public String getId() { return id; }
+        public String getTitle() { return title; }
+        public String getDescription() { return description; }
+    }
+
+
+    public static class Action {
+        // BUTTONS
+        private List<InteractiveActionButton> buttons;
+
+        // LIST
+        private String button;        // texto do botão que abre a lista
+        private List<Section> sections;
+
+        private Action() {}
+
+        public static Action forButtons(List<InteractiveActionButton> buttons) {
+            Action a = new Action();
+            a.buttons = buttons;
+            return a;
+        }
+
+        public static Action forList(String buttonText, List<Section> sections) {
+            Action a = new Action();
+            a.button = buttonText;
+            a.sections = sections;
+            return a;
+        }
+
+        public List<InteractiveActionButton> getButtons() { return buttons; }
+        public String getButton() { return button; }
+        public List<Section> getSections() { return sections; }
+    }
+
 
     public static class InteractiveActionButton {
         private final String type = "reply";

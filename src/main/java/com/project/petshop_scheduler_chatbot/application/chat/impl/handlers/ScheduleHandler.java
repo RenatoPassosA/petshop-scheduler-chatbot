@@ -32,13 +32,13 @@ public class ScheduleHandler {
     private final StartMenuHandler startMenuHandler;
 
 
-    // public ScheduleHandler(PetRepository petRepository, PetServiceRepository petServiceRepository, ListAvailableSlotsUseCase listAvailableSlotsUseCase, ScheduleAppointmentUseCase scheduleAppointmentUseCase, StartMenuHandler startMenuHandler) {
-    //     this.petRepository = petRepository;
-    //     this.petServiceRepository = petServiceRepository;
-    //     this.listAvailableSlotsUseCase = listAvailableSlotsUseCase;
-    //     this.scheduleAppointmentUseCase = scheduleAppointmentUseCase;
-    //     this.startMenuHandler = startMenuHandler;
-    // }
+    public ScheduleHandler(PetRepository petRepository, PetServiceRepository petServiceRepository, ListAvailableSlotsUseCase listAvailableSlotsUseCase, ScheduleAppointmentUseCase scheduleAppointmentUseCase, StartMenuHandler startMenuHandler) {
+        this.petRepository = petRepository;
+        this.petServiceRepository = petServiceRepository;
+        this.listAvailableSlotsUseCase = listAvailableSlotsUseCase;
+        this.scheduleAppointmentUseCase = scheduleAppointmentUseCase;
+        this.startMenuHandler = startMenuHandler;
+    }
 
     public ProcessIncomingMessageResult handle_STATE_SCHEDULE_START(ConversationSession conversationSession, ProcessIncomingMessageCommand messageCommand) {
         if (checkError_STATE_SCHEDULE_START(messageCommand)) {
@@ -255,41 +255,71 @@ public class ScheduleHandler {
 
     private ProcessIncomingMessageResult generateServiceButtons(ConversationSession conversationSession, boolean withError) {
         List<PetService> petServices = petServiceRepository.getAll();
-        List<ButtonOption> serviceButtons = new ArrayList<>();
-        for (PetService petServiceList : petServices) {
-            String serviceId = petServiceList.getId().toString();
-            serviceButtons.add(new ButtonOption(serviceId, petServiceList.getName()));
+
+        List<ButtonOption> rows = new ArrayList<>();
+        for (PetService s : petServices) {
+            String id = s.getId().toString();
+            String title = truncate(s.getName(), 24); // ✅ limite do WhatsApp list row title
+            rows.add(new ButtonOption(id, title));
         }
+
         conversationSession.setCurrentState(ConversationState.STATE_SCHEDULE_CHOOSE_SERVICE);
-        if (withError)
-            return ProcessIncomingMessageResult.interactiveWithMessage("⚠️ Não entendi.\n\n", new InteractiveMessage( "Qual serviço deseja agendar?\n",serviceButtons));
-        return ProcessIncomingMessageResult.interactive(new InteractiveMessage("Qual serviço deseja agendar?\n", serviceButtons));
+
+        String prefix = withError ? "⚠️ Não entendi.\n\n" : "";
+        return ProcessIncomingMessageResult.interactiveWithMessage(
+            prefix,
+            InteractiveMessage.list(
+                "Qual serviço deseja agendar?\n",
+                "Escolher serviço",
+                "Serviços",
+                rows
+            )
+        );
     }
 
-    private ProcessIncomingMessageResult generateSlotsButtons(ConversationSession conversationSession, boolean withError) {
-        List<AvailableSlots> availableSlots = listAvailableSlotsUseCase.listSlots(conversationSession.getChosenServiceId(), conversationSession.getLastInteraction());
+    private String truncate(String s, int max) {
+        if (s == null) return "";
+        String t = s.trim();
+        if (t.length() <= max) return t;
+        return t.substring(0, Math.max(0, max - 1)) + "…";
+    }
 
-        if (availableSlots.isEmpty()) {
-            return ProcessIncomingMessageResult.interactiveWithMessage( "Não encontrei horários disponíveis nos próximos dias.\n\n",
-                                                                        MenuMessages.mainMenu(conversationSession.getRegisteredTutorName()));
+
+
+    private ProcessIncomingMessageResult generateSlotsButtons(ConversationSession conversationSession, boolean withError) {
+        List<AvailableSlots> availableSlots =
+            listAvailableSlotsUseCase.listSlots(conversationSession.getChosenServiceId(), conversationSession.getLastInteraction());
+
+        if (availableSlots == null || availableSlots.isEmpty()) {
+            return ProcessIncomingMessageResult.interactiveWithMessage(
+                "Não encontrei horários disponíveis nos próximos dias.\n\n",
+                MenuMessages.mainMenu(conversationSession.getRegisteredTutorName())
+            );
         }
 
-        List<ButtonOption> slotButtons = new ArrayList<>();
+        List<ButtonOption> rows = new ArrayList<>();
         for (int i = 0; i < availableSlots.size(); i++) {
             AvailableSlots slot = availableSlots.get(i);
-            String slotText = "Dia: " + DateTimeFormatterHelper.formatDateTime(slot.getStartAt()) +
-                            " Profissional: " + slot.getProfessionalName();
-            slotButtons.add(new ButtonOption(String.valueOf(i), slotText));
+            String when = DateTimeFormatterHelper.formatDateTime(slot.getStartAt());
+            String prof = slot.getProfessionalName();
+            String title = truncate(when + " - " + prof, 24);
+            rows.add(new ButtonOption(String.valueOf(i), title));
         }
 
         conversationSession.setSlots(availableSlots);
         conversationSession.setCurrentState(ConversationState.STATE_SCHEDULE_CHOOSE_SLOT);
 
-        if (withError) {
-            return ProcessIncomingMessageResult.interactiveWithMessage("⚠️ Não entendi.\n\n", new InteractiveMessage("Para qual horário deseja agendar?\n", slotButtons));
-        }
-        return ProcessIncomingMessageResult.interactive(new InteractiveMessage("Para qual horário deseja agendar?\n", slotButtons));
+        String prefix = withError ? "⚠️ Não entendi.\n\n" : "";
 
+        return ProcessIncomingMessageResult.interactiveWithMessage(
+            prefix,
+            InteractiveMessage.list(
+                "Para qual horário deseja agendar?\n",
+                "Escolher horário",       // texto do botão que abre a lista
+                "Horários disponíveis",   // título da seção
+                rows
+            )
+        );
     }
 
     private String generateConfirmationMessage(ConversationSession conversationSession, boolean withError) {
