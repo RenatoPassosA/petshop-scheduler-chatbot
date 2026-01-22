@@ -15,13 +15,32 @@ public class MenuMessages {
             ));
         }
 
+    // public static InteractiveMessage mainMenu(String name) {
+    //     return new InteractiveMessage("Oi " + name + " ! 🐶\n O que você deseja fazer hoje?",
+    //     List.of(new ButtonOption("SCHEDULE", "Marcar serviço"),
+    //                 new ButtonOption("RESCHEDULE", "Reagendar serviço"),
+    //                 new ButtonOption("CANCEL_SCHEDULE", "Cancelar serviço"),
+    //                 new ButtonOption("REGISTER_PET", "Cadastrar outro pet"),
+    //                 new ButtonOption("CHECK_SERVICES", "Ver serviços e preços"),
+    //                 new ButtonOption("TALK_TO_HUMAN", "Falar com atendente")));
+    // }
     public static InteractiveMessage mainMenu(String name) {
-        return new InteractiveMessage("Oi " + name + " ! 🐶\n O que você deseja fazer hoje?",
-        List.of(new ButtonOption("SCHEDULE", "Marcar serviço"),
-                    new ButtonOption("RESCHEDULE", "Reagendar serviço"),
-                    new ButtonOption("CANCEL_SCHEDULE", "Cancelar serviço"),
-                    new ButtonOption("REGISTER_PET", "Cadastrar outro pet"),
-                    new ButtonOption("CHECK_SERVICES", "Ver serviços e preços"),
-                    new ButtonOption("TALK_TO_HUMAN", "Falar com atendente")));
+    return new InteractiveMessage(
+        "Oi " + name + " ! 🐶\nO que você deseja fazer hoje?",
+        List.of(
+            new ButtonOption("REGISTER_PET", "Cadastrar pet"),
+            new ButtonOption("CHECK_SERVICES", "Serviços e preços"),
+            new ButtonOption("MORE_OPTIONS", "Mais opções")
+        ));
+    }
+
+    public static InteractiveMessage moreOptionsMenu() {
+    return new InteractiveMessage(
+        "",
+        List.of(
+            new ButtonOption("SCHEDULE", "Agendar serviço"),
+            new ButtonOption("RESCHEDULE", "Reagendar serviço"),
+            new ButtonOption("TALK_TO_HUMAN", "Falar com atendente")
+        ));
     }
 }

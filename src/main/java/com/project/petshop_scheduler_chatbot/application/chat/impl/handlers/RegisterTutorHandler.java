@@ -77,9 +77,10 @@ public class RegisterTutorHandler {
         AddTutorCommand command = new AddTutorCommand(conversationSession.getTempTutorName(), phone, conversationSession.getTempTutorAddress());
         tutorUseCase.execute(command);
         conversationSession.resetFlowData();
+        String name = conversationSession.getTempTutorName();
         conversationSession.setCurrentState(ConversationState.STATE_START);
         // return ProcessIncomingMessageResult.text("Agradecemos a preferencia!"); 
-        return ProcessIncomingMessageResult.interactiveWithMessage("Agradecemos a preferencia!\n\n", MenuMessages.mainMenu(conversationSession.getRegisteredTutorName()));
+        return ProcessIncomingMessageResult.interactiveWithMessage("Agradecemos a preferencia!\n\n", MenuMessages.mainMenu(name));
     }
 
     private boolean checkError_STATE_REGISTER_TUTOR_START(ProcessIncomingMessageCommand messageCommand) {

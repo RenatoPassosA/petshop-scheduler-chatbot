@@ -170,7 +170,7 @@ public class RegisterPetHandler {
                         "\nGenero: " + 
                         conversationSession.getTempPetGender() + 
                         "\nPorte: " + 
-                        conversationSession.getTempPetSize() + 
+                        getStringSize(conversationSession) + 
                         "\nRaça: " +
                         conversationSession.getTempPetBreed() + 
                         "\nObservações: " +
@@ -181,7 +181,7 @@ public class RegisterPetHandler {
                         "\nGenero: " + 
                         conversationSession.getTempPetGender() + 
                         "\nPorte: " + 
-                        conversationSession.getTempPetSize() + 
+                        getStringSize(conversationSession) + 
                         "\nRaça: " +
                         conversationSession.getTempPetBreed() + 
                         "\nObservações: " +
@@ -203,5 +203,14 @@ public class RegisterPetHandler {
             return PetSize.MEDIUM;
         else
             return PetSize.LARGE;
+    }
+
+    private String getStringSize (ConversationSession conversationSession) {
+        if (conversationSession.getTempPetSize().equals("SMALL"))
+            return "Pequeno";
+        else if (conversationSession.getTempPetSize().equals("MEDIUM"))
+            return "Médio";
+        else
+            return "Grande";
     }
 }

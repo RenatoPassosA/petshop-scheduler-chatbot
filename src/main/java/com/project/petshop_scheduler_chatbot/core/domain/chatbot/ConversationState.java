@@ -4,6 +4,7 @@ public enum ConversationState {
     STATE_START, //menu inicio de conversa
     STATE_NO_REGISTERED_MENU, //menu primeiro contato
     STATE_MAIN_MENU, //menu cliente recorrente
+
     
     //registrar novo cliente
     STATE_REGISTER_TUTOR_START,

@@ -50,9 +50,9 @@ public class ScheduleHandler {
 
     public ProcessIncomingMessageResult handle_STATE_SCHEDULE_CHOOSE_PET(ConversationSession conversationSession, ProcessIncomingMessageCommand messageCommand) {
         if (checkError_STATE_SCHEDULE_CHOOSE_PET(conversationSession, messageCommand)) {
-                return generatePetButtons(conversationSession, true);
+            return generatePetButtons(conversationSession, true);
         }
-        conversationSession.setPetId(Long.valueOf(messageCommand.getButtonId()));
+        conversationSession.setPetId(Long.parseLong(messageCommand.getButtonId()));
         return generateServiceButtons(conversationSession, false);
     }
 
@@ -122,31 +122,43 @@ public class ScheduleHandler {
 
     private boolean checkError_STATE_SCHEDULE_CHOOSE_PET(ConversationSession conversationSession, ProcessIncomingMessageCommand messageCommand) {
         String id = messageCommand.getButtonId();
-        if (id == null)
+        if (id == null) {
+            System.out.println("Button ID is null in STATE_SCHEDULE_CHOOSE_PET");
             return true;
-
-        int petId;
+        }
+        long  petId;
         try {
-            petId = Integer.parseInt(id);
+            petId = Long.parseLong(id);
         } catch (NumberFormatException e) {
+            System.out.println("Button ID is not a valid number in STATE_SCHEDULE_CHOOSE_PET");
             return true;
         }
 
-        List<Long> petIdsList = conversationSession.getAllTutorsPets();
-        if (petIdsList == null || petIdsList.isEmpty())
-            return true;
+        List<Pet> pets = petRepository.listByTutor(conversationSession.getTutorId());
+        return pets.stream().noneMatch(p -> p.getId().equals(petId));
 
-        boolean existsId = false;
+        // List<Long> petIdsList = conversationSession.getAllTutorsPets();
+        // if (petIdsList == null || petIdsList.isEmpty()) {
+        //     System.out.println("Pet IDs list is null or empty in STATE_SCHEDULE_CHOOSE_PET");
+        //     return true;
+        // }
 
-        for (Long itens : petIdsList) {
-            if (itens.equals(Long.valueOf(petId))) {
-                existsId = true;
-                break;
-            }
-        }
-        if (existsId)
-            return false; 
-        return true;
+        // boolean existsId = false;
+
+        // for (Long itens : petIdsList) {
+        //     if (itens.equals(Long.valueOf(petId))) {
+        //         existsId = true;
+        //         break;
+        //     }
+        // }
+        // if (existsId) {
+        //     System.out.println("existe o pet na lista");
+        //     return false;
+        //     }
+        // else {
+        //     System.out.println("nao existe o pet na lista");
+        //     return true;
+        // }
     }
 
     private boolean checkError_STATE_SCHEDULE_CHOOSE_SERVICE(ConversationSession conversationSession, ProcessIncomingMessageCommand messageCommand) {
@@ -236,7 +248,7 @@ public class ScheduleHandler {
         conversationSession.setCurrentState(ConversationState.STATE_SCHEDULE_CHOOSE_PET);
         conversationSession.setAllTutorsPets(petIds);
         if (withError) {
-            return ProcessIncomingMessageResult.interactiveWithMessage("⚠️ Não entendi.\nPara qual pet deseja agendar?\n", new InteractiveMessage( "Para qual pet deseja agendar?\n",petButtons));
+            return ProcessIncomingMessageResult.interactiveWithMessage("⚠️ Não entendi.\n", new InteractiveMessage( "Para qual pet deseja agendar?\n",petButtons));
         }
         return ProcessIncomingMessageResult.interactive(new InteractiveMessage("Para qual pet deseja agendar?\n", petButtons));
     }

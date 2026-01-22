@@ -34,7 +34,10 @@ public class MainMenuHandler {
             return ProcessIncomingMessageResult.interactiveWithMessage("⚠️ Opa! Não entendi sua escolha.\n\n", MenuMessages.mainMenu(conversationSession.getRegisteredTutorName()));
         }
         
-        if ("SCHEDULE".equals(messageCommand.getButtonId())) {
+        if ("MORE_OPTIONS".equals(messageCommand.getButtonId())) {
+            return ProcessIncomingMessageResult.interactiveWithMessage("Mais opções disponíveis 👇", MenuMessages.moreOptionsMenu());
+        }
+        else if ("SCHEDULE".equals(messageCommand.getButtonId())) {
             conversationSession.setCurrentState(ConversationState.STATE_SCHEDULE_START);
             return scheduleHandler.handle_STATE_SCHEDULE_START(conversationSession, messageCommand);
         }
@@ -68,8 +71,9 @@ public class MainMenuHandler {
         !"RESCHEDULE".equals(id) && 
         !"CANCEL_SCHEDULE".equals(id) &&  
         !"REGISTER_PET".equals(id) &&  
-        !"CHECK_SERVICES".equals(id)&&  
-        !"TALK_TO_HUMAN".equals(id)))
+        !"CHECK_SERVICES".equals(id) &&  
+        !"TALK_TO_HUMAN".equals(id) &&
+        !"MORE_OPTIONS".equals(id)))
             return true;
         return false;
     }
