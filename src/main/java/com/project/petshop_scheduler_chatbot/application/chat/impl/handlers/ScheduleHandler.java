@@ -32,13 +32,13 @@ public class ScheduleHandler {
     private final StartMenuHandler startMenuHandler;
 
 
-    public ScheduleHandler(PetRepository petRepository, PetServiceRepository petServiceRepository, ListAvailableSlotsUseCase listAvailableSlotsUseCase, ScheduleAppointmentUseCase scheduleAppointmentUseCase, StartMenuHandler startMenuHandler) {
-        this.petRepository = petRepository;
-        this.petServiceRepository = petServiceRepository;
-        this.listAvailableSlotsUseCase = listAvailableSlotsUseCase;
-        this.scheduleAppointmentUseCase = scheduleAppointmentUseCase;
-        this.startMenuHandler = startMenuHandler;
-    }
+    // public ScheduleHandler(PetRepository petRepository, PetServiceRepository petServiceRepository, ListAvailableSlotsUseCase listAvailableSlotsUseCase, ScheduleAppointmentUseCase scheduleAppointmentUseCase, StartMenuHandler startMenuHandler) {
+    //     this.petRepository = petRepository;
+    //     this.petServiceRepository = petServiceRepository;
+    //     this.listAvailableSlotsUseCase = listAvailableSlotsUseCase;
+    //     this.scheduleAppointmentUseCase = scheduleAppointmentUseCase;
+    //     this.startMenuHandler = startMenuHandler;
+    // }
 
     public ProcessIncomingMessageResult handle_STATE_SCHEDULE_START(ConversationSession conversationSession, ProcessIncomingMessageCommand messageCommand) {
         if (checkError_STATE_SCHEDULE_START(messageCommand)) {
