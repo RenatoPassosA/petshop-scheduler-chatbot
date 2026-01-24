@@ -16,8 +16,10 @@ import com.project.petshop_scheduler_chatbot.application.chat.impl.handlers.Resc
 import com.project.petshop_scheduler_chatbot.application.chat.impl.handlers.ScheduleHandler;
 import com.project.petshop_scheduler_chatbot.application.chat.impl.handlers.StartMenuHandler;
 import com.project.petshop_scheduler_chatbot.application.chat.impl.utils.ServicesFormatedList;
+import com.project.petshop_scheduler_chatbot.application.chat.messages.MenuMessages;
 import com.project.petshop_scheduler_chatbot.core.domain.application.TimeProvider;
 import com.project.petshop_scheduler_chatbot.core.domain.chatbot.ConversationSession;
+import com.project.petshop_scheduler_chatbot.core.domain.chatbot.ConversationState;
 import com.project.petshop_scheduler_chatbot.core.domain.exceptions.DomainValidationException;
 import com.project.petshop_scheduler_chatbot.core.domain.policy.BusinessHoursPolicy;
 import com.project.petshop_scheduler_chatbot.core.repository.AppointmentRepository;
@@ -41,7 +43,6 @@ public class DefaultProcessIncomingMessageUseCase implements ProcessIncomingMess
     private final ScheduleHandler scheduleHandler;
     private final RescheduleHandler rescheduleHandler;
     private final CancelScheduleHandler cancelScheduleHandler;
-
     private final ServicesFormatedList servicesFormatedList;
 
 
@@ -156,7 +157,13 @@ public class DefaultProcessIncomingMessageUseCase implements ProcessIncomingMess
                 return registerPetHandler.handle_STATE_REGISTER_PET_CONFIRM(conversationSession, messageCommand);
 
             case STATE_CHECK_SERVICES:
-                return servicesFormatedList.sendServicesList();
+                String servicesList = servicesFormatedList.getAllServicesFormated();
+                if (conversationSession.getRegisteredTutorName() != null) {
+                    conversationSession.setCurrentState(ConversationState.STATE_MAIN_MENU);
+                    return ProcessIncomingMessageResult.interactiveWithMessage(servicesList, MenuMessages.afterListServicesRegistered(conversationSession.getRegisteredTutorName()));
+                }
+                conversationSession.setCurrentState(ConversationState.STATE_NO_REGISTERED_MENU);
+                return ProcessIncomingMessageResult.interactiveWithMessage(servicesList, MenuMessages.afterListServicesNoRegistered());
 
             case STATE_SCHEDULE_START:
                 return scheduleHandler.handle_STATE_SCHEDULE_START(conversationSession, messageCommand);

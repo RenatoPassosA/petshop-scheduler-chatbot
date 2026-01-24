@@ -101,4 +101,48 @@ public class AppointmentEntity {
     public OffsetDateTime getUpdatedAt() {
         return updatedAt;
     }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setPetId(Long petId) { 
+        this.petId = petId;
+    }
+
+    public void setTutorId(Long tutorId) {
+        this.tutorId = tutorId;
+    }
+
+    public void setProfessionalId(Long professionalId) {
+        this.professionalId = professionalId;
+    }
+
+    public void setServiceId(Long serviceId) {
+        this.serviceId = serviceId;
+    }
+
+    public void setStartAt(OffsetDateTime startAt) {
+        this.startAt = startAt;
+    }
+
+    public void setServiceDurationMinutes(Integer serviceDurationMinutes) {
+        this.serviceDurationMinutes = serviceDurationMinutes;
+    }
+
+    public void setStatus(AppointmentStatus status) {
+        this.status = status;
+    }
+
+    public void setObservations(String observations) {
+        this.observations = observations;
+    }
+
+    public void setCreatedAt(OffsetDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+    
+    public void setUpdatedAt(OffsetDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
 }

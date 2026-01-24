@@ -25,11 +25,9 @@ import com.project.petshop_scheduler_chatbot.core.domain.Tutor;
 import com.project.petshop_scheduler_chatbot.core.domain.chatbot.ConversationSession;
 import com.project.petshop_scheduler_chatbot.core.domain.chatbot.ConversationState;
 import com.project.petshop_scheduler_chatbot.core.domain.valueobject.AppointmentStatus;
-import com.project.petshop_scheduler_chatbot.core.domain.valueobject.PhoneNumber;
 import com.project.petshop_scheduler_chatbot.core.repository.AppointmentRepository;
 import com.project.petshop_scheduler_chatbot.core.repository.PetRepository;
 import com.project.petshop_scheduler_chatbot.core.repository.PetServiceRepository;
-import com.project.petshop_scheduler_chatbot.core.repository.TutorRepository;
 
 @ExtendWith(MockitoExtension.class)
 class RescheduleHandlerTest {
@@ -38,7 +36,6 @@ class RescheduleHandlerTest {
     @Mock private StartMenuHandler startMenuHandler;
     @Mock private PetRepository petRepository;
     @Mock private PetServiceRepository petServiceRepository;
-    @Mock private TutorRepository tutorRepository;
     @Mock private ListAvailableSlotsUseCase listAvailableSlotsUseCase;
     @Mock private RescheduleAppointmentUseCase rescheduleAppointmentUseCase;
 
@@ -52,8 +49,7 @@ class RescheduleHandlerTest {
                 petRepository,
                 petServiceRepository,
                 listAvailableSlotsUseCase,
-                rescheduleAppointmentUseCase,
-                tutorRepository
+                rescheduleAppointmentUseCase
         );
     }
 
@@ -142,7 +138,6 @@ class RescheduleHandlerTest {
         Tutor tutor = mock(Tutor.class);
         when(tutor.getId()).thenReturn(10L);
 
-        when(tutorRepository.findByPhone(any(PhoneNumber.class))).thenReturn(Optional.of(tutor));
         when(appointmentRepository.existsOwnership(10L, 1L)).thenReturn(true);
 
         AvailableSlots slot = mock(AvailableSlots.class);

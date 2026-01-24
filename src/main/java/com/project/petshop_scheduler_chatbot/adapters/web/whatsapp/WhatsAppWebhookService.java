@@ -35,8 +35,6 @@ public class WhatsAppWebhookService {
             );
 
             ProcessIncomingMessageResult result = processIncomingMessageUseCase.execute(cmd);
-            System.out.println("---------------------------------------" + result.getInteractive());
-
             if (result != null) {
                 chatMessagingPort.send(result, inbound.getWaId());
             }

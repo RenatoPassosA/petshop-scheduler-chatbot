@@ -1,6 +1,8 @@
 package com.project.petshop_scheduler_chatbot.application.appointment;
 
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -30,16 +32,18 @@ public class ListAvailableSlotsUseCase {
         this.professionalRepository = professionalRepository;
     }
 
+    private static final ZoneId BUSINESS_ZONE = ZoneId.of("America/Sao_Paulo");
+
     public List<AvailableSlots> listSlots(Long serviceId, OffsetDateTime now) {
         long daysAhead = 7L;
         int step = 30;
-
-        OffsetDateTime from = now.plusDays(1).withHour(8).withMinute(0).withSecond(0).withNano(0);
-        OffsetDateTime to = from.plusDays(daysAhead);
-
+        ZonedDateTime nowLocal = now.atZoneSameInstant(BUSINESS_ZONE);
+        ZonedDateTime fromLocal = nowLocal.plusDays(1).withHour(9).withMinute(0).withSecond(0).withNano(0); // 09:00 local
+        ZonedDateTime toLocal = fromLocal.plusDays(daysAhead);
+        OffsetDateTime from = fromLocal.toOffsetDateTime();
+        OffsetDateTime to   = toLocal.toOffsetDateTime();
         PetService service = petServiceUseCase.getPetService(serviceId);
         int serviceDuration = service.getDuration();
-
         List<Professional> professionals = professionalRepository.getAll();
         List<AvailableSlots> listSlots = new ArrayList<>();
 
@@ -58,8 +62,10 @@ public class ListAvailableSlotsUseCase {
                 OffsetDateTime start = cursor;
                 OffsetDateTime end = cursor.plusMinutes(serviceDuration);
                 boolean invalidCandidate = false;
+                OffsetDateTime startBr = start.atZoneSameInstant(BUSINESS_ZONE).toOffsetDateTime();
+                OffsetDateTime endBr   = end.atZoneSameInstant(BUSINESS_ZONE).toOffsetDateTime();
 
-                if (!businessHoursPolicy.fits(start, end)) {
+                if (!businessHoursPolicy.fits(startBr, endBr)) {
                     invalidCandidate = true;
                 } else {
                     for (Appointment appointment : appointmentsFromProfessional) {
@@ -70,10 +76,12 @@ public class ListAvailableSlotsUseCase {
                         }
                     }
                 }
+
                 if (!invalidCandidate) {
                     listSlots.add(new AvailableSlots(start, professionalI.getId(), professionalI.getName()));
                     limit--;
                 }
+
                 cursor = cursor.plusMinutes(step);
             }
         }

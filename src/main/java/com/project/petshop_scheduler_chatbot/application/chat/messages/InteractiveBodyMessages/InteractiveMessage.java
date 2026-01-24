@@ -5,24 +5,14 @@ import java.util.List;
 public final class InteractiveMessage {
 
     public enum Kind { BUTTONS, LIST }
-
     private final Kind kind;
-
-    // comum
     private final String body;
-
-    // BUTTONS
     private final List<ButtonOption> buttons;
+    private final String listButtonText;
+    private final String listSectionTitle;
+    private final List<ButtonOption> rows;
 
-    // LIST
-    private final String listButtonText;      // texto do botão que abre a lista
-    private final String listSectionTitle;    // título da seção
-    private final List<ButtonOption> rows;    // opções da lista (id + title)
-
-    /**
-     * ✅ Mantém compatibilidade com o que você já usa:
-     * new InteractiveMessage(body, buttons)
-     */
+    
     public InteractiveMessage(String body, List<ButtonOption> buttons) {
         this.kind = Kind.BUTTONS;
         this.body = body;
@@ -49,9 +39,6 @@ public final class InteractiveMessage {
         this.rows = rows;
     }
 
-    /**
-     * ✅ Novo: cria mensagem no formato LIST
-     */
     public static InteractiveMessage list(
         String body,
         String listButtonText,
@@ -61,7 +48,6 @@ public final class InteractiveMessage {
         return new InteractiveMessage(Kind.LIST, body, null, listButtonText, sectionTitle, rows);
     }
 
-    // Mantendo "accessors" no estilo record (body(), buttons(), etc.)
     public Kind kind() { return kind; }
     public String body() { return body; }
 

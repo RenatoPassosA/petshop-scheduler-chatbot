@@ -1,6 +1,8 @@
 package com.project.petshop_scheduler_chatbot.application.appointment.impl;
 
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -84,17 +86,28 @@ public class DefaultRescheduleAppointmentUseCase implements RescheduleAppointmen
         return (findAppointment.get());
     }
 
-    private void checkBusinessHours(OffsetDateTime newStartAt, OffsetDateTime newEndAt) {
-        if (!businessHoursPolicy.fits(newStartAt, newEndAt))
+   
+
+    
+
+
+    private static final ZoneId BUSINESS_ZONE = ZoneId.of("America/Sao_Paulo");
+
+    private void checkBusinessHours(OffsetDateTime startAt, OffsetDateTime endAt) {
+        ZonedDateTime startLocal = startAt.atZoneSameInstant(BUSINESS_ZONE);
+        ZonedDateTime endLocal   = endAt.atZoneSameInstant(BUSINESS_ZONE);
+
+        boolean ok = businessHoursPolicy.fits(
+            startLocal.toOffsetDateTime(),
+            endLocal.toOffsetDateTime()
+        );
+
+        if (!ok) {
             throw new WorkingHoursOutsideException("Horário fora do expediente");
+        }
     }
-  
-    private void checkTimeOff(Appointment appointment, OffsetDateTime newStartAt, OffsetDateTime newEndAt) {
-        Long professionalId = appointment.getProfessionalId();
-        
-        if (professionalTimeOffRepository.existsOverlap(professionalId, newStartAt, newEndAt))
-            throw new ProfessionalTimeOffException("Profissional está em folga");
-    }
+
+
 
     private void checkSchedule(Appointment appointment, OffsetDateTime newStartAt, OffsetDateTime newEndAt) {
         Long appointmentId = appointment.getId();
@@ -106,4 +119,13 @@ public class DefaultRescheduleAppointmentUseCase implements RescheduleAppointmen
         if (appointmentRepository.existsOverlapForPetExcluding(petId, newStartAt, newEndAt, appointmentId))
             throw new PetOverlapException("Pet com serviço agendado no mesmo horário");
     }
+
+    private void checkTimeOff(Appointment appointment, OffsetDateTime newStartAt, OffsetDateTime newEndAt) {
+    Long professionalId = appointment.getProfessionalId();
+
+    if (professionalTimeOffRepository.existsOverlap(professionalId, newStartAt, newEndAt)) {
+        throw new ProfessionalTimeOffException("Profissional está de folga");
+    }
+}
+
 }

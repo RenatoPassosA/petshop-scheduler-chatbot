@@ -16,7 +16,7 @@ public final class DateTimeFormatterHelper {
             DateTimeFormatter.ofPattern("HH:mm", LOCALE_PT_BR);
 
     private static final DateTimeFormatter DATE_TIME_FORMAT =
-            DateTimeFormatter.ofPattern("dd/MM/yyyy 'às' HH:mm", LOCALE_PT_BR);
+            DateTimeFormatter.ofPattern("dd/MM - HH:mm", LOCALE_PT_BR);
 
     private DateTimeFormatterHelper() {
     }

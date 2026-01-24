@@ -11,19 +11,24 @@ public class AppointmentMapper {
     public AppointmentEntity toJPA(Appointment appointment) {
         if (appointment == null)
             throw new DomainValidationException("Dados de entrada invalidos");
-        return new AppointmentEntity(appointment.getPetId(),
-                                    appointment.getTutorId(),
-                                    appointment.getProfessionalId(),
-                                    appointment.getServiceId(),
-                                    appointment.getStartAt(),
-                                    appointment.getServiceDuration(),
-                                    appointment.getStatus(),
-                                    appointment.getObservations(),
-                                    appointment.getCreatedAt(),
-                                    appointment.getUpdatedAt()
-                                    );
+        AppointmentEntity entity = new AppointmentEntity();
 
+        entity.setId(appointment.getId());
+        entity.setPetId(appointment.getPetId());
+        entity.setTutorId(appointment.getTutorId());
+        entity.setProfessionalId(appointment.getProfessionalId());
+        entity.setServiceId(appointment.getServiceId());
+        entity.setStartAt(appointment.getStartAt());
+        entity.setServiceDurationMinutes(appointment.getServiceDuration());
+        entity.setStatus(appointment.getStatus());
+        entity.setObservations(appointment.getObservations());
+        entity.setCreatedAt(appointment.getCreatedAt());
+        entity.setUpdatedAt(appointment.getUpdatedAt());
+
+        return entity;
     }
+
+    
 
     public Appointment toDomain(AppointmentEntity entity) {
         if (entity == null)

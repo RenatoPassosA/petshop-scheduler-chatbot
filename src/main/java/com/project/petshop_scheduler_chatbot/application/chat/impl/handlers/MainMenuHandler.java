@@ -29,6 +29,8 @@ public class MainMenuHandler {
     }
 
     public ProcessIncomingMessageResult STATE_MAIN_MENU_handler(ConversationSession conversationSession, ProcessIncomingMessageCommand messageCommand) {
+        System.out.println("----------------------------------------------------------------------------------[MAIN_MENU] text=" + messageCommand.getText() + " | buttonId=" + messageCommand.getButtonId());
+
         if (checkError(messageCommand)) {
             conversationSession.setCurrentState(ConversationState.STATE_MAIN_MENU);
             return ProcessIncomingMessageResult.interactiveWithMessage("⚠️ Opa! Não entendi sua escolha.\n\n", MenuMessages.mainMenu(conversationSession.getRegisteredTutorName()));
@@ -54,9 +56,14 @@ public class MainMenuHandler {
             return registerPetHandler.handle_STATE_REGISTER_PET_START(conversationSession, messageCommand);
         }
         else if ("CHECK_SERVICES".equals(messageCommand.getButtonId())) {
-            conversationSession.setCurrentState(ConversationState.STATE_CHECK_SERVICES);
+            // conversationSession.setCurrentState(ConversationState.STATE_CHECK_SERVICES);
             String servicesList = servicesFormatedList.getAllServicesFormated();
-            return ProcessIncomingMessageResult.text(servicesList);
+            if (conversationSession.getRegisteredTutorName() != null) {
+                    conversationSession.setCurrentState(ConversationState.STATE_MAIN_MENU);
+                    return ProcessIncomingMessageResult.interactiveWithMessage(servicesList, MenuMessages.afterListServicesRegistered(conversationSession.getRegisteredTutorName()));
+                }
+                conversationSession.setCurrentState(ConversationState.STATE_NO_REGISTERED_MENU);
+                return ProcessIncomingMessageResult.interactiveWithMessage(servicesList, MenuMessages.afterListServicesNoRegistered());
         } else {
             conversationSession.setCurrentState(ConversationState.STATE_CHAT_WITH_HUMAN);
             conversationSession.setChatWithHuman(true);

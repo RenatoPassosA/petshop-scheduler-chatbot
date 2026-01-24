@@ -52,7 +52,7 @@ public class CancelScheduleHandler {
         List<Appointment> appointments = appointmentRepository.findByTutorId(conversationSession.getTutorId());
         if (appointments.isEmpty()){
             conversationSession.setCurrentState(ConversationState.STATE_MAIN_MENU);
-            return ProcessIncomingMessageResult.interactiveWithMessage("Você não tem nenhum serviço agendado.\n\n O que deseja fazer?\n\n",
+            return ProcessIncomingMessageResult.interactiveWithMessage("Você não tem nenhum serviço agendado.\n\n",
                                                             MenuMessages.mainMenu(conversationSession.getRegisteredTutorName()));
         }
         List<ButtonOption> appointmentButtons = new ArrayList<>();

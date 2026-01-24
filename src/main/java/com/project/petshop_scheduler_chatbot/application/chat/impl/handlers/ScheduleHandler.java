@@ -109,8 +109,8 @@ public class ScheduleHandler {
                                                                             conversationSession.getChosenSlot().getStartAt(),
                                                                             conversationSession.getObservations());
         scheduleAppointmentUseCase.execute(command);
-        conversationSession.setCurrentState(ConversationState.STATE_START);
-        return ProcessIncomingMessageResult.text("Agradecemos a preferencia!\nEstamos aguardando o seu pet!"); 
+        conversationSession.setCurrentState(ConversationState.STATE_MAIN_MENU);
+        return ProcessIncomingMessageResult.interactiveWithMessage("Agradecemos a preferencia!\nEstamos aguardando o seu pet!\n", MenuMessages.mainMenu(conversationSession.getRegisteredTutorName()));
     }
 
     private boolean checkError_STATE_SCHEDULE_START(ProcessIncomingMessageCommand messageCommand) {
@@ -190,7 +190,7 @@ public class ScheduleHandler {
         return true;
     }
 
-    private ProcessIncomingMessageResult  checkError_STATE_SCHEDULE_CHOOSE_SLOT(ConversationSession conversationSession, ProcessIncomingMessageCommand messageCommand) {
+    private ProcessIncomingMessageResult checkError_STATE_SCHEDULE_CHOOSE_SLOT(ConversationSession conversationSession, ProcessIncomingMessageCommand messageCommand) {
         String id = messageCommand.getButtonId();
         if (id == null)
             return generateSlotsButtons(conversationSession, true);
@@ -202,18 +202,30 @@ public class ScheduleHandler {
             return generateSlotsButtons(conversationSession, true);
         }
 
-        List<AvailableSlots> availableSlots  = conversationSession.getSlots();
-        if (availableSlots  == null || availableSlots.isEmpty()) {
-            conversationSession.setCurrentState(ConversationState.STATE_MAIN_MENU);
-            return ProcessIncomingMessageResult.interactiveWithMessage("Não encontrei horários disponíveis nos próximos dias.\n\n",
-                                                                    MenuMessages.mainMenu(conversationSession.getRegisteredTutorName()));
+        List<AvailableSlots> slots = conversationSession.getSlots();
+        if (slots == null || slots.isEmpty()) {
+            slots = listAvailableSlotsUseCase.listSlots(
+                conversationSession.getChosenServiceId(),
+                conversationSession.getLastInteraction()
+            );
+
+            if (slots == null || slots.isEmpty()) {
+                conversationSession.setCurrentState(ConversationState.STATE_MAIN_MENU);
+                return ProcessIncomingMessageResult.interactiveWithMessage(
+                    "Não encontrei horários disponíveis nos próximos dias.\n\n",
+                    MenuMessages.mainMenu(conversationSession.getRegisteredTutorName())
+                );
+            }
+            conversationSession.setSlots(slots);
         }
 
-        if (index < 0 || index >= availableSlots.size()) {
+        if (index < 0 || index >= slots.size()) {
             return generateSlotsButtons(conversationSession, true);
         }
+
         return null;
     }
+
 
     private boolean checkError_TextNullOrBlank(ProcessIncomingMessageCommand messageCommand) {
         String text = messageCommand.getText();
@@ -288,21 +300,42 @@ public class ScheduleHandler {
 
     private ProcessIncomingMessageResult generateSlotsButtons(ConversationSession conversationSession, boolean withError) {
         List<AvailableSlots> availableSlots =
-            listAvailableSlotsUseCase.listSlots(conversationSession.getChosenServiceId(), conversationSession.getLastInteraction());
+            listAvailableSlotsUseCase.listSlots(
+                conversationSession.getChosenServiceId(),
+                conversationSession.getLastInteraction()
+            );
 
         if (availableSlots == null || availableSlots.isEmpty()) {
+            conversationSession.setCurrentState(ConversationState.STATE_MAIN_MENU);
             return ProcessIncomingMessageResult.interactiveWithMessage(
                 "Não encontrei horários disponíveis nos próximos dias.\n\n",
                 MenuMessages.mainMenu(conversationSession.getRegisteredTutorName())
             );
         }
 
-        List<ButtonOption> rows = new ArrayList<>();
+        // 1) Ordena por data/hora
+        availableSlots = availableSlots.stream()
+            .sorted((a, b) -> a.getStartAt().compareTo(b.getStartAt()))
+            .toList();
+
+        // 2) Monta um header com a data do primeiro slot (mostra data 1 vez só)
+        String firstDay = DateTimeFormatterHelper.formatDate(availableSlots.get(0).getStartAt()); 
+        // ↑ se você não tiver formatDate, pode criar um helper.
+        // Ex: "24/01"
+
+        List<ButtonOption> rows = new ArrayList<>(availableSlots.size());
         for (int i = 0; i < availableSlots.size(); i++) {
             AvailableSlots slot = availableSlots.get(i);
-            String when = DateTimeFormatterHelper.formatDateTime(slot.getStartAt());
-            String prof = slot.getProfessionalName();
-            String title = truncate(when + " - " + prof, 24);
+
+            // 3) Título curto e útil (sem data)
+            String time = DateTimeFormatterHelper.formatTime(slot.getStartAt()); 
+            // Ex: "08:00"
+
+            String prof = shortProfessionalName(slot.getProfessionalName()); 
+            // Ex: "Dr. Bruno" / "Camila"
+
+            String title = truncate(time + " — " + prof, 24);
+
             rows.add(new ButtonOption(String.valueOf(i), title));
         }
 
@@ -314,13 +347,39 @@ public class ScheduleHandler {
         return ProcessIncomingMessageResult.interactiveWithMessage(
             prefix,
             InteractiveMessage.list(
-                "Para qual horário deseja agendar?\n",
-                "Escolher horário",       // texto do botão que abre a lista
-                "Horários disponíveis",   // título da seção
+                "Qual horário funciona melhor pra você? ⏰\n" +
+                "📅 " + firstDay + "\n",          // data 1 vez só
+                "Escolher horário",
+                "Horários disponíveis",
                 rows
             )
         );
     }
+
+    /** Mantém o nome curto e “humano” pro WhatsApp (24 chars é apertado). */
+    private String shortProfessionalName(String name) {
+        if (name == null) return "Profissional";
+        String n = name.trim();
+        if (n.isBlank()) return "Profissional";
+
+        // Exemplo de normalização simples:
+        // "Dr Bruno Silva" -> "Dr. Bruno"
+        // "Camila Souza" -> "Camila"
+        String[] parts = n.split("\\s+");
+        if (parts.length == 1) return parts[0];
+
+        // Se já começa com Dr/Dra, mantém + primeiro nome
+        String p0 = parts[0].replace(".", "");
+        if (p0.equalsIgnoreCase("dr") || p0.equalsIgnoreCase("dra")) {
+            String title = p0.equalsIgnoreCase("dr") ? "Dr." : "Dra.";
+            return title + " " + parts[1];
+        }
+
+        // Caso geral: só primeiro nome
+        return parts[0];
+    }
+
+
 
     private String generateConfirmationMessage(ConversationSession conversationSession, boolean withError) {
         AvailableSlots slot = conversationSession.getChosenSlot();
