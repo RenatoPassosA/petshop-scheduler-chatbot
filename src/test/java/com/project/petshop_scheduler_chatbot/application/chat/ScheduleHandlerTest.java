@@ -32,6 +32,7 @@ import com.project.petshop_scheduler_chatbot.core.domain.valueobject.Office;
 import com.project.petshop_scheduler_chatbot.core.domain.valueobject.PetSize;
 import com.project.petshop_scheduler_chatbot.core.repository.PetRepository;
 import com.project.petshop_scheduler_chatbot.core.repository.PetServiceRepository;
+import com.project.petshop_scheduler_chatbot.core.repository.ProfessionalRepository;
 
 @ExtendWith(MockitoExtension.class)
 public class ScheduleHandlerTest {
@@ -40,16 +41,20 @@ public class ScheduleHandlerTest {
    @Mock ListAvailableSlotsUseCase listAvailableSlotsUseCase; 
    @Mock ScheduleAppointmentUseCase scheduleAppointmentUseCase;
    @Mock StartMenuHandler startMenuHandler;
+   @Mock ProfessionalRepository professionalRepository;
 
    private ScheduleHandler scheduleHandler;
 
     @BeforeEach
     void setUp() {
-        scheduleHandler = new ScheduleHandler(petRepository,
-                                        petServiceRepository,
-                                        listAvailableSlotsUseCase,
-                                        scheduleAppointmentUseCase,
-                                        startMenuHandler);
+        scheduleHandler = new ScheduleHandler(
+            petRepository,
+            petServiceRepository,
+            listAvailableSlotsUseCase,
+            scheduleAppointmentUseCase,
+            startMenuHandler,
+            professionalRepository
+        );
     }
 
     private ProcessIncomingMessageCommand generateCommand(String text, String buttonId) {
@@ -59,16 +64,15 @@ public class ScheduleHandlerTest {
     private Pet pet(long id, String name) {
         Pet pet = new Pet(name, Gender.F, PetSize.SMALL, "VIRA-LATA", 1L, "nenhuma", OffsetDateTime.now(), OffsetDateTime.now());
         return pet.withPersistenceId(id);
-
     }
 
     private PetService service(Long id, String name) {
-        PetService service = new PetService (name, new BigDecimal(100), 180, Office.AUX, OffsetDateTime.now(), OffsetDateTime.now());
+        PetService service = new PetService(name, new BigDecimal(100), 180, Office.AUX, OffsetDateTime.now(), OffsetDateTime.now());
         return service.withPersistenceId(id);
     }
 
-    private AvailableSlots slots(String name) {
-        return new AvailableSlots(OffsetDateTime.now(), 1L, name);
+    private AvailableSlots slots(OffsetDateTime startAt, long professionalId, String name) {
+        return new AvailableSlots(startAt, professionalId, name);
     }
 
     @Test
@@ -76,14 +80,14 @@ public class ScheduleHandlerTest {
         ProcessIncomingMessageCommand command = generateCommand(null, "AAAA");
         ConversationSession session = new ConversationSession(command.getWaId());
 
-        ProcessIncomingMessageResult expect = ProcessIncomingMessageResult.text("expected");
-
-        when(startMenuHandler.STATE_START_handler(session)).thenReturn(expect);
+        when(startMenuHandler.STATE_START_handler(session)).thenReturn(ProcessIncomingMessageResult.text("expected"));
 
         ProcessIncomingMessageResult result = scheduleHandler.handle_STATE_SCHEDULE_START(session, command);
 
         assertThat(session.getCurrentState()).isEqualTo(ConversationState.STATE_START);
-        assertThat(result).isEqualTo(expect);
+        assertThat(result.getType()).isEqualTo(Kind.TEXT);
+        assertThat(result.getText()).isEqualTo("expected");
+
         verify(startMenuHandler, times(1)).STATE_START_handler(session);
         verifyNoInteractions(petRepository, petServiceRepository, listAvailableSlotsUseCase, scheduleAppointmentUseCase);
     }
@@ -103,6 +107,7 @@ public class ScheduleHandlerTest {
         assertThat(session.getCurrentState()).isEqualTo(ConversationState.STATE_MAIN_MENU);
         assertThat(result.getType()).isEqualTo(Kind.INTERACTIVE);
         assertThat(result.getText()).contains("Você não tem nenhum pet cadastrado");
+
         verify(petRepository, times(1)).listByTutor(session.getTutorId());
         verifyNoInteractions(petServiceRepository, listAvailableSlotsUseCase, scheduleAppointmentUseCase, startMenuHandler);
     }
@@ -115,7 +120,6 @@ public class ScheduleHandlerTest {
         session.setCurrentState(ConversationState.STATE_START);
 
         when(petRepository.listByTutor(1L)).thenReturn(List.of(pet(1L,"flor"), pet(2L, "kiwi")));
-
 
         ProcessIncomingMessageResult result = scheduleHandler.handle_STATE_SCHEDULE_START(session, command);
 
@@ -138,15 +142,16 @@ public class ScheduleHandlerTest {
 
         when(petRepository.listByTutor(1L)).thenReturn(List.of(pet(1L, "flor"), pet(2L, "kiwi")));
 
-        session.setCurrentState(ConversationState.STATE_SCHEDULE_CHOOSE_PET);
-
         ProcessIncomingMessageResult result = scheduleHandler.handle_STATE_SCHEDULE_CHOOSE_PET(session, command);
 
         assertThat(session.getCurrentState()).isEqualTo(ConversationState.STATE_SCHEDULE_CHOOSE_PET);
         assertThat(session.getAllTutorsPets()).contains(1L, 2L);
         assertThat(result.getType()).isEqualTo(Kind.INTERACTIVE);
+
+        // ⚠️ agora: erro no text, pergunta no body
         assertThat(result.getText()).contains("⚠️ Não entendi");
-        assertThat(result.getText()).contains("Para qual pet deseja agendar?");
+        assertThat(result.getInteractive().body()).contains("Para qual pet deseja agendar?");
+
         verify(petRepository, times(1)).listByTutor(session.getTutorId());
         verifyNoInteractions(petServiceRepository, listAvailableSlotsUseCase, scheduleAppointmentUseCase, startMenuHandler);
     }
@@ -159,17 +164,20 @@ public class ScheduleHandlerTest {
         session.setAllTutorsPets(List.of(1L, 2L));
         session.setCurrentState(ConversationState.STATE_SCHEDULE_CHOOSE_PET);
 
+        // ✅ necessário: validação do petId depende disso
+        when(petRepository.listByTutor(1L)).thenReturn(List.of(pet(1L,"flor"), pet(2L,"kiwi")));
         when(petServiceRepository.getAll()).thenReturn(List.of(service(1L, "tosa"), service(2L, "banho")));
-        
+
         ProcessIncomingMessageResult result = scheduleHandler.handle_STATE_SCHEDULE_CHOOSE_PET(session, command);
 
         assertThat(session.getCurrentState()).isEqualTo(ConversationState.STATE_SCHEDULE_CHOOSE_SERVICE);
-        assertThat(session.getAllTutorsPets()).contains(1L, 2L);
         assertThat(session.getPetId()).isEqualTo(1L);
         assertThat(result.getType()).isEqualTo(Kind.INTERACTIVE);
-        assertThat(result.getInteractive().body()).contains("Qual serviço deseja agendar?\n");
+        assertThat(result.getInteractive().body()).contains("Qual serviço deseja agendar?");
+
+        verify(petRepository, times(1)).listByTutor(1L);
         verify(petServiceRepository, times(1)).getAll();
-        verifyNoInteractions(petRepository, listAvailableSlotsUseCase, scheduleAppointmentUseCase, startMenuHandler);
+        verifyNoInteractions(listAvailableSlotsUseCase, scheduleAppointmentUseCase, startMenuHandler);
     }
 
     @Test
@@ -177,7 +185,6 @@ public class ScheduleHandlerTest {
         ProcessIncomingMessageCommand command = generateCommand(null, null);
         ConversationSession session = new ConversationSession(command.getWaId());
         session.setTutorId(1L);
-        session.setAllTutorsPets(List.of(1L, 2L));
         session.setCurrentState(ConversationState.STATE_SCHEDULE_CHOOSE_SERVICE);
 
         when(petServiceRepository.getAll()).thenReturn(List.of(service(1L, "tosa"), service(2L, "banho")));
@@ -186,103 +193,125 @@ public class ScheduleHandlerTest {
 
         assertThat(session.getCurrentState()).isEqualTo(ConversationState.STATE_SCHEDULE_CHOOSE_SERVICE);
         assertThat(result.getType()).isEqualTo(Kind.INTERACTIVE);
-        assertThat(result.getText()).contains("⚠️ Não entendi.");
+        assertThat(result.getText()).contains("⚠️ Não entendi");
+
         verify(petServiceRepository, times(1)).getAll();
         verifyNoInteractions(petRepository, listAvailableSlotsUseCase, scheduleAppointmentUseCase, startMenuHandler);
     }
 
     @Test
-    void chooseService_ValidButton_ShouldGenerateSlotButtons() {
+    void chooseService_ValidButton_ShouldGenerateDaysButtons() {
         ProcessIncomingMessageCommand command = generateCommand(null, "1");
         ConversationSession session = new ConversationSession(command.getWaId());
         OffsetDateTime fixed = OffsetDateTime.parse("2100-01-01T10:00:00-03:00");
         session.setTutorId(1L);
         session.setPetId(1L);
-        session.setAllTutorsPets(List.of(1L, 2L));
         session.setLastInteraction(fixed);
         session.setCurrentState(ConversationState.STATE_SCHEDULE_CHOOSE_SERVICE);
 
         when(petServiceRepository.getAll()).thenReturn(List.of(service(1L, "tosa"), service(2L, "banho")));
-        when(listAvailableSlotsUseCase.listSlots(1L, fixed)).thenReturn(List.of(slots("Renato"), slots("Amanda")));
 
-        
+        // ✅ agora o fluxo pede DIAS, então listSlots deve retornar slots em dias diferentes (ou iguais)
+        OffsetDateTime s1 = OffsetDateTime.parse("2100-01-02T09:00:00-03:00");
+        OffsetDateTime s2 = OffsetDateTime.parse("2100-01-03T09:00:00-03:00");
+        when(listAvailableSlotsUseCase.listSlots(1L, fixed))
+            .thenReturn(List.of(
+                slots(s1, 10L, "Renato"),
+                slots(s2, 11L, "Amanda")
+            ));
+
         ProcessIncomingMessageResult result = scheduleHandler.handle_STATE_SCHEDULE_CHOOSE_SERVICE(session, command);
 
-        assertThat(session.getCurrentState()).isEqualTo(ConversationState.STATE_SCHEDULE_CHOOSE_SLOT);
-        assertThat(session.getChosenServiceId()).isEqualTo(1);
+        assertThat(session.getCurrentState()).isEqualTo(ConversationState.STATE_SCHEDULE_CHOOSE_DAY);
+        assertThat(session.getChosenServiceId()).isEqualTo(1L);
         assertThat(result.getType()).isEqualTo(Kind.INTERACTIVE);
-        assertThat(result.getInteractive().body()).contains("Para qual horário deseja agendar?");
+        assertThat(result.getInteractive().body()).contains("Escolha o dia");
 
-        verify(listAvailableSlotsUseCase, times(1)).listSlots(session.getChosenServiceId(), fixed);
+        verify(listAvailableSlotsUseCase, times(1)).listSlots(1L, fixed);
         verifyNoInteractions(petRepository, scheduleAppointmentUseCase, startMenuHandler);
     }
 
     @Test
-    void chooseSlot_InvalidButton_ShouldGenerateSlotButtons() {
+    void chooseSlot_InvalidButton_ShouldReturnToChooseDay() {
         ProcessIncomingMessageCommand command = generateCommand(null, null);
         ConversationSession session = new ConversationSession(command.getWaId());
         OffsetDateTime fixed = OffsetDateTime.parse("2100-01-01T10:00:00-03:00");
         session.setTutorId(1L);
-        session.setPetId(Long.valueOf(1L));
-        session.setAllTutorsPets(List.of(1L, 2L));
+        session.setPetId(1L);
         session.setLastInteraction(fixed);
-        session.setChosenServiceId(1l);
-        session.setSlots(List.of(slots("Renato"), slots("Amanda")));
+        session.setChosenServiceId(1L);
         session.setCurrentState(ConversationState.STATE_SCHEDULE_CHOOSE_SLOT);
 
-        when(listAvailableSlotsUseCase.listSlots(1L, fixed)).thenReturn(List.of(slots("Renato"), slots("Amanda")));
+        // ✅ generateDaysButtons chama listSlots
+        OffsetDateTime s1 = OffsetDateTime.parse("2100-01-02T09:00:00-03:00");
+        when(listAvailableSlotsUseCase.listSlots(1L, fixed)).thenReturn(List.of(slots(s1, 10L, "Renato")));
 
-        ProcessIncomingMessageResult result = scheduleHandler.handle_STATE_SCHEDULE_CHOOSE_SLOT(session, command);        
+        ProcessIncomingMessageResult result = scheduleHandler.handle_STATE_SCHEDULE_CHOOSE_SLOT(session, command);
 
-        assertThat(session.getCurrentState()).isEqualTo(ConversationState.STATE_SCHEDULE_CHOOSE_SLOT);
+        assertThat(session.getCurrentState()).isEqualTo(ConversationState.STATE_SCHEDULE_CHOOSE_DAY);
         assertThat(result.getType()).isEqualTo(Kind.INTERACTIVE);
-        assertThat(result.getText()).contains("⚠️ Não entendi.");
+        assertThat(result.getText()).contains("⚠️ Não entendi");
+
         verify(listAvailableSlotsUseCase, times(1)).listSlots(1L, fixed);
         verifyNoInteractions(petRepository, petServiceRepository, scheduleAppointmentUseCase, startMenuHandler);
     }
 
     @Test
-    void chooseSlot_EmptySlotList_ShouldMessageAndReturnToMenu() {
+    void chooseSlot_EmptyOrInvalidSlotKey_ShouldReturnToChooseDay_WithError() {
+        // aqui o buttonId não é SlotKey -> parse falha -> cai em generateDaysButtons
         ProcessIncomingMessageCommand command = generateCommand(null, "1");
+
         ConversationSession session = new ConversationSession(command.getWaId());
+        OffsetDateTime fixed = OffsetDateTime.parse("2100-01-01T10:00:00-03:00");
         session.setTutorId(1L);
-        session.setPetId(Long.valueOf(1L));
-        session.setAllTutorsPets(List.of(1L, 2L));
-        session.setChosenServiceId(Long.valueOf(command.getButtonId()));
-        session.setSlots(List.of());
+        session.setPetId(1L);
+        session.setLastInteraction(fixed);
+        session.setChosenServiceId(1L);
         session.setCurrentState(ConversationState.STATE_SCHEDULE_CHOOSE_SLOT);
+
+        OffsetDateTime s1 = OffsetDateTime.parse("2100-01-02T09:00:00-03:00");
+        when(listAvailableSlotsUseCase.listSlots(1L, fixed)).thenReturn(List.of(slots(s1, 10L, "Renato")));
 
         ProcessIncomingMessageResult result = scheduleHandler.handle_STATE_SCHEDULE_CHOOSE_SLOT(session, command);
 
-        assertThat(session.getCurrentState()).isEqualTo(ConversationState.STATE_MAIN_MENU);
-        assertThat(session.getChosenServiceId()).isEqualTo(1);
+        assertThat(session.getCurrentState()).isEqualTo(ConversationState.STATE_SCHEDULE_CHOOSE_DAY);
         assertThat(result.getType()).isEqualTo(Kind.INTERACTIVE);
-        assertThat(result.getText()).contains("Não encontrei horários disponíveis nos próximos dias.");
-        verifyNoInteractions(petRepository, petServiceRepository, scheduleAppointmentUseCase, startMenuHandler,listAvailableSlotsUseCase);
+        assertThat(result.getText()).contains("⚠️");
+
+        verify(listAvailableSlotsUseCase, times(1)).listSlots(1L, fixed);
+        verifyNoInteractions(petRepository, petServiceRepository, scheduleAppointmentUseCase, startMenuHandler);
     }
 
     @Test
-    void chooseSlot_ValidButton_ShouldGenerateSlotButtons() {
-        ProcessIncomingMessageCommand command = generateCommand(null, "0");
-        ConversationSession session = new ConversationSession(command.getWaId());
+    void chooseSlot_ValidSlotKey_ShouldGoToObs() {
+        OffsetDateTime fixed = OffsetDateTime.parse("2100-01-01T10:00:00-03:00");
+
+        OffsetDateTime slotStart = OffsetDateTime.parse("2100-01-02T09:00:00-03:00");
+        long professionalId = 10L;
+        AvailableSlots slot = slots(slotStart, professionalId, "Renato");
+
+        ConversationSession session = new ConversationSession("21988398302");
         session.setTutorId(1L);
         session.setPetId(2L);
-        session.setAllTutorsPets(List.of(1L, 2L));
         session.setChosenServiceId(3L);
-        AvailableSlots slot1 = slots("Renato");
-        AvailableSlots slot2 = slots("Amanda");
-        session.setSlots(List.of(slot1, slot2));
-        session.setChosenSlot(slot1);
+        session.setLastInteraction(fixed);
         session.setCurrentState(ConversationState.STATE_SCHEDULE_CHOOSE_SLOT);
 
-        ProcessIncomingMessageResult result = scheduleHandler.handle_STATE_SCHEDULE_CHOOSE_SLOT(session, command);
+        // ✅ o handler recalcula e encontra pelo key
+        when(listAvailableSlotsUseCase.listSlots(3L, fixed)).thenReturn(List.of(slot));
+
+        String slotKey = com.project.petshop_scheduler_chatbot.application.chat.impl.utils.SlotKeyHelper
+            .toKey(slotStart, professionalId);
+
+        ProcessIncomingMessageResult result = scheduleHandler.handle_STATE_SCHEDULE_CHOOSE_SLOT(session, generateCommand(null, slotKey));
 
         assertThat(session.getCurrentState()).isEqualTo(ConversationState.STATE_SCHEDULE_OBS);
-
-        assertThat(session.getChosenSlot()).isEqualTo(slot1);
+        assertThat(session.getChosenSlot()).isNotNull();
         assertThat(result.getType()).isEqualTo(Kind.TEXT);
-        assertThat(result.getText()).contains("Alguma observação importante para essa consulta?");
-        verifyNoInteractions(listAvailableSlotsUseCase, petRepository, petServiceRepository, scheduleAppointmentUseCase, startMenuHandler);
+        assertThat(result.getText()).contains("Alguma observação importante");
+
+        verify(listAvailableSlotsUseCase, times(1)).listSlots(3L, fixed);
+        verifyNoInteractions(petRepository, petServiceRepository, scheduleAppointmentUseCase, startMenuHandler);
     }
 
     @Test
@@ -291,14 +320,12 @@ public class ScheduleHandlerTest {
         ConversationSession session = new ConversationSession(command.getWaId());
         session.setTutorId(1L);
         session.setPetId(1L);
-        session.setAllTutorsPets(List.of(1L, 2L));
         session.setChosenServiceId(1L);
-        AvailableSlots slot1 = slots("Renato");
-        AvailableSlots slot2 = slots("Amanda");
-        session.setSlots(List.of(slot1, slot2));
-        session.setChosenSlot(slot1);
-        session.setObservations("sem observações");
+        session.setChosenSlot(slots(OffsetDateTime.now().plusDays(1), 10L, "Renato"));
         session.setCurrentState(ConversationState.STATE_SCHEDULE_OBS);
+
+        when(petRepository.findById(anyLong())).thenReturn(java.util.Optional.of(pet(1L,"flor")));
+        when(petServiceRepository.findById(anyLong())).thenReturn(java.util.Optional.of(service(1L,"tosa")));
 
         ProcessIncomingMessageResult result = scheduleHandler.handle_STATE_SCHEDULE_OBS(session, command);
 
@@ -306,6 +333,7 @@ public class ScheduleHandlerTest {
         assertThat(session.getObservations()).contains("sem observações");
         assertThat(result.getType()).isEqualTo(Kind.INTERACTIVE);
         assertThat(result.getInteractive().body()).contains("Podemos confirmar o agendamento?");
+
         verify(petRepository, times(1)).findById(anyLong());
         verify(petServiceRepository, times(1)).findById(anyLong());
         verifyNoInteractions(listAvailableSlotsUseCase, scheduleAppointmentUseCase, startMenuHandler);
@@ -317,12 +345,12 @@ public class ScheduleHandlerTest {
         ConversationSession session = new ConversationSession(command.getWaId());
         session.setTutorId(1L);
         session.setPetId(1L);
-        session.setAllTutorsPets(List.of(1L, 2L));
         session.setChosenServiceId(3L);
-        session.setSlots(List.of(slots("Renato"), slots("Amanda")));
-        session.setChosenSlot(slots("renato"));
-        session.setObservations("ouvido inflamado");
+        session.setChosenSlot(slots(OffsetDateTime.now().plusDays(1), 10L, "Renato"));
         session.setCurrentState(ConversationState.STATE_SCHEDULE_OBS);
+
+        when(petRepository.findById(anyLong())).thenReturn(java.util.Optional.of(pet(1L,"flor")));
+        when(petServiceRepository.findById(anyLong())).thenReturn(java.util.Optional.of(service(3L,"banho")));
 
         ProcessIncomingMessageResult result = scheduleHandler.handle_STATE_SCHEDULE_OBS(session, command);
 
@@ -330,10 +358,9 @@ public class ScheduleHandlerTest {
         assertThat(session.getObservations()).contains("ouvido inflamado");
         assertThat(result.getType()).isEqualTo(Kind.INTERACTIVE);
         assertThat(result.getInteractive().body()).contains("Podemos confirmar o agendamento?");
+
         verify(petRepository, times(1)).findById(anyLong());
         verify(petServiceRepository, times(1)).findById(anyLong());
         verifyNoInteractions(listAvailableSlotsUseCase, scheduleAppointmentUseCase, startMenuHandler);
     }
 }
-
-

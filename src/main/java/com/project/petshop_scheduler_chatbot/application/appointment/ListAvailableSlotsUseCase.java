@@ -35,10 +35,10 @@ public class ListAvailableSlotsUseCase {
     private static final ZoneId BUSINESS_ZONE = ZoneId.of("America/Sao_Paulo");
 
     public List<AvailableSlots> listSlots(Long serviceId, OffsetDateTime now) {
-        long daysAhead = 7L;
+        long daysAhead = 21L;
         int step = 30;
         ZonedDateTime nowLocal = now.atZoneSameInstant(BUSINESS_ZONE);
-        ZonedDateTime fromLocal = nowLocal.plusDays(1).withHour(9).withMinute(0).withSecond(0).withNano(0); // 09:00 local
+        ZonedDateTime fromLocal = nowLocal.plusDays(1).withHour(9).withMinute(0).withSecond(0).withNano(0);
         ZonedDateTime toLocal = fromLocal.plusDays(daysAhead);
         OffsetDateTime from = fromLocal.toOffsetDateTime();
         OffsetDateTime to   = toLocal.toOffsetDateTime();
@@ -52,11 +52,9 @@ public class ListAvailableSlotsUseCase {
                 continue;
             }
 
-            long limit = 10L;
+            long limit = 200L;
             OffsetDateTime cursor = from;
-
-            List<Appointment> appointmentsFromProfessional =
-                appointmentRepository.listByProfessionalBetween(professionalI.getId(), from, to);
+            List<Appointment> appointmentsFromProfessional = appointmentRepository.listByProfessionalBetween(professionalI.getId(), from, to);
 
             while (cursor.isBefore(to) && limit != 0) {
                 OffsetDateTime start = cursor;
@@ -81,23 +79,20 @@ public class ListAvailableSlotsUseCase {
                     listSlots.add(new AvailableSlots(start, professionalI.getId(), professionalI.getName()));
                     limit--;
                 }
-
                 cursor = cursor.plusMinutes(step);
             }
         }
-
         return filterByStartAt(listSlots);
     }
-
 
     private List<AvailableSlots> filterByStartAt(List<AvailableSlots> listSlots) {
         if (listSlots.isEmpty())
             return listSlots;
 
         listSlots.sort(Comparator.comparing(AvailableSlots::getStartAt));
-
-        return listSlots.stream().limit(10).toList();
+        return listSlots;
     }
+
 }
 
 

@@ -204,12 +204,14 @@ public class RegisterTutorHandlerTest {
         ProcessIncomingMessageResult result = registerTutorHandler.handle_STATE_REGISTER_TUTOR_CONFIRM(session, command);
 
         assertThat(session.getCurrentState()).isEqualTo(ConversationState.STATE_START);
-        assertThat(result.getType()).isEqualTo(Kind.TEXT);
-        assertThat(result.getText()).contains("Agradecemos a preferencia!");
+        assertThat(result.getType()).isEqualTo(Kind.INTERACTIVE);
+        String body = result.getInteractive() != null ? result.getInteractive().body() : "";
+        String text = result.getText() != null ? result.getText() : "";
+        assertThat(body + text).contains("Agradecemos a preferencia!");
         assertThat(session.getTempTutorName()).isNull();
         assertThat(session.getTempTutorAddress()).isNull();
-
-        verify(tutorUseCase, times(1)).execute(any(AddTutorCommand .class));
+        verify(tutorUseCase, times(1)).execute(any(AddTutorCommand.class));
         verifyNoInteractions(startMenuHandler);
     }
+
 }

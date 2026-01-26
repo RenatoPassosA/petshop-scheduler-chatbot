@@ -2,6 +2,10 @@ package com.project.petshop_scheduler_chatbot.application.chat.impl.handlers;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.time.LocalDate;
+import java.time.format.TextStyle;
+import java.util.LinkedHashSet;
+import java.util.Locale;
 
 import org.springframework.stereotype.Component;
 
@@ -17,10 +21,14 @@ import com.project.petshop_scheduler_chatbot.application.chat.messages.Interacti
 import com.project.petshop_scheduler_chatbot.application.chat.messages.InteractiveBodyMessages.InteractiveMessage;
 import com.project.petshop_scheduler_chatbot.core.domain.Pet;
 import com.project.petshop_scheduler_chatbot.core.domain.PetService;
+import com.project.petshop_scheduler_chatbot.core.domain.Professional;
 import com.project.petshop_scheduler_chatbot.core.domain.chatbot.ConversationSession;
 import com.project.petshop_scheduler_chatbot.core.domain.chatbot.ConversationState;
 import com.project.petshop_scheduler_chatbot.core.repository.PetRepository;
 import com.project.petshop_scheduler_chatbot.core.repository.PetServiceRepository;
+import com.project.petshop_scheduler_chatbot.core.repository.ProfessionalRepository;
+import com.project.petshop_scheduler_chatbot.application.chat.impl.utils.SlotKeyHelper;
+import com.project.petshop_scheduler_chatbot.application.chat.impl.utils.BusinessTime;
 
 @Component
 public class ScheduleHandler {
@@ -30,14 +38,15 @@ public class ScheduleHandler {
     private final ListAvailableSlotsUseCase listAvailableSlotsUseCase; 
     private final ScheduleAppointmentUseCase scheduleAppointmentUseCase;
     private final StartMenuHandler startMenuHandler;
+    private final ProfessionalRepository professionalRepository;
 
-
-    public ScheduleHandler(PetRepository petRepository, PetServiceRepository petServiceRepository, ListAvailableSlotsUseCase listAvailableSlotsUseCase, ScheduleAppointmentUseCase scheduleAppointmentUseCase, StartMenuHandler startMenuHandler) {
+    public ScheduleHandler(PetRepository petRepository, PetServiceRepository petServiceRepository, ListAvailableSlotsUseCase listAvailableSlotsUseCase, ScheduleAppointmentUseCase scheduleAppointmentUseCase, StartMenuHandler startMenuHandler, ProfessionalRepository professionalRepository) {
         this.petRepository = petRepository;
         this.petServiceRepository = petServiceRepository;
         this.listAvailableSlotsUseCase = listAvailableSlotsUseCase;
         this.scheduleAppointmentUseCase = scheduleAppointmentUseCase;
         this.startMenuHandler = startMenuHandler;
+        this.professionalRepository = professionalRepository;
     }
 
     public ProcessIncomingMessageResult handle_STATE_SCHEDULE_START(ConversationSession conversationSession, ProcessIncomingMessageCommand messageCommand) {
@@ -62,19 +71,62 @@ public class ScheduleHandler {
             return generateServiceButtons(conversationSession, true);
         }
         conversationSession.setChosenServiceId(Long.valueOf(messageCommand.getButtonId()));
-        return generateSlotsButtons(conversationSession, false);
+        return generateDaysButtons(conversationSession, false);
     }
+
+
+    public ProcessIncomingMessageResult handle_STATE_SCHEDULE_CHOOSE_DAY(ConversationSession conversationSession, ProcessIncomingMessageCommand messageCommand) {
+        String dayId = messageCommand.getButtonId(); // "2026-01-24"
+        if (dayId == null || dayId.isBlank()) {
+            return generateDaysButtons(conversationSession, true);
+        }
+        LocalDate chosenDay;
+        try {
+            chosenDay = LocalDate.parse(dayId);
+        } catch (Exception e) {
+            return generateDaysButtons(conversationSession, true);
+        }
+
+        return generateSlotsButtonsForDay(conversationSession, chosenDay, false);
+    }
+
 
     public ProcessIncomingMessageResult handle_STATE_SCHEDULE_CHOOSE_SLOT(ConversationSession conversationSession, ProcessIncomingMessageCommand messageCommand) {
         ProcessIncomingMessageResult error = checkError_STATE_SCHEDULE_CHOOSE_SLOT(conversationSession, messageCommand);
-        if (error != null) {
-            return error;
+        if (error != null) return error;
+
+        String slotKey = messageCommand.getButtonId();
+        var parsed = SlotKeyHelper.parse(slotKey);
+        if (parsed == null) {
+            return generateDaysButtons(conversationSession, true);
         }
-        int index = Integer.parseInt(messageCommand.getButtonId());
-        AvailableSlots chosenSlot = conversationSession.getSlots().get(index);
-        conversationSession.setChosenSlot(chosenSlot);
+
+        Long serviceId = conversationSession.getChosenServiceId();
+        if (serviceId == null) {
+            conversationSession.setCurrentState(ConversationState.STATE_MAIN_MENU);
+            return ProcessIncomingMessageResult.interactiveWithMessage(
+                "⚠️ Perdi o contexto do agendamento. Vamos voltar ao menu.\n\n",
+                MenuMessages.mainMenu(conversationSession.getRegisteredTutorName())
+            );
+        }
+
+        List<AvailableSlots> allSlots = listAvailableSlotsUseCase.listSlots(serviceId, conversationSession.getLastInteraction());
+        AvailableSlots chosen = null;
+        for (AvailableSlots s : allSlots) {
+            String k = SlotKeyHelper.toKey(s.getStartAt(), s.getProfessionalId());
+            if (k.equals(slotKey)) {
+                chosen = s;
+                break;
+            }
+        }
+
+        if (chosen == null) {
+            return generateDaysButtons(conversationSession, true);
+        }
+
+        conversationSession.setChosenSlot(chosen);
         conversationSession.setCurrentState(ConversationState.STATE_SCHEDULE_OBS);
-        return ProcessIncomingMessageResult.text("Alguma observação importante para essa consulta?");        
+        return ProcessIncomingMessageResult.text("Alguma observação importante para essa consulta?");
     }
 
     public ProcessIncomingMessageResult handle_STATE_SCHEDULE_OBS(ConversationSession conversationSession, ProcessIncomingMessageCommand messageCommand) {
@@ -136,29 +188,6 @@ public class ScheduleHandler {
 
         List<Pet> pets = petRepository.listByTutor(conversationSession.getTutorId());
         return pets.stream().noneMatch(p -> p.getId().equals(petId));
-
-        // List<Long> petIdsList = conversationSession.getAllTutorsPets();
-        // if (petIdsList == null || petIdsList.isEmpty()) {
-        //     System.out.println("Pet IDs list is null or empty in STATE_SCHEDULE_CHOOSE_PET");
-        //     return true;
-        // }
-
-        // boolean existsId = false;
-
-        // for (Long itens : petIdsList) {
-        //     if (itens.equals(Long.valueOf(petId))) {
-        //         existsId = true;
-        //         break;
-        //     }
-        // }
-        // if (existsId) {
-        //     System.out.println("existe o pet na lista");
-        //     return false;
-        //     }
-        // else {
-        //     System.out.println("nao existe o pet na lista");
-        //     return true;
-        // }
     }
 
     private boolean checkError_STATE_SCHEDULE_CHOOSE_SERVICE(ConversationSession conversationSession, ProcessIncomingMessageCommand messageCommand) {
@@ -192,40 +221,11 @@ public class ScheduleHandler {
 
     private ProcessIncomingMessageResult checkError_STATE_SCHEDULE_CHOOSE_SLOT(ConversationSession conversationSession, ProcessIncomingMessageCommand messageCommand) {
         String id = messageCommand.getButtonId();
-        if (id == null)
-            return generateSlotsButtons(conversationSession, true);
-
-        int index;
-        try {
-            index = Integer.parseInt(id);
-        } catch (NumberFormatException e) {
-            return generateSlotsButtons(conversationSession, true);
+        if (id == null || id.isBlank()) {
+            return generateDaysButtons(conversationSession, true);
         }
-
-        List<AvailableSlots> slots = conversationSession.getSlots();
-        if (slots == null || slots.isEmpty()) {
-            slots = listAvailableSlotsUseCase.listSlots(
-                conversationSession.getChosenServiceId(),
-                conversationSession.getLastInteraction()
-            );
-
-            if (slots == null || slots.isEmpty()) {
-                conversationSession.setCurrentState(ConversationState.STATE_MAIN_MENU);
-                return ProcessIncomingMessageResult.interactiveWithMessage(
-                    "Não encontrei horários disponíveis nos próximos dias.\n\n",
-                    MenuMessages.mainMenu(conversationSession.getRegisteredTutorName())
-                );
-            }
-            conversationSession.setSlots(slots);
-        }
-
-        if (index < 0 || index >= slots.size()) {
-            return generateSlotsButtons(conversationSession, true);
-        }
-
         return null;
     }
-
 
     private boolean checkError_TextNullOrBlank(ProcessIncomingMessageCommand messageCommand) {
         String text = messageCommand.getText();
@@ -238,11 +238,11 @@ public class ScheduleHandler {
     }
 
     private boolean checkError_STATE_SCHEDULE_CONFIRM(ProcessIncomingMessageCommand messageCommand) {
-            String id = messageCommand.getButtonId();
-            if (id == null || (!"YES".equals(id) &&!"NO".equals(id)))  
-                return true;
-            return false;
-        }
+        String id = messageCommand.getButtonId();
+        if (id == null || (!"YES".equals(id) &&!"NO".equals(id)))  
+            return true;
+        return false;
+    }
 
     private ProcessIncomingMessageResult generatePetButtons(ConversationSession conversationSession, boolean withError) {
         List<Pet> pets = petRepository.listByTutor(conversationSession.getTutorId());
@@ -250,18 +250,22 @@ public class ScheduleHandler {
             conversationSession.setCurrentState(ConversationState.STATE_MAIN_MENU);
             return ProcessIncomingMessageResult.interactiveWithMessage("Você não tem nenhum pet cadastrado.\n\n O que deseja fazer?\n\n", MenuMessages.mainMenu(conversationSession.getRegisteredTutorName()));
         }
+
         List<ButtonOption> petButtons = new ArrayList<>();
         List<Long> petIds = new ArrayList<>();
+
         for (Pet petList : pets) {
             String stringIndex = petList.getId().toString();
             petButtons.add(new ButtonOption(stringIndex, petList.getName()));
             petIds.add(petList.getId());
         }
+
         conversationSession.setCurrentState(ConversationState.STATE_SCHEDULE_CHOOSE_PET);
         conversationSession.setAllTutorsPets(petIds);
-        if (withError) {
+
+        if (withError) 
             return ProcessIncomingMessageResult.interactiveWithMessage("⚠️ Não entendi.\n", new InteractiveMessage( "Para qual pet deseja agendar?\n",petButtons));
-        }
+
         return ProcessIncomingMessageResult.interactive(new InteractiveMessage("Para qual pet deseja agendar?\n", petButtons));
     }
 
@@ -271,7 +275,7 @@ public class ScheduleHandler {
         List<ButtonOption> rows = new ArrayList<>();
         for (PetService s : petServices) {
             String id = s.getId().toString();
-            String title = truncate(s.getName(), 24); // ✅ limite do WhatsApp list row title
+            String title = truncate(s.getName(), 24);
             rows.add(new ButtonOption(id, title));
         }
 
@@ -289,23 +293,17 @@ public class ScheduleHandler {
         );
     }
 
-    private String truncate(String s, int max) {
-        if (s == null) return "";
-        String t = s.trim();
-        if (t.length() <= max) return t;
-        return t.substring(0, Math.max(0, max - 1)) + "…";
-    }
+    private ProcessIncomingMessageResult generateDaysButtons(ConversationSession conversationSession, boolean withError) {
+        Long serviceId = conversationSession.getChosenServiceId();
+        if (serviceId == null) {
+            conversationSession.setCurrentState(ConversationState.STATE_MAIN_MENU);
+            return ProcessIncomingMessageResult.interactiveWithMessage("⚠️ Não consegui identificar o serviço. Voltei ao menu.\n\n",
+                                                                        MenuMessages.mainMenu(conversationSession.getRegisteredTutorName()));
+        }
 
+        List<AvailableSlots> allSlots = listAvailableSlotsUseCase.listSlots(serviceId, conversationSession.getLastInteraction());
 
-
-    private ProcessIncomingMessageResult generateSlotsButtons(ConversationSession conversationSession, boolean withError) {
-        List<AvailableSlots> availableSlots =
-            listAvailableSlotsUseCase.listSlots(
-                conversationSession.getChosenServiceId(),
-                conversationSession.getLastInteraction()
-            );
-
-        if (availableSlots == null || availableSlots.isEmpty()) {
+        if (allSlots == null || allSlots.isEmpty()) {
             conversationSession.setCurrentState(ConversationState.STATE_MAIN_MENU);
             return ProcessIncomingMessageResult.interactiveWithMessage(
                 "Não encontrei horários disponíveis nos próximos dias.\n\n",
@@ -313,83 +311,83 @@ public class ScheduleHandler {
             );
         }
 
-        // 1) Ordena por data/hora
-        availableSlots = availableSlots.stream()
-            .sorted((a, b) -> a.getStartAt().compareTo(b.getStartAt()))
-            .toList();
-
-        // 2) Monta um header com a data do primeiro slot (mostra data 1 vez só)
-        String firstDay = DateTimeFormatterHelper.formatDate(availableSlots.get(0).getStartAt()); 
-        // ↑ se você não tiver formatDate, pode criar um helper.
-        // Ex: "24/01"
-
-        List<ButtonOption> rows = new ArrayList<>(availableSlots.size());
-        for (int i = 0; i < availableSlots.size(); i++) {
-            AvailableSlots slot = availableSlots.get(i);
-
-            // 3) Título curto e útil (sem data)
-            String time = DateTimeFormatterHelper.formatTime(slot.getStartAt()); 
-            // Ex: "08:00"
-
-            String prof = shortProfessionalName(slot.getProfessionalName()); 
-            // Ex: "Dr. Bruno" / "Camila"
-
-            String title = truncate(time + " — " + prof, 24);
-
-            rows.add(new ButtonOption(String.valueOf(i), title));
+        LinkedHashSet<LocalDate> days = new LinkedHashSet<>();
+        for (AvailableSlots s : allSlots) {
+            days.add(BusinessTime.toBusinessDate(s.getStartAt()));
         }
 
-        conversationSession.setSlots(availableSlots);
-        conversationSession.setCurrentState(ConversationState.STATE_SCHEDULE_CHOOSE_SLOT);
+        List<ButtonOption> rows = new ArrayList<>();
+        for (LocalDate d : days) {
+            String id = d.toString();
+            String title = truncate(formatDayTitle(d), 24);
+            rows.add(new ButtonOption(id, title));
+            if (rows.size() >= 10) break;
+        }
 
+        conversationSession.setCurrentState(ConversationState.STATE_SCHEDULE_CHOOSE_DAY);
         String prefix = withError ? "⚠️ Não entendi.\n\n" : "";
-
         return ProcessIncomingMessageResult.interactiveWithMessage(
             prefix,
             InteractiveMessage.list(
-                "Qual horário funciona melhor pra você? ⏰\n" +
-                "📅 " + firstDay + "\n",          // data 1 vez só
-                "Escolher horário",
-                "Horários disponíveis",
+                "Escolha o dia:\n",
+                "Escolher dia",
+                "Dias disponíveis",
                 rows
             )
         );
     }
 
-    /** Mantém o nome curto e “humano” pro WhatsApp (24 chars é apertado). */
-    private String shortProfessionalName(String name) {
-        if (name == null) return "Profissional";
-        String n = name.trim();
-        if (n.isBlank()) return "Profissional";
-
-        // Exemplo de normalização simples:
-        // "Dr Bruno Silva" -> "Dr. Bruno"
-        // "Camila Souza" -> "Camila"
-        String[] parts = n.split("\\s+");
-        if (parts.length == 1) return parts[0];
-
-        // Se já começa com Dr/Dra, mantém + primeiro nome
-        String p0 = parts[0].replace(".", "");
-        if (p0.equalsIgnoreCase("dr") || p0.equalsIgnoreCase("dra")) {
-            String title = p0.equalsIgnoreCase("dr") ? "Dr." : "Dra.";
-            return title + " " + parts[1];
+    private ProcessIncomingMessageResult generateSlotsButtonsForDay(ConversationSession conversationSession, LocalDate chosenDay, boolean withError) {
+        Long serviceId = conversationSession.getChosenServiceId();
+        if (serviceId == null) {
+            conversationSession.setCurrentState(ConversationState.STATE_MAIN_MENU);
+            return ProcessIncomingMessageResult.interactiveWithMessage(
+                "⚠️ Perdi o contexto do serviço. Voltando ao menu.\n\n",
+                MenuMessages.mainMenu(conversationSession.getRegisteredTutorName()));
         }
 
-        // Caso geral: só primeiro nome
-        return parts[0];
+        List<AvailableSlots> allSlots = listAvailableSlotsUseCase.listSlots(serviceId, conversationSession.getLastInteraction());
+
+        if (allSlots == null || allSlots.isEmpty()) {
+            conversationSession.setCurrentState(ConversationState.STATE_MAIN_MENU);
+            return ProcessIncomingMessageResult.interactiveWithMessage(
+                "Não encontrei horários disponíveis nos próximos dias.\n\n",
+                MenuMessages.mainMenu(conversationSession.getRegisteredTutorName())
+            );
+        }
+
+        List<AvailableSlots> daySlots = new ArrayList<>();
+        for (AvailableSlots s : allSlots) {
+            LocalDate d = BusinessTime.toBusinessDate(s.getStartAt());
+            if (d.equals(chosenDay)) daySlots.add(s);
+        }
+
+        if (daySlots.isEmpty())
+            return generateDaysButtons(conversationSession, true);
+
+        List<ButtonOption> rows = new ArrayList<>();
+        for (AvailableSlots slot : daySlots) {
+            String id = SlotKeyHelper.toKey(slot.getStartAt(), slot.getProfessionalId());    
+            String hhmm = slot.getStartAt().atZoneSameInstant(BusinessTime.BUSINESS_ZONE).toLocalTime().toString().substring(0, 5);
+            String profName = (slot.getProfessionalName() == null || slot.getProfessionalName().isBlank()) ? "Profissional" : slot.getProfessionalName();
+            String title = truncate(hhmm + " - " + profName, 24);
+            rows.add(new ButtonOption(id, title));
+            if (rows.size() >= 10) break;
+        }
+
+        conversationSession.setCurrentState(ConversationState.STATE_SCHEDULE_CHOOSE_SLOT);
+        String prefix = withError ? "⚠️ Não entendi.\n\n" : "";
+        return ProcessIncomingMessageResult.interactiveWithMessage(prefix, InteractiveMessage.list("Agora escolha o horário:\n",
+                                                                                                    "Escolher horário",
+                                                                                                    "Horários",
+                                                                                                    rows));
     }
-
-
 
     private String generateConfirmationMessage(ConversationSession conversationSession, boolean withError) {
         AvailableSlots slot = conversationSession.getChosenSlot();
-
         String petName = petRepository.findById(conversationSession.getPetId()).map(Pet::getName).orElse("Pet não encontrado");
-
         String serviceName = petServiceRepository.findById(conversationSession.getChosenServiceId()).map(PetService::getName).orElse("Serviço não encontrado");
-
-        String professionalName = slot.getProfessionalName() != null ? slot.getProfessionalName() : "Profissional selecionado automaticamente";
-
+        String professionalName = resolveProfessionalName(slot);
         String header = withError ? "⚠️ Não entendi, selecione SIM ou NÃO.\n" : "";
 
         return header +
@@ -399,5 +397,40 @@ public class ScheduleHandler {
             "\nProfissional: " + professionalName;
     }
 
+     private String truncate(String s, int max) {
+        if (s == null) return "";
+        String t = s.trim();
+        if (t.length() <= max) return t;
+        return t.substring(0, Math.max(0, max - 1)) + "…";
+    }
+
+    private String formatDayTitle(LocalDate d) {
+        TextStyle style = TextStyle.SHORT;
+        Locale ptBR = new Locale("pt", "BR");
+        String dow = d.getDayOfWeek().getDisplayName(style, ptBR);
+        dow = dow.replace(".", "");
+        String ddmm = String.format("%02d/%02d", d.getDayOfMonth(), d.getMonthValue());
+        return capitalize(dow) + " (" + ddmm + ")";
+    }
+
+    private String capitalize(String s) {
+        if (s == null || s.isBlank())
+            return s;
+        return s.substring(0, 1).toUpperCase() + s.substring(1);
+    }
+
+    private String resolveProfessionalName(AvailableSlots slot) {
+        if (slot == null)
+            return "Profissional";
+
+        if (slot.getProfessionalName() != null && !slot.getProfessionalName().isBlank())
+            return slot.getProfessionalName();
+
+        Long profId = slot.getProfessionalId();
+
+        if (profId == null)
+            return "Profissional";
+        return professionalRepository.findById(profId).map(Professional::getName).orElse("Profissional");
+    }
 }
 

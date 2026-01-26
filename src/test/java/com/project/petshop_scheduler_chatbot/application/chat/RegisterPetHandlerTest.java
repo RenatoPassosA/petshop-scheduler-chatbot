@@ -220,7 +220,8 @@ public class RegisterPetHandlerTest {
         session.setTutorId(1L);
         session.setTempPetObs("nenhuma");
 
-        ProcessIncomingMessageResult result = registerPetHandler.handle_STATE_REGISTER_PET_CONFIRM(session, command);
+        ProcessIncomingMessageResult result =
+            registerPetHandler.handle_STATE_REGISTER_PET_CONFIRM(session, command);
 
         assertThat(session.getCurrentState()).isEqualTo(ConversationState.STATE_START);
         assertThat(session.getTempPetName()).isNull();
@@ -228,12 +229,17 @@ public class RegisterPetHandlerTest {
         assertThat(session.getTempPetSize()).isNull();
         assertThat(session.getTempPetBreed()).isNull();
         assertThat(session.getTempPetObs()).isNull();
+
         assertThat(result).isNotNull();
-        assertThat(result.getText()).contains("Agradecemos a preferencia!\nEstamos aguardando o seu pet!");
-        assertThat(result.getType()).isEqualTo(ProcessIncomingMessageResult.Kind.TEXT);
+        assertThat(result.getType()).isEqualTo(ProcessIncomingMessageResult.Kind.INTERACTIVE);
+
+        String body = result.getInteractive() != null ? result.getInteractive().body() : "";
+        String text = result.getText() != null ? result.getText() : "";
+        assertThat(body + text).contains("Agradecemos a preferencia!");
 
         verify(petUseCase).execute(any(AddPetToTutorCommand.class));
     }
+
 
     @Test
     void confirm_InvalidButton_ShouldStayInConfirmAndReturnErrorInteractive() {

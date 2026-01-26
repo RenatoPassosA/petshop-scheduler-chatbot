@@ -218,32 +218,28 @@ public class DefaultProcessIncomingMessageUseCaseTest {
     }
 
     @Test
-    void execute_STATE_CHECK_SERVICES_ShouldReturnServices() {
+    void execute_STATE_CHECK_SERVICES_ShouldSendServicesList_AndReturnMainMenu() {
         ProcessIncomingMessageCommand command = generateMessageCommand("oi", null);
         String waId = command.getWaId();
+
         ConversationSession session = new ConversationSession(waId);
         session.setCurrentState(ConversationState.STATE_CHECK_SERVICES);
+        session.setRegisteredTutorName("Renato");
 
         when(conversationSessionRepository.findByWaId(waId)).thenReturn(Optional.of(session));
         when(timeProvider.nowInUTC()).thenReturn(OffsetDateTime.parse("2025-12-15T00:00:00Z"));
-        when(servicesFormatedList.sendServicesList()).thenReturn(ProcessIncomingMessageResult.text("Lista de serviços"));
+        when(servicesFormatedList.getAllServicesFormated()).thenReturn("Lista de serviços");
 
         ProcessIncomingMessageResult result = processIncomingMessageUseCase.execute(command);
 
-        assertNotNull(result);
+        assertThat(result).isNotNull();
+        assertThat(result.getType()).isEqualTo(Kind.INTERACTIVE);
         assertThat(result.getText()).isEqualTo("Lista de serviços");
-        assertThat(result.getType()).isEqualTo(Kind.TEXT);
+        assertThat(result.getInteractive().body()).contains("O que você deseja fazer hoje, Renato?");
+        assertThat(session.getCurrentState()).isEqualTo(ConversationState.STATE_MAIN_MENU);
 
         verify(conversationSessionRepository).findByWaId(waId);
-        verify(servicesFormatedList).sendServicesList();
-        verify(conversationSessionRepository).save(any(ConversationSession.class));
-        verifyNoInteractions(startMenuHandler,
-                            noRegisteredMenuHandler,
-                            mainMenuHandler,
-                            registerTutorHandler,
-                            registerPetHandler,
-                            scheduleHandler,
-                            rescheduleHandler,
-                            cancelScheduleHandler);
+        verify(servicesFormatedList).getAllServicesFormated();
+        verify(conversationSessionRepository).save(session);
     }
 }

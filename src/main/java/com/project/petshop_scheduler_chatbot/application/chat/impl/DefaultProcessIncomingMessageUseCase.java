@@ -174,6 +174,9 @@ public class DefaultProcessIncomingMessageUseCase implements ProcessIncomingMess
             case STATE_SCHEDULE_CHOOSE_SERVICE:
                 return scheduleHandler.handle_STATE_SCHEDULE_CHOOSE_SERVICE(conversationSession, messageCommand);
 
+            case STATE_SCHEDULE_CHOOSE_DAY:
+                return scheduleHandler.handle_STATE_SCHEDULE_CHOOSE_DAY(conversationSession, messageCommand);
+
             case STATE_SCHEDULE_CHOOSE_SLOT:
                 return scheduleHandler.handle_STATE_SCHEDULE_CHOOSE_SLOT(conversationSession, messageCommand);
 
@@ -188,6 +191,9 @@ public class DefaultProcessIncomingMessageUseCase implements ProcessIncomingMess
             
             case STATE_RESCHEDULE_CHOOSE_APPOINTMENT:
                 return rescheduleHandler.handle_STATE_RESCHEDULE_CHOOSE_APPOINTMENT(conversationSession, messageCommand);
+
+            case STATE_RESCHEDULE_CHOOSE_DAY:
+                return rescheduleHandler.handle_STATE_RESCHEDULE_CHOOSE_DAY(conversationSession, messageCommand);
 
             case STATE_RESCHEDULE_CHOOSE_SLOT:
                 return rescheduleHandler.handle_STATE_RESCHEDULE_CHOOSE_SLOT(conversationSession, messageCommand);

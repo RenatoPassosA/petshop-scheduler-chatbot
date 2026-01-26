@@ -1,8 +1,12 @@
 package com.project.petshop_scheduler_chatbot.application.chat.impl.handlers;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.LinkedHashSet;
+import java.time.format.TextStyle;
+import java.util.Locale;
 
 import org.springframework.stereotype.Component;
 
@@ -25,6 +29,8 @@ import com.project.petshop_scheduler_chatbot.core.domain.chatbot.ConversationSta
 import com.project.petshop_scheduler_chatbot.core.repository.AppointmentRepository;
 import com.project.petshop_scheduler_chatbot.core.repository.PetRepository;
 import com.project.petshop_scheduler_chatbot.core.repository.PetServiceRepository;
+import com.project.petshop_scheduler_chatbot.application.chat.impl.utils.SlotKeyHelper;
+import com.project.petshop_scheduler_chatbot.application.chat.impl.utils.BusinessTime;
 
 @Component
 public class RescheduleHandler {
@@ -64,39 +70,67 @@ public class RescheduleHandler {
         conversationSession.setChosenAppointmentId(apptId);
 
         Appointment appt = appointmentRepository.findById(apptId).orElseThrow(() -> new RuntimeException("Agendamento não encontrado: " + apptId));
-
         conversationSession.setChosenServiceId(appt.getServiceId());
         conversationSession.setPetId(appt.getPetId());
         conversationSession.setTutorId(appt.getTutorId());
 
-        return generateSlotsButtons(conversationSession, false);
+        return generateDaysButtons(conversationSession, false); // ✅ antes era generateSlotsButtons
     }
 
-
-    public ProcessIncomingMessageResult handle_STATE_RESCHEDULE_CHOOSE_SLOT(
-        ConversationSession conversationSession,
-        ProcessIncomingMessageCommand messageCommand
-    ) {
-        ProcessIncomingMessageResult error = checkError_STATE_RESCHEDULE_CHOOSE_SLOT(conversationSession, messageCommand);
-        if (error != null) {
-            conversationSession.setCurrentState(ConversationState.STATE_RESCHEDULE_CHOOSE_SLOT);
-            return error;
+    public ProcessIncomingMessageResult handle_STATE_RESCHEDULE_CHOOSE_DAY(ConversationSession conversationSession, ProcessIncomingMessageCommand messageCommand) {
+        String dayId = messageCommand.getButtonId();
+        if (dayId == null || dayId.isBlank()) {
+            return generateDaysButtons(conversationSession, true);
         }
 
-        int index = Integer.parseInt(messageCommand.getButtonId());
-        AvailableSlots chosenSlot = conversationSession.getSlots().get(index);
-
-        conversationSession.setChosenSlot(chosenSlot);
-        conversationSession.setCurrentState(ConversationState.STATE_RESCHEDULE_CONFIRM);
-
-        return ProcessIncomingMessageResult.interactive(
-            new InteractiveMessage(
-                "Podemos reagendar?\n\n" + generateConfirmationMessage(conversationSession, false),
-                List.of(new ButtonOption("YES", "SIM"), new ButtonOption("NO", "NÃO"))
-            )
-        );
+        LocalDate chosenDay;
+        try {
+            chosenDay = LocalDate.parse(dayId);
+        } catch (Exception e) {
+            return generateDaysButtons(conversationSession, true);
+        }
+        return generateSlotsButtonsForDay(conversationSession, chosenDay, false);
     }
 
+    public ProcessIncomingMessageResult handle_STATE_RESCHEDULE_CHOOSE_SLOT(ConversationSession conversationSession, ProcessIncomingMessageCommand messageCommand) {
+        ProcessIncomingMessageResult error = checkError_STATE_RESCHEDULE_CHOOSE_SLOT(conversationSession, messageCommand);
+        if (error != null)
+            return error;
+
+        String slotKey = messageCommand.getButtonId();
+        var parsed = SlotKeyHelper.parse(slotKey);
+        if (parsed == null) {
+            return generateDaysButtons(conversationSession, true);
+        }
+
+        Long serviceId = conversationSession.getChosenServiceId();
+        if (serviceId == null) {
+            conversationSession.setCurrentState(ConversationState.STATE_MAIN_MENU);
+            return ProcessIncomingMessageResult.interactiveWithMessage(
+                "⚠️ Perdi o contexto do reagendamento. Voltando ao menu.\n\n",
+                MenuMessages.mainMenu(conversationSession.getRegisteredTutorName())
+            );
+        }
+
+        List<AvailableSlots> allSlots = listAvailableSlotsUseCase.listSlots(serviceId, conversationSession.getLastInteraction());
+        AvailableSlots chosen = null;
+        for (AvailableSlots s : allSlots) {
+            String k = SlotKeyHelper.toKey(s.getStartAt(), s.getProfessionalId());
+            if (k.equals(slotKey)) {
+                chosen = s;
+                break;
+            }
+        }
+
+        if (chosen == null)
+            return generateDaysButtons(conversationSession, true);
+
+        conversationSession.setChosenSlot(chosen);
+        conversationSession.setCurrentState(ConversationState.STATE_RESCHEDULE_CONFIRM);
+        return ProcessIncomingMessageResult.interactive(new InteractiveMessage("Podemos reagendar?\n\n" + generateConfirmationMessage(conversationSession, false),
+                                                                                List.of(new ButtonOption("YES", "SIM"), new ButtonOption("NO", "NÃO")))
+        );
+    }
 
     public ProcessIncomingMessageResult handle_STATE_RESCHEDULE_CONFIRM(ConversationSession conversationSession, ProcessIncomingMessageCommand messageCommand) {
         if (checkError_STATE_RESCHEDULE_CONFIRM(messageCommand)) {
@@ -116,11 +150,9 @@ public class RescheduleHandler {
         try {
             rescheduleAppointmentUseCase.execute(command);
         } catch (WorkingHoursOutsideException e) {
-            conversationSession.setCurrentState(ConversationState.STATE_RESCHEDULE_CHOOSE_SLOT);
-            return ProcessIncomingMessageResult.interactiveWithMessage(
-                "⚠️ Esse horário ficou fora do expediente. Escolha outro horário.\n\n",
-                generateSlotsButtons(conversationSession, false).getInteractive()
-            );
+            conversationSession.setCurrentState(ConversationState.STATE_RESCHEDULE_CHOOSE_DAY);
+            return ProcessIncomingMessageResult.interactiveWithMessage("⚠️ Esse horário ficou fora do expediente. Escolha outro dia/horário.\n\n",
+                                                                    generateDaysButtons(conversationSession, false).getInteractive());
         }
         conversationSession.resetFlowData();
         conversationSession.setCurrentState(ConversationState.STATE_MAIN_MENU);
@@ -154,7 +186,8 @@ public class RescheduleHandler {
         if (tutorId == null)
             return true;
 
-        if (!appointmentRepository.existsOwnership(tutorId, appointmentId)) return true;
+        if (!appointmentRepository.existsOwnership(tutorId, appointmentId))
+            return true;
 
         return false;
     }
@@ -162,59 +195,11 @@ public class RescheduleHandler {
 
     private ProcessIncomingMessageResult checkError_STATE_RESCHEDULE_CHOOSE_SLOT(ConversationSession conversationSession, ProcessIncomingMessageCommand messageCommand) {
         String id = messageCommand.getButtonId();
-        if (id == null)
-            return generateSlotsButtons(conversationSession, true);
-
-        int index;
-        try {
-            index = Integer.parseInt(id);
-        } catch (NumberFormatException e) {
-            return generateSlotsButtons(conversationSession, true);
+        if (id == null || id.isBlank()) {
+            return generateDaysButtons(conversationSession, true);
         }
-
-        List<AvailableSlots> slots = conversationSession.getSlots();
-
-        if (slots == null || slots.isEmpty()) {
-
-            Long apptId = conversationSession.getChosenAppointmentId();
-            if (apptId == null) {
-                conversationSession.setCurrentState(ConversationState.STATE_MAIN_MENU);
-                return ProcessIncomingMessageResult.interactiveWithMessage(
-                    "⚠️ Perdi o contexto do reagendamento. Vamos começar de novo.\n\n",
-                    MenuMessages.mainMenu(conversationSession.getRegisteredTutorName())
-                );
-            }
-
-            Optional<Appointment> apptOpt = appointmentRepository.findById(apptId);
-            if (apptOpt.isEmpty()) {
-                conversationSession.setCurrentState(ConversationState.STATE_MAIN_MENU);
-                return ProcessIncomingMessageResult.interactiveWithMessage(
-                    "⚠️ Não encontrei esse agendamento. Vamos voltar ao menu.\n\n",
-                    MenuMessages.mainMenu(conversationSession.getRegisteredTutorName())
-                );
-            }
-
-            Long serviceId = apptOpt.get().getServiceId();
-
-            slots = listAvailableSlotsUseCase.listSlots(serviceId, conversationSession.getLastInteraction());
-
-            if (slots == null || slots.isEmpty()) {
-                conversationSession.setCurrentState(ConversationState.STATE_MAIN_MENU);
-                return ProcessIncomingMessageResult.interactiveWithMessage(
-                    "Não encontrei horários disponíveis nos próximos dias.\n\n",
-                    MenuMessages.mainMenu(conversationSession.getRegisteredTutorName())
-                );
-            }
-
-            conversationSession.setSlots(slots);
-        }
-
-        if (index < 0 || index >= slots.size())
-            return generateSlotsButtons(conversationSession, true);
-
         return null;
     }
-
 
     private boolean checkError_STATE_RESCHEDULE_CONFIRM(ProcessIncomingMessageCommand messageCommand) {
         String id = messageCommand.getButtonId();
@@ -227,22 +212,17 @@ public class RescheduleHandler {
         List<Appointment> appointments = appointmentRepository.findByTutorId(conversationSession.getTutorId());
         if (appointments.isEmpty()) {
             conversationSession.setCurrentState(ConversationState.STATE_START);
-            return ProcessIncomingMessageResult.interactiveWithMessage(
-                "Você não tem nenhum serviço agendado.\n\nO que deseja fazer?\n\n",
-                MenuMessages.mainMenu(conversationSession.getRegisteredTutorName())
-            );
+            return ProcessIncomingMessageResult.interactiveWithMessage("Você não tem nenhum serviço agendado.\n\nO que deseja fazer?\n\n",
+                                                                        MenuMessages.mainMenu(conversationSession.getRegisteredTutorName()));
         }
 
         List<ButtonOption> rows = new ArrayList<>();
 
         for (Appointment appt : appointments) {
             String id = appt.getId().toString();
-
-            String petName = petRepository.findById(appt.getPetId()).map(Pet::getName).orElse("Pet");
             String serviceName = petServiceRepository.findById(appt.getServiceId()).map(PetService::getName).orElse("Serviço");
             String startAt = DateTimeFormatterHelper.formatDateTime(appt.getStartAt());
-            String title = truncate(serviceName + " - " + petName + " (" + startAt + ")", 24);
-
+            String title = truncate(startAt + " " + serviceName, 24);
             rows.add(new ButtonOption(id, title));
         }
 
@@ -250,48 +230,77 @@ public class RescheduleHandler {
 
         String prefix = withError ? "⚠️ Não entendi.\n\n" : "";
 
-        return ProcessIncomingMessageResult.interactiveWithMessage(
-            prefix,
-            InteractiveMessage.list(
-                "Qual serviço deseja reagendar?\n",
-                "Escolher serviço",
-                "Agendamentos",
-                rows
-            )
-        );
+        return ProcessIncomingMessageResult.interactiveWithMessage(prefix, InteractiveMessage.list("Qual serviço deseja reagendar?\n",
+                                                                                                "Escolher serviço",
+                                                                                                "Agendamentos",
+                                                                                                rows));
     }
 
-    private ProcessIncomingMessageResult generateSlotsButtons(ConversationSession conversationSession, boolean withError) {
+    private ProcessIncomingMessageResult generateDaysButtons(ConversationSession conversationSession, boolean withError) {
         Long serviceId = conversationSession.getChosenServiceId();
-
         if (serviceId == null) {
-            Long apptId = conversationSession.getChosenAppointmentId();
-            if (apptId == null) {
-                conversationSession.setCurrentState(ConversationState.STATE_MAIN_MENU);
-                return ProcessIncomingMessageResult.interactiveWithMessage(
-                    "Não consegui identificar qual agendamento você quer reagendar.\n\n",
-                    MenuMessages.mainMenu(conversationSession.getRegisteredTutorName())
-                );
-            }
-
-            Appointment appt = appointmentRepository.findById(apptId).orElse(null);
-            if (appt == null) {
-                conversationSession.setCurrentState(ConversationState.STATE_MAIN_MENU);
-                return ProcessIncomingMessageResult.interactiveWithMessage(
-                    "Esse agendamento não existe mais.\n\n",
-                    MenuMessages.mainMenu(conversationSession.getRegisteredTutorName())
-                );
-            }
-
-            serviceId = appt.getServiceId();
-            conversationSession.setChosenServiceId(serviceId);
-            conversationSession.setPetId(appt.getPetId());
+            conversationSession.setCurrentState(ConversationState.STATE_MAIN_MENU);
+            return ProcessIncomingMessageResult.interactiveWithMessage("⚠️ Não consegui identificar o serviço. Voltei ao menu.\n\n",
+                                                                    MenuMessages.mainMenu(conversationSession.getRegisteredTutorName()));
         }
 
-        List<AvailableSlots> availableSlots =
-            listAvailableSlotsUseCase.listSlots(serviceId, conversationSession.getLastInteraction());
+        List<AvailableSlots> allSlots = listAvailableSlotsUseCase.listSlots(serviceId, conversationSession.getLastInteraction());
 
-        if (availableSlots == null || availableSlots.isEmpty()) {
+        if (allSlots == null || allSlots.isEmpty()) {
+            conversationSession.setCurrentState(ConversationState.STATE_MAIN_MENU);
+            return ProcessIncomingMessageResult.interactiveWithMessage("Não encontrei horários disponíveis nos próximos dias.\n\n",
+                                                                    MenuMessages.mainMenu(conversationSession.getRegisteredTutorName()));
+        }
+
+        LinkedHashSet<LocalDate> days = new LinkedHashSet<>();
+        for (AvailableSlots s : allSlots) {
+            days.add(BusinessTime.toBusinessDate(s.getStartAt()));
+        }
+
+        List<ButtonOption> rows = new ArrayList<>();
+        for (LocalDate d : days) {
+            String id = d.toString();
+            String title = truncate(formatDayTitle(d), 24);
+            rows.add(new ButtonOption(id, title));
+            if (rows.size() >= 10)
+                break;
+        }
+
+        conversationSession.setCurrentState(ConversationState.STATE_RESCHEDULE_CHOOSE_DAY);
+
+        String prefix = withError ? "⚠️ Não entendi.\n\n" : "";
+        return ProcessIncomingMessageResult.interactiveWithMessage(prefix, InteractiveMessage.list("Escolha o dia:\n",
+                                                                                                "Escolher dia",
+                                                                                                "Dias disponíveis",
+                                                                                                rows));
+    }
+
+    private String formatDayTitle(LocalDate d) {
+        TextStyle style = TextStyle.SHORT;
+        Locale ptBR = new Locale("pt", "BR");
+        String dow = d.getDayOfWeek().getDisplayName(style, ptBR); // "sáb."
+        dow = dow.replace(".", ""); // "sáb"
+        String ddmm = String.format("%02d/%02d", d.getDayOfMonth(), d.getMonthValue());
+        return capitalize(dow) + " (" + ddmm + ")";
+    }
+
+    private String capitalize(String s) {
+        if (s == null || s.isBlank()) return s;
+        return s.substring(0, 1).toUpperCase() + s.substring(1);
+    }
+
+    private ProcessIncomingMessageResult generateSlotsButtonsForDay(ConversationSession conversationSession, LocalDate chosenDay, boolean withError) {
+        Long serviceId = conversationSession.getChosenServiceId();
+        if (serviceId == null) {
+            conversationSession.setCurrentState(ConversationState.STATE_MAIN_MENU);
+            return ProcessIncomingMessageResult.interactiveWithMessage(
+                "⚠️ Perdi o contexto do serviço. Voltando ao menu.\n\n",
+                MenuMessages.mainMenu(conversationSession.getRegisteredTutorName())
+            );
+        }
+
+        List<AvailableSlots> allSlots = listAvailableSlotsUseCase.listSlots(serviceId, conversationSession.getLastInteraction());
+        if (allSlots == null || allSlots.isEmpty()) {
             conversationSession.setCurrentState(ConversationState.STATE_MAIN_MENU);
             return ProcessIncomingMessageResult.interactiveWithMessage(
                 "Não encontrei horários disponíveis nos próximos dias.\n\n",
@@ -299,29 +308,32 @@ public class RescheduleHandler {
             );
         }
 
-        List<ButtonOption> rows = new ArrayList<>();
-        for (int i = 0; i < availableSlots.size(); i++) {
-            AvailableSlots slot = availableSlots.get(i);
-            String title = truncate(
-                DateTimeFormatterHelper.formatDateTime(slot.getStartAt()) + " - " + slot.getProfessionalName(),
-                24
-            );
-            rows.add(new ButtonOption(String.valueOf(i), title));
+        List<AvailableSlots> daySlots = new ArrayList<>();
+        for (AvailableSlots s : allSlots) {
+            LocalDate d = BusinessTime.toBusinessDate(s.getStartAt());
+            if (d.equals(chosenDay)) daySlots.add(s);
         }
 
-        conversationSession.setSlots(availableSlots);
+        if (daySlots.isEmpty()) {
+            return generateDaysButtons(conversationSession, true);
+        }
+
+        List<ButtonOption> rows = new ArrayList<>();
+        for (AvailableSlots slot : daySlots) {
+            String id = SlotKeyHelper.toKey(slot.getStartAt(), slot.getProfessionalId());
+            String hhmm = slot.getStartAt().atZoneSameInstant(BusinessTime.BUSINESS_ZONE).toLocalTime().toString().substring(0, 5);
+            String title = truncate(hhmm + " - " + slot.getProfessionalName(), 24);
+            rows.add(new ButtonOption(id, title));
+            if (rows.size() >= 10) break;
+        }
+
         conversationSession.setCurrentState(ConversationState.STATE_RESCHEDULE_CHOOSE_SLOT);
 
         String prefix = withError ? "⚠️ Não entendi.\n\n" : "";
-        return ProcessIncomingMessageResult.interactiveWithMessage(
-            prefix,
-            InteractiveMessage.list(
-                "Para qual horário deseja reagendar?\n",
-                "Escolher horário",
-                "Horários disponíveis",
-                rows
-            )
-        );
+        return ProcessIncomingMessageResult.interactiveWithMessage(prefix, InteractiveMessage.list("Agora escolha o horário:\n",
+                                                                                                "Escolher horário",
+                                                                                                "Horários",
+                                                                                                rows));
     }
 
     private String generateConfirmationMessage(ConversationSession conversationSession, boolean withError) {
