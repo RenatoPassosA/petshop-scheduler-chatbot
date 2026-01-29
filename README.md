@@ -35,10 +35,10 @@ Dados do WhatsApp (ID, access token e outros parâmetros necessários)
 Instalação rápida
 
 Clonar o repositório
-
+```bash
 git clone https://github.com/renatopassos/chatbot-whatsapp.git
 cd chatbot-whatsapp
-
+```
 
 Configuração do WhatsApp:
 
@@ -46,31 +46,33 @@ Crie um arquivo .env na raiz do projeto.
 
 Adicione as variáveis necessárias para autenticação com o WhatsApp API:
 
-WHATSAPP_PHONE_ID=your_phone_number_id
-WHATSAPP_ACCESS_TOKEN=your_access_token
+WHATSAPP_PHONE_NUMBER_ID
+WHATSAPP_ACCESS_TOKEN
+WHATSAPP_API_VERSION
+WHATSAPP_BASE_URL
 
 
 Isso permitirá que o chatbot se conecte corretamente com a API do WhatsApp.
 
 Configurar o Banco de Dados (PostgreSQL) com Docker:
-
+```bash
 docker-compose up -d
-
+```
 
 Rodar o projeto
-
+```bash
 ./mvnw spring-boot:run
-
+```
 
 Rodar os testes
-
+```bash
 ./mvnw test
-
+```
 
 Ou, se preferir executar testes específicos:
-
+```bash
 ./mvnw test -Dtest=RescheduleAppointmentUseCaseTest
-
+```
 
 Execução no WhatsApp
 
