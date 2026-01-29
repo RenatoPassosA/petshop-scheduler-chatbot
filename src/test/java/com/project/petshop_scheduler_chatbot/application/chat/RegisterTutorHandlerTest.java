@@ -14,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.project.petshop_scheduler_chatbot.application.chat.ProcessIncomingMessageResult.Kind;
+import com.project.petshop_scheduler_chatbot.application.chat.impl.handlers.RegisterPetHandler;
 import com.project.petshop_scheduler_chatbot.application.chat.impl.handlers.RegisterTutorHandler;
 import com.project.petshop_scheduler_chatbot.application.chat.impl.handlers.StartMenuHandler;
 import com.project.petshop_scheduler_chatbot.application.tutor.AddTutorCommand;
@@ -26,12 +27,13 @@ public class RegisterTutorHandlerTest {
 
     @Mock TutorUseCase tutorUseCase;
     @Mock StartMenuHandler startMenuHandler;
+    @Mock RegisterPetHandler registerPetHandler;
 
     private RegisterTutorHandler registerTutorHandler;
 
     @BeforeEach
     void setUp() {
-        registerTutorHandler = new RegisterTutorHandler(tutorUseCase, startMenuHandler);
+        registerTutorHandler = new RegisterTutorHandler(tutorUseCase, startMenuHandler, registerPetHandler);
     }
 
     private ProcessIncomingMessageCommand generateMessageCommand(String text, String buttonId) {

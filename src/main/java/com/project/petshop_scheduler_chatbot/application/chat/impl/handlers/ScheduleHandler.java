@@ -248,7 +248,7 @@ public class ScheduleHandler {
         List<Pet> pets = petRepository.listByTutor(conversationSession.getTutorId());
         if (pets.isEmpty()) {
             conversationSession.setCurrentState(ConversationState.STATE_MAIN_MENU);
-            return ProcessIncomingMessageResult.interactiveWithMessage("Você não tem nenhum pet cadastrado.\n\n O que deseja fazer?\n\n", MenuMessages.mainMenu(conversationSession.getRegisteredTutorName()));
+            return ProcessIncomingMessageResult.interactiveWithMessage("Você não tem nenhum pet cadastrado.\n\n", MenuMessages.mainMenu(conversationSession.getRegisteredTutorName()));
         }
 
         List<ButtonOption> petButtons = new ArrayList<>();

@@ -6,10 +6,11 @@ import org.springframework.stereotype.Component;
 
 import com.project.petshop_scheduler_chatbot.application.chat.ProcessIncomingMessageCommand;
 import com.project.petshop_scheduler_chatbot.application.chat.ProcessIncomingMessageResult;
-import com.project.petshop_scheduler_chatbot.application.chat.messages.MenuMessages;
+// import com.project.petshop_scheduler_chatbot.application.chat.messages.MenuMessages;
 import com.project.petshop_scheduler_chatbot.application.chat.messages.InteractiveBodyMessages.ButtonOption;
 import com.project.petshop_scheduler_chatbot.application.chat.messages.InteractiveBodyMessages.InteractiveMessage;
 import com.project.petshop_scheduler_chatbot.application.tutor.AddTutorCommand;
+import com.project.petshop_scheduler_chatbot.application.tutor.AddTutorResult;
 import com.project.petshop_scheduler_chatbot.application.tutor.TutorUseCase;
 import com.project.petshop_scheduler_chatbot.core.domain.chatbot.ConversationSession;
 import com.project.petshop_scheduler_chatbot.core.domain.chatbot.ConversationState;
@@ -20,11 +21,12 @@ public class RegisterTutorHandler {
 
     private final TutorUseCase tutorUseCase;
     private final StartMenuHandler startMenuHandler;
+    private final RegisterPetHandler registerPetHandler;
 
-    public RegisterTutorHandler(TutorUseCase tutorUseCase, StartMenuHandler startMenuHandler) {
+    public RegisterTutorHandler(TutorUseCase tutorUseCase, StartMenuHandler startMenuHandler, RegisterPetHandler registerPetHandler) {
         this.tutorUseCase = tutorUseCase;
         this.startMenuHandler = startMenuHandler;
-
+        this.registerPetHandler = registerPetHandler;
     }
     
     public ProcessIncomingMessageResult handle_STATE_REGISTER_TUTOR_START(ConversationSession conversationSession, ProcessIncomingMessageCommand messageCommand) {
@@ -60,7 +62,7 @@ public class RegisterTutorHandler {
 
 
     public ProcessIncomingMessageResult handle_STATE_REGISTER_TUTOR_CONFIRM(ConversationSession conversationSession, ProcessIncomingMessageCommand messageCommand) {
-        if (checkError_STATE_REGISTER_TUTOR_CONFIRM(messageCommand)) {
+        if (checkError_YES_or_NO(messageCommand)) {
             conversationSession.setCurrentState(ConversationState.STATE_REGISTER_TUTOR_CONFIRM);
             return ProcessIncomingMessageResult.interactive(new InteractiveMessage(generateConfirmationMessage(conversationSession, true),
                                                                                     List.of(new ButtonOption("YES", "SIM"),
@@ -75,12 +77,47 @@ public class RegisterTutorHandler {
 
         PhoneNumber phone = new PhoneNumber(conversationSession.getWaId());
         AddTutorCommand command = new AddTutorCommand(conversationSession.getTempTutorName(), phone, conversationSession.getTempTutorAddress());
-        tutorUseCase.execute(command);
+        AddTutorResult result = tutorUseCase.execute(command);
+        conversationSession.setTutorId(result.getTutorId());
+        conversationSession.setRegisteredTutorName(conversationSession.getTempTutorName());
         conversationSession.resetFlowData();
-        String name = conversationSession.getTempTutorName();
-        conversationSession.setCurrentState(ConversationState.STATE_START);
+        // String name = conversationSession.getTempTutorName();
+        conversationSession.setCurrentState(ConversationState.STATE_REGISTER_PET_AFTER_TUTOR);
         // return ProcessIncomingMessageResult.text("Agradecemos a preferencia!"); 
-        return ProcessIncomingMessageResult.interactiveWithMessage("Agradecemos a preferencia!\n\n", MenuMessages.mainMenu(name));
+        return ProcessIncomingMessageResult.interactiveWithMessage("Agradecemos a preferencia!\n\n", new InteractiveMessage("Deseja cadastrar um pet?\n",
+                                                                                                                                List.of(new ButtonOption("REGISTER_PET", "SIM"),
+                                                                                                                                    new ButtonOption("NO", "NÃO"))));
+    }
+
+    public ProcessIncomingMessageResult handle_STATE_REGISTER_PET_AFTER_TUTOR(ConversationSession conversationSession, ProcessIncomingMessageCommand messageCommand) {
+        if (checkError_REGISTER_PET_OR_NO(messageCommand)) {
+            conversationSession.setCurrentState(ConversationState.STATE_REGISTER_PET_AFTER_TUTOR);
+            return ProcessIncomingMessageResult.interactiveWithMessage("Agradecemos a preferencia!\n\n", new InteractiveMessage("Deseja cadastrar um pet?\n",
+                                                                                                                                List.of(new ButtonOption("REGISTER_PET", "SIM"),
+                                                                                                                                    new ButtonOption("NO", "NÃO"))));
+        }
+
+        if ("NO".equals(messageCommand.getButtonId())) {
+            conversationSession.setCurrentState(ConversationState.STATE_START);
+            conversationSession.resetFlowData();
+            return startMenuHandler.STATE_START_handler(conversationSession);
+        }
+        conversationSession.setCurrentState(ConversationState.STATE_REGISTER_PET_START);
+        return registerPetHandler.handle_STATE_REGISTER_PET_START(conversationSession, messageCommand);
+    }
+
+    private boolean checkError_YES_or_NO(ProcessIncomingMessageCommand messageCommand) {
+        String id = messageCommand.getButtonId();
+        if (id == null || (!"YES".equals(id) &&!"NO".equals(id)))  
+            return true;
+        return false;
+    }
+
+    private boolean checkError_REGISTER_PET_OR_NO(ProcessIncomingMessageCommand messageCommand) {
+        String id = messageCommand.getButtonId();
+        if (id == null || (!"REGISTER_PET".equals(id) && !"NO".equals(id)))
+            return true;
+        return false;
     }
 
     private boolean checkError_STATE_REGISTER_TUTOR_START(ProcessIncomingMessageCommand messageCommand) {
@@ -96,13 +133,6 @@ public class RegisterTutorHandler {
             return true;
         text = text.trim();
         if (text.isBlank())
-            return true;
-        return false;
-    }
-
-    private boolean checkError_STATE_REGISTER_TUTOR_CONFIRM(ProcessIncomingMessageCommand messageCommand) {
-        String id = messageCommand.getButtonId();
-        if (id == null || (!"YES".equals(id) &&!"NO".equals(id)))  
             return true;
         return false;
     }

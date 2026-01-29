@@ -223,7 +223,7 @@ public class RegisterPetHandlerTest {
         ProcessIncomingMessageResult result =
             registerPetHandler.handle_STATE_REGISTER_PET_CONFIRM(session, command);
 
-        assertThat(session.getCurrentState()).isEqualTo(ConversationState.STATE_START);
+        assertThat(session.getCurrentState()).isEqualTo(ConversationState.STATE_MAIN_MENU);
         assertThat(session.getTempPetName()).isNull();
         assertThat(session.getTempPetGender()).isNull();
         assertThat(session.getTempPetSize()).isNull();

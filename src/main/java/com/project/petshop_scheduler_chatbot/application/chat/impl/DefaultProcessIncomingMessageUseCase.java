@@ -135,6 +135,9 @@ public class DefaultProcessIncomingMessageUseCase implements ProcessIncomingMess
             case STATE_REGISTER_TUTOR_CONFIRM:
                 return registerTutorHandler.handle_STATE_REGISTER_TUTOR_CONFIRM(conversationSession, messageCommand);
 
+            case STATE_REGISTER_PET_AFTER_TUTOR:
+                return registerTutorHandler.handle_STATE_REGISTER_PET_AFTER_TUTOR(conversationSession, messageCommand);
+
             case STATE_REGISTER_PET_START:
                 return registerPetHandler.handle_STATE_REGISTER_PET_START(conversationSession, messageCommand);
 
