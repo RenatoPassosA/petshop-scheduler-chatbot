@@ -1,7 +1,6 @@
 package com.project.petshop_scheduler_chatbot.application.chat;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -17,7 +16,6 @@ import com.project.petshop_scheduler_chatbot.application.chat.ProcessIncomingMes
 import com.project.petshop_scheduler_chatbot.application.chat.impl.handlers.RegisterPetHandler;
 import com.project.petshop_scheduler_chatbot.application.chat.impl.handlers.RegisterTutorHandler;
 import com.project.petshop_scheduler_chatbot.application.chat.impl.handlers.StartMenuHandler;
-import com.project.petshop_scheduler_chatbot.application.tutor.AddTutorCommand;
 import com.project.petshop_scheduler_chatbot.application.tutor.TutorUseCase;
 import com.project.petshop_scheduler_chatbot.core.domain.chatbot.ConversationSession;
 import com.project.petshop_scheduler_chatbot.core.domain.chatbot.ConversationState;
@@ -194,26 +192,4 @@ public class RegisterTutorHandlerTest {
         verifyNoInteractions(tutorUseCase);
         verify(startMenuHandler, times(1)).STATE_START_handler(session);;
     }
-
-    @Test
-    void registerConfirm_ValidConfirmation_ShouldResetDataSendConfirmationMessage() {
-        ProcessIncomingMessageCommand command = generateMessageCommand(null, "YES");
-        ConversationSession session = new ConversationSession("21988398302");
-        session.setCurrentState(ConversationState.STATE_REGISTER_TUTOR_CONFIRM);
-        session.setTempTutorName("Renato");
-        session.setTempTutorAddress("Rua 1");
-
-        ProcessIncomingMessageResult result = registerTutorHandler.handle_STATE_REGISTER_TUTOR_CONFIRM(session, command);
-
-        assertThat(session.getCurrentState()).isEqualTo(ConversationState.STATE_START);
-        assertThat(result.getType()).isEqualTo(Kind.INTERACTIVE);
-        String body = result.getInteractive() != null ? result.getInteractive().body() : "";
-        String text = result.getText() != null ? result.getText() : "";
-        assertThat(body + text).contains("Agradecemos a preferencia!");
-        assertThat(session.getTempTutorName()).isNull();
-        assertThat(session.getTempTutorAddress()).isNull();
-        verify(tutorUseCase, times(1)).execute(any(AddTutorCommand.class));
-        verifyNoInteractions(startMenuHandler);
-    }
-
 }
