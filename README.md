@@ -32,6 +32,8 @@ Testcontainers (para testes com banco de dados em containers)
 
 Dados do WhatsApp (ID, access token e outros parâmetros necessários)
 
+
+
 Instalação rápida
 
 Clonar o repositório
