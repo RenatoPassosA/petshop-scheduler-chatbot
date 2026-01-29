@@ -48,9 +48,9 @@ Crie um arquivo .env na raiz do projeto.
 
 Adicione as variáveis necessárias para autenticação com o WhatsApp API:
 
-WHATSAPP_PHONE_NUMBER_ID
-WHATSAPP_ACCESS_TOKEN
-WHATSAPP_API_VERSION
+WHATSAPP_PHONE_NUMBER_ID,
+WHATSAPP_ACCESS_TOKEN,
+WHATSAPP_API_VERSION,
 WHATSAPP_BASE_URL
 
 
