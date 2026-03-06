@@ -82,4 +82,6 @@ Após a configuração, ao executar o bot, você poderá interagir com ele via W
 
 🖼️ Demonstração
 
+Video do projeto em funcionamento: https://youtube.com/shorts/YItowSGhdAE
+
 ![Chatbot](assets/chatbot.jpg)
